@@ -7,14 +7,14 @@ public static class LeadsServiceLogs
     public const string CompleteLead = "Create new lead with ID {id}";
     public const string AddAccount = "Сalling the repository method To create a new default RUB account for lead";
     public const string CompleteAccount = "Create new account with ID {id}";
+    public const string CheckLeadByMail = "Checking the lead is in the database";
+    public const string CheckUserPassword = "Verification of authentication data";
 
 
 
 
-
-    public const string CheckUserByMail = "Проверяем есть ли пользователь в базе данных";
     public const string CheckUserById = "Проверяем существует ли пользователь с ID {id}";
-    public const string CheckUserPassword = "Проверка аутентификационных данных";
+
     public const string GetUsers = "Обращаемся к методу репозитория Получение всех пользователей";
     public const string GetUserById = "Обращаемся к методу репозитория Получение пользователя по ID {id}";
     public const string UpdateUserData = "Обновляем данные пользователя с ID {id} из запроса";

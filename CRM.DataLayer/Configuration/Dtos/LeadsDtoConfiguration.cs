@@ -37,6 +37,10 @@ public class LeadsDtoConfiguration : IEntityTypeConfiguration<LeadDto>
             .IsRequired()
             .HasMaxLength(DatabaseProperties.PasswordLength);
         builder
+            .Property(u => u.Salt)
+            .IsRequired()
+            .HasMaxLength(DatabaseProperties.SaltLength);
+        builder
             .Property(u => u.Status)
             .HasDefaultValue(LeadStatus.Regular);
         builder

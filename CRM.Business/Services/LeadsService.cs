@@ -2,6 +2,7 @@
 using CRM.Business.Configuration;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
+using CRM.Business.Models.Tokens.Responses;
 using CRM.Core.Constants.Exceptions.Business;
 using CRM.Core.Constants.Logs.Business;
 using CRM.Core.Dtos;
@@ -9,6 +10,7 @@ using CRM.Core.Enums;
 using CRM.Core.Exсeptions;
 using CRM.DataLayer.Interfaces;
 using Serilog;
+using System.Security.Claims;
 
 namespace CRM.Business.Services;
 
@@ -61,5 +63,39 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         }
 
         return lead.Id;
+    }
+
+    public AuthenticatedResponse LoginLead(LoginLeadRequest request)
+    {
+        LeadDto lead = _mapper.Map<LeadDto>(request);
+
+        _logger.Information(LeadsServiceLogs.CheckLeadByMail);
+        var leadDb = _leadsRepository.GetLeadByMail(lead.Mail.ToLower())
+            ?? throw new UnauthenticatedException();
+
+        _logger.Information(LeadsServiceLogs.CheckUserPassword);
+        var confirmPassword = _passwordsService.VerifyPassword(lead.Password, leadDb.Password, leadDb.Salt);
+        if (!confirmPassword)
+        {
+            throw new UnauthenticatedException();
+        }
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, leadDb.Id.ToString()),
+            new(ClaimTypes.Email, leadDb.Mail),
+        };
+
+        var accessToken = _tokensService.GenerateAccessToken(claims);
+        var refreshToken = _tokensService.GenerateRefreshToken();
+        leadDb.RefreshToken = refreshToken;
+        leadDb.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwt.LifeTimeRefreshToken);
+        _leadsRepository.UpdateLead(leadDb);
+
+        return new AuthenticatedResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
     }
 }

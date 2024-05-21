@@ -9,5 +9,6 @@ public class LeadsMappingProfile : Profile
     public LeadsMappingProfile()
     {
         CreateMap<RegistrationLeadRequest, LeadDto>();
+        CreateMap<LoginLeadRequest, LeadDto>();
     }
 }
