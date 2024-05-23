@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CRM.DataLayer.Migrations
 {
     [DbContext(typeof(CrmContext))]
-    [Migration("20240521072305_Initial")]
+    [Migration("20240521171923_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -68,10 +68,8 @@ namespace CRM.DataLayer.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("address");
 
-                    b.Property<string>("BirthDate")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date")
                         .HasColumnName("birth_date");
 
                     b.Property<bool>("IsDeleted")

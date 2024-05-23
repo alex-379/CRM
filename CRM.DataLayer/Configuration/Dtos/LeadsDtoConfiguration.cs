@@ -30,8 +30,7 @@ public class LeadsDtoConfiguration : IEntityTypeConfiguration<LeadDto>
             .HasMaxLength(DatabaseProperties.AddressLength);
         builder
             .Property(u => u.BirthDate)
-            .IsRequired()
-            .HasMaxLength(DatabaseProperties.BirthDateLength);
+            .IsRequired();
         builder
             .Property(u => u.Password)
             .IsRequired()

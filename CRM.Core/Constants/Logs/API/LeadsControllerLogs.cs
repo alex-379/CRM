@@ -4,12 +4,12 @@ public static class LeadsControllerLogs
 {
     public const string CreateUser = "Creating lead with mail {request.Mail}";
     public const string Login = "Lead authentication";
-
+    public const string GetLeadById = "Getting the user by ID {id}";
 
 
 
     public const string GetUsers = "Получаем всех пользователей";
-    public const string GetUserById = "Получаем пользователя по ID {id}";
+
     public const string GetDevicesByUserId = "Получаем устройства по ID пользователя {userId}";
     public const string GetOrdersByUserId = "Получаем заказы по ID пользователя {userId}";
 

@@ -8,7 +8,7 @@ public class LeadDto : IdContainer
     public string Mail { get; set; }
     public string Phone { get; set; }
     public string Address { get; set; }
-    public string BirthDate { get; set; }
+    public DateOnly BirthDate { get; set; }
     public LeadStatus Status { get; set; }
     public string Password { get; set; }
     public string Salt { get; set; }

@@ -19,7 +19,7 @@ namespace CRM.DataLayer.Migrations
                     mail = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     phone = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
                     address = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    birth_date = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    birth_date = table.Column<DateOnly>(type: "date", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false, defaultValue: 2),
                     password = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     salt = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),

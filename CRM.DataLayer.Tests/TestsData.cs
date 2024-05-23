@@ -8,7 +8,7 @@ public static class TestsData
     public static LeadDto GetFakeLeadDto() =>
         new()
         {
-            Name = "testuser03",
+            Name = "TestLead03",
             Mail = "test03@test.ru",
         };
 
@@ -21,7 +21,7 @@ public static class TestsData
             Mail = "test01@test.test",
             Phone = "+78888888888",
             Address = "TestAddress01",
-            BirthDate ="01.01.2000",
+            BirthDate = new DateOnly(2000,1,1),
         },
         new()
         {
@@ -30,7 +30,7 @@ public static class TestsData
             Mail = "test02@test.test",
             Phone = "+79999999999",
             Address = "TestAddress02",
-            BirthDate ="01.01.1999",
+            BirthDate = new DateOnly(1999,1,1),
         }
         ];
 
@@ -41,7 +41,7 @@ public static class TestsData
             Status = AccountStatus.Active,
             Lead = new()
             {
-                Name = "testuser03",
+                Name = "TestLead03",
                 Mail = "test03@test.ru",
             }
         };

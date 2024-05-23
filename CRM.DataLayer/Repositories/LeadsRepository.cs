@@ -40,8 +40,8 @@ public class LeadsRepository(CrmContext context) : BaseRepository(context), ILea
 
     public void UpdateLead(LeadDto lead)
     {
-        _logger.Information(LeadsRepositoryLogs.UpdateLead, lead.Id);
         _ctx.Leads.Update(lead);
         _ctx.SaveChanges();
+        _logger.Information(LeadsRepositoryLogs.UpdateLead, lead.Id);
     }
 }

@@ -11,8 +11,8 @@ public class TransactionsRepository(CrmContext context) : BaseRepository(context
 
     public IDbContextTransaction BeginTransaction()
     {
-        _logger.Information(TransactionsRepositoryLogs.BeginTransaction, _ctx);
         var transactionContext = _ctx.Database.BeginTransaction();
+        _logger.Information(TransactionsRepositoryLogs.BeginTransaction, _ctx);
 
         return transactionContext;
     }

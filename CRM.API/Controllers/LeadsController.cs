@@ -1,5 +1,7 @@
-﻿using CRM.Business.Interfaces;
+﻿using CRM.API.Configuration.Filters;
+using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
+using CRM.Business.Models.Leads.Responses;
 using CRM.Business.Models.Tokens.Responses;
 using CRM.Core.Constants;
 using CRM.Core.Constants.Logs.API;
@@ -9,6 +11,7 @@ using Serilog;
 
 namespace CRM.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route(ControllersRoutes.LeadsController)]
 public class LeadsController(ILeadsService leadsService) : Controller
@@ -34,5 +37,14 @@ public class LeadsController(ILeadsService leadsService) : Controller
         var authenticatedResponse = _leadsService.LoginLead(request);
 
         return Ok(authenticatedResponse);
+    }
+
+    [AuthorizationFilterByUserId]
+    [HttpGet(ControllersRoutes.Id)]
+    public ActionResult<LeadResponse> GetLeadById(Guid id)
+    {
+        _logger.Information(LeadsControllerLogs.GetLeadById, id);
+
+        return Ok(_leadsService.GetLeadById(id));
     }
 }

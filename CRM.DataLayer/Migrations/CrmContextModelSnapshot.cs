@@ -65,10 +65,8 @@ namespace CRM.DataLayer.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("address");
 
-                    b.Property<string>("BirthDate")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date")
                         .HasColumnName("birth_date");
 
                     b.Property<bool>("IsDeleted")
