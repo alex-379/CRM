@@ -1,7 +1,6 @@
 ﻿using CRM.Core.Constants.Logs.DataLayer;
 using CRM.Core.Dtos;
 using CRM.DataLayer.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace CRM.DataLayer.Repositories

@@ -1,6 +1,6 @@
 ﻿namespace CRM.Core.Constants.Exceptions.Business;
 
-public class TokensServiceExceptions
+public static class TokensServiceExceptions
 {
     public const string UnauthenticatedException = "User Token verification error";
 }

@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
-using CRM.Business.Models.Leads.Requests;
 using CRM.Core.Constants.Exceptions.Business;
 using CRM.Core.Constants.Logs.Business;
 using CRM.Core.Dtos;
-using CRM.Core.Enums;
-using CRM.Core.Exсeptions;
+using CRM.Core.Exceptions;
 using CRM.DataLayer.Interfaces;
 using Serilog;
 

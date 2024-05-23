@@ -1,6 +1,6 @@
 ﻿using CRM.Core.Constants;
 using CRM.Core.Constants.Exceptions;
-using CRM.Core.Exсeptions;
+using CRM.Core.Exceptions;
 
 namespace CRM.API.Configuration.Extensions;
 

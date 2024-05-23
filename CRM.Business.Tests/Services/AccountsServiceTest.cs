@@ -3,7 +3,7 @@ using CRM.Business.Models.Accounts;
 using CRM.Business.Services;
 using CRM.Core.Constants.Exceptions.Business;
 using CRM.Core.Dtos;
-using CRM.Core.Exсeptions;
+using CRM.Core.Exceptions;
 using CRM.DataLayer.Interfaces;
 using FluentAssertions;
 using Moq;

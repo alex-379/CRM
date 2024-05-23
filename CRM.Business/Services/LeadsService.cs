@@ -8,7 +8,7 @@ using CRM.Core.Constants.Exceptions.Business;
 using CRM.Core.Constants.Logs.Business;
 using CRM.Core.Dtos;
 using CRM.Core.Enums;
-using CRM.Core.Exсeptions;
+using CRM.Core.Exceptions;
 using CRM.DataLayer.Interfaces;
 using Serilog;
 using System.Security.Claims;

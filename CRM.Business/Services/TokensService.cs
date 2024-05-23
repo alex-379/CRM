@@ -3,7 +3,7 @@ using CRM.Business.Interfaces;
 using CRM.Business.Models.Tokens.Requests;
 using CRM.Business.Models.Tokens.Responses;
 using CRM.Core.Constants.Exceptions.Business;
-using CRM.Core.Exсeptions;
+using CRM.Core.Exceptions;
 using CRM.DataLayer.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

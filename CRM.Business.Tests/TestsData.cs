@@ -15,7 +15,7 @@ public static class TestsData
             Mail = "test01@test.test",
             Phone = "+78888888888",
             Address = "TestAddress01",
-            BirthDate = new DateOnly(2000,1,1),
+            BirthDate = new DateOnly(2000, 1, 1),
             Password = "Password",
         };
 

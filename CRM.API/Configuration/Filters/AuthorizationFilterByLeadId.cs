@@ -1,6 +1,6 @@
 ﻿using CRM.Core.Constants;
 using CRM.Core.Enums;
-using CRM.Core.Exсeptions;
+using CRM.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
 

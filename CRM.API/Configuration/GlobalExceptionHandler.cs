@@ -1,5 +1,5 @@
 ﻿using CRM.Core.Constants.Exceptions;
-using CRM.Core.Exсeptions;
+using CRM.Core.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -62,9 +62,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                 break;
         }
 
-
         httpContext.Response.StatusCode = problemDetails.Status.Value;
-
         await httpContext.Response
             .WriteAsJsonAsync(problemDetails, cancellationToken);
 
