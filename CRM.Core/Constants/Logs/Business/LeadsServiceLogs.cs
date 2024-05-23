@@ -8,6 +8,7 @@ public static class LeadsServiceLogs
     public const string CheckLeadByMail = "Checking the lead is in the database with e-mail: {mail}";
     public const string CheckLeadById = "Checking the lead is in the database with ID: {id}";
     public const string CheckLeadPassword = "Verification of authentication data";
+    public const string GetLeads = "Calling the repository method \"To get all leads\"";
     public const string GetLeadById = "Calling the repository method \"To get the lead with ID {id}\"";
     public const string UpdateLeadById = "Calling the repository method \"To update the lead with ID {id}\"";
     public const string UpdateLeadData = "Updating lead's data with ID: {id}";

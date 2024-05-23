@@ -99,12 +99,20 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         };
     }
 
-    public LeadResponse GetLeadById(Guid id)
+    public List<LeadResponse> GetLeads()
+    {
+        _logger.Information(LeadsServiceLogs.GetLeads);
+        var leads = _mapper.Map<List<LeadResponse>>(_leadsRepository.GetLeads());
+
+        return leads;
+    }
+
+    public LeadFullResponse GetLeadById(Guid id)
     {
         _logger.Information(LeadsServiceLogs.GetLeadById, id);
         var lead = _leadsRepository.GetLeadById(id)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, id));
-        var leadResponse = _mapper.Map<LeadResponse>(lead);
+        var leadResponse = _mapper.Map<LeadFullResponse>(lead);
 
         return leadResponse;
     }

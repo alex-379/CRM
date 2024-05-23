@@ -40,9 +40,18 @@ public class LeadsController(ILeadsService leadsService) : Controller
         return Ok(authenticatedResponse);
     }
 
+    [Authorize(Roles = nameof(LeadStatus.Administrator))]
+    [HttpGet]
+    public ActionResult<List<LeadResponse>> GetLeads()
+    {
+        _logger.Information(LeadsControllerLogs.GetLeads);
+
+        return Ok(_leadsService.GetLeads());
+    }
+
     [AuthorizationFilterByLeadId]
     [HttpGet(ControllersRoutes.Id)]
-    public ActionResult<LeadResponse> GetLeadById(Guid id)
+    public ActionResult<LeadFullResponse> GetLeadById(Guid id)
     {
         _logger.Information(LeadsControllerLogs.GetLeadById, id);
 

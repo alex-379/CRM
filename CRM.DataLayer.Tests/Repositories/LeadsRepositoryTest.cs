@@ -2,6 +2,7 @@
 using CRM.DataLayer.Repositories;
 using MockQueryable.Moq;
 using Moq;
+using Moq.EntityFrameworkCore;
 
 namespace CRM.DataLayer.Tests.Repositories;
 
@@ -34,6 +35,23 @@ public class LeadsRepositoryTest
         Assert.Equal(expected, leads.Count);
         mock.Verify(m => m.Add(lead), Times.Once());
         _contextMock.Verify(m => m.SaveChanges(), Times.Once());
+    }
+
+    [Fact]
+    public void GetLeads_Called_LeadDtoListReceived()
+    {
+        //arrange
+        var expected = 2;
+        _contextMock.Setup(x => x.Leads)
+            .ReturnsDbSet(TestsData.GetFakeLeadDtoList());
+        var sut = new LeadsRepository(_contextMock.Object);
+
+        //act
+        var actual = sut.GetLeads();
+
+        //assert
+        Assert.NotNull(actual);
+        Assert.Equal(expected, actual.Count());
     }
 
     [Fact]

@@ -19,6 +19,14 @@ public class LeadsRepository(CrmContext context) : BaseRepository(context), ILea
         return lead.Id;
     }
 
+    public IEnumerable<LeadDto> GetLeads()
+    {
+        _logger.Information(LeadsRepositoryLogs.GetLeads);
+
+        return _ctx.Leads
+            .Where(d => !d.IsDeleted);
+    }
+
     public LeadDto GetLeadById(Guid id)
     {
         _logger.Information(LeadsRepositoryLogs.GetLeadById, id);

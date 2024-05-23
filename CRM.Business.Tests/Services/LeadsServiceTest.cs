@@ -125,10 +125,28 @@ public class LeadsServiceTest
     }
 
     [Fact]
+    public void GetLeads_Called_ListLeadResponseReceived()
+    {
+        //arrange
+        var expected = TestsData.GetFakeListLeadResponse();
+        var expectedLeads = TestsData.GetFakeListLeadDto();
+        _leadsRepositoryMock.Setup(x => x.GetLeads()).Returns(expectedLeads);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, _accountsRepositoryMock.Object, _transactionsRepositoryMock.Object,
+            _passwordsService, _tokensService, _mapper, _jwt);
+
+        //act
+        var actual = sut.GetLeads();
+
+        //assert
+        actual.Should().BeEquivalentTo(expected);
+        _leadsRepositoryMock.Verify(m => m.GetLeads(), Times.Once);
+    }
+
+    [Fact]
     public void GetLeadById_GuidSent_LeadResponseReceived()
     {
         //arrange
-        var expected = TestsData.GetFakeLeadResponse();
+        var expected = TestsData.GetFakeLeadFullResponse();
         var expectedLead = TestsData.GetFakeLeadDto();
         var id = Guid.NewGuid();
         _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns(expectedLead);

@@ -13,5 +13,6 @@ public class LeadsMappingProfile : Profile
         CreateMap<LoginLeadRequest, LeadDto>();
 
         CreateMap<LeadDto, LeadResponse>();
+        CreateMap<LeadDto, LeadFullResponse>();
     }
 }

@@ -8,7 +8,8 @@ public interface ILeadsService
 {
     Guid AddLead(RegistrationLeadRequest request);
     void DeleteLeadById(Guid id);
-    LeadResponse GetLeadById(Guid id);
+    LeadFullResponse GetLeadById(Guid id);
+    List<LeadResponse> GetLeads();
     AuthenticatedResponse LoginLead(LoginLeadRequest request);
     void UpdateLead(Guid leadId, UpdateLeadDataRequest request);
     void UpdateLeadBirthDate(Guid leadId, UpdateLeadBirthDateRequest request);

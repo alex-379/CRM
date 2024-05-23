@@ -51,7 +51,7 @@ public static class TestsData
             ]
         };
 
-    public static LeadResponse GetFakeLeadResponse() =>
+    public static LeadFullResponse GetFakeLeadFullResponse() =>
         new()
         {
             Name = "TestLead01",
@@ -116,4 +116,36 @@ public static class TestsData
         {
             Status = AccountStatus.Block,
         };
+
+    public static List<LeadResponse> GetFakeListLeadResponse() =>
+        [
+        new()
+        {
+            Name = "TestLead01",
+            Mail = "test01@test.test",
+            Phone = "+78888888888",
+        },
+        new()
+        {
+            Name = "TestLead02",
+            Mail = "test02@test.test",
+            Phone = "+78888888882",
+        }
+        ];
+
+    public static List<LeadDto> GetFakeListLeadDto() =>
+        [
+        new()
+            {
+                Name = "TestLead01",
+                Mail = "test01@test.test",
+                Phone = "+78888888888",
+            },
+            new()
+            {
+                Name = "TestLead02",
+                Mail = "test02@test.test",
+                Phone = "+78888888882",
+            }
+        ];
 }

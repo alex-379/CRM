@@ -51,11 +51,26 @@ public class LeadsControllerTest
     }
 
     [Fact]
+    public void GetLeads_Called_OkResultReceived()
+    {
+        //arrange
+        _leadsServiceMock.Setup(x => x.GetLeads()).Returns([]);
+        var sut = new LeadsController(_leadsServiceMock.Object);
+
+        //act
+        var actual = sut.GetLeads();
+
+        //assert
+        actual.Result.Should().BeOfType<OkObjectResult>();
+        _leadsServiceMock.Verify(m => m.GetLeads(), Times.Once);
+    }
+
+    [Fact]
     public void GetLeadById_GuidSent_OkResultReceived()
     {
         //arrange
         var id = new Guid();
-        _leadsServiceMock.Setup(x => x.GetLeadById(id)).Returns(new LeadResponse());
+        _leadsServiceMock.Setup(x => x.GetLeadById(id)).Returns(new LeadFullResponse());
         var sut = new LeadsController(_leadsServiceMock.Object);
 
         //act
