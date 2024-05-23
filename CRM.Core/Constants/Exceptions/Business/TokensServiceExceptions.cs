@@ -2,5 +2,5 @@
 
 public class TokensServiceExceptions
 {
-    public const string UnauthenticatedException = "Ошибка проверки токена пользователя";
+    public const string UnauthenticatedException = "User Token verification error";
 }

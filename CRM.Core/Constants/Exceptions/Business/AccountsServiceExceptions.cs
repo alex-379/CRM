@@ -2,5 +2,5 @@
 
 public class AccountsServiceExceptions
 {
-    public const string NotFoundException = "Account with Id {0} not found";
+    public const string NotFoundException = "Account with Id: {0} not found";
 }

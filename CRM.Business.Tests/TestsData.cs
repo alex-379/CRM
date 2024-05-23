@@ -1,4 +1,5 @@
-﻿using CRM.Business.Models.Leads.Requests;
+﻿using CRM.Business.Models.Accounts.Requests;
+using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
 using CRM.Core.Dtos;
 using CRM.Core.Enums;
@@ -93,14 +94,20 @@ public static class TestsData
         };
 
     public static UpdateLeadStatusRequest GetFakeUpdateLeadStatusRequest() =>
-    new()
-    {
-        Status = LeadStatus.Vip,
-    };
+        new()
+        {
+            Status = LeadStatus.Vip,
+        };
 
     public static UpdateLeadBirthDateRequest GetFakeUpdateLeadBirthDateRequest() =>
-    new()
-    {
-        BirthDate = new DateOnly(1990, 11, 20),
-    };
+        new()
+        {
+            BirthDate = new DateOnly(1990, 11, 20),
+        };
+
+    public static RegistrationAccountRequest GetFakeRegistrationAccountRequest() =>
+        new()
+        {
+            Currency = Currency.Usd,
+        };
 }

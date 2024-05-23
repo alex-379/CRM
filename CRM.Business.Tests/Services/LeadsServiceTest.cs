@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CRM.Business.Configuration;
 using CRM.Business.Interfaces;
+using CRM.Business.Models.Accounts;
 using CRM.Business.Models.Leads;
 using CRM.Business.Services;
 using CRM.Core.Constants.Exceptions.Business;
@@ -36,6 +37,7 @@ public class LeadsServiceTest
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new LeadsMappingProfile());
+            cfg.AddProfile(new AccountsMappingProfile());
         });
 
         _mapper = new Mapper(config);
@@ -123,7 +125,7 @@ public class LeadsServiceTest
     }
 
     [Fact]
-    public void GetUserById_GuidSent_LeadFullResponseReceived()
+    public void GetLeadById_GuidSent_LeadResponseReceived()
     {
         //arrange
         var expected = TestsData.GetFakeLeadResponse();

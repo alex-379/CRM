@@ -2,5 +2,5 @@
 
 public static class ConfigurationExceptions
 {
-    public const string ConfigurationMissingException = "Не прописаны переменные окружения";
+    public const string ConfigurationMissingException = "Environment variables are not specified";
 }

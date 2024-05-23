@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CRM.Business", "CRM.Busines
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRM.DataLayer.Tests", "CRM.DataLayer.Tests\CRM.DataLayer.Tests.csproj", "{504410A5-C8F4-4E13-8063-A3917418A305}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRM.Business.Tests", "TestProject1\CRM.Business.Tests.csproj", "{5AB65E41-1CE3-4030-9DA6-76C79424C3C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRM.Business.Tests", "CRM.Business.Tests\CRM.Business.Tests.csproj", "{5AB65E41-1CE3-4030-9DA6-76C79424C3C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

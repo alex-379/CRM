@@ -4,7 +4,7 @@ namespace CRM.Business.Interfaces;
 
 public interface IAccountsService
 {
-    Guid AddAccount(RegistrationAccountRequest request);
-    void BlockAccount(AccountRequest request);
-    void UnblockAccount(AccountRequest request);
+    Guid AddAccount(Guid leadId, RegistrationAccountRequest request);
+    void BlockAccount(Guid id);
+    void UnblockAccount(Guid id);
 }
