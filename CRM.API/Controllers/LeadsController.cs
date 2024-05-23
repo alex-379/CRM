@@ -5,6 +5,7 @@ using CRM.Business.Models.Leads.Responses;
 using CRM.Business.Models.Tokens.Responses;
 using CRM.Core.Constants;
 using CRM.Core.Constants.Logs.API;
+using CRM.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -23,7 +24,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpPost]
     public ActionResult<Guid> RegistrationLead([FromBody] RegistrationLeadRequest request)
     {
-        _logger.Information(LeadsControllerLogs.CreateUser, request.Mail);
+        _logger.Information(LeadsControllerLogs.RegistrationLead, request.Mail);
         var id = _leadsService.AddLead(request);
 
         return Created($"{ControllersRoutes.Host}{ControllersRoutes.LeadsController}/{id}", id);
@@ -39,12 +40,72 @@ public class LeadsController(ILeadsService leadsService) : Controller
         return Ok(authenticatedResponse);
     }
 
-    [AuthorizationFilterByUserId]
+    [AuthorizationFilterByLeadId]
     [HttpGet(ControllersRoutes.Id)]
     public ActionResult<LeadResponse> GetLeadById(Guid id)
     {
         _logger.Information(LeadsControllerLogs.GetLeadById, id);
 
         return Ok(_leadsService.GetLeadById(id));
+    }
+
+    [AuthorizationFilterByLeadId]
+    [HttpPut(ControllersRoutes.Id)]
+    public ActionResult UpdateLeadData([FromRoute] Guid id, [FromBody] UpdateLeadDataRequest request)
+    {
+        _logger.Information(LeadsControllerLogs.UpdateLeadData, id);
+        _leadsService.UpdateLead(id, request);
+
+        return NoContent();
+    }
+
+    [AuthorizationFilterByLeadId]
+    [HttpDelete(ControllersRoutes.Id)]
+    public ActionResult DeleteLeadById(Guid id)
+    {
+        _logger.Information(LeadsControllerLogs.DeleteLeadById, id);
+        _leadsService.DeleteLeadById(id);
+
+        return NoContent();
+    }
+
+    [AuthorizationFilterByLeadId]
+    [HttpPatch(ControllersRoutes.LeadPassword)]
+    public ActionResult UpdateLeadPassword([FromRoute] Guid id, [FromBody] UpdateLeadPasswordRequest request)
+    {
+        _logger.Information(LeadsControllerLogs.UpdateLeadPassword, id);
+        _leadsService.UpdateLeadPassword(id, request);
+
+        return NoContent();
+    }
+
+    [AuthorizationFilterByLeadId]
+    [HttpPatch(ControllersRoutes.LeadMail)]
+    public ActionResult UpdateLeadMail([FromRoute] Guid id, [FromBody] UpdateLeadMailRequest request)
+    {
+        _logger.Information(LeadsControllerLogs.UpdateLeadMail, id);
+        _leadsService.UpdateLeadMail(id, request);
+
+        return NoContent();
+    }
+
+    [Authorize(Roles = nameof(LeadStatus.Administrator))]
+    [HttpPatch(ControllersRoutes.Status)]
+    public ActionResult UpdateLeadStatus([FromRoute] Guid id, [FromBody] UpdateLeadStatusRequest request)
+    {
+        _logger.Information(LeadsControllerLogs.UpdateLeadStatus, id);
+        _leadsService.UpdateLeadStatus(id, request);
+
+        return NoContent();
+    }
+
+    [Authorize(Roles = nameof(LeadStatus.Administrator))]
+    [HttpPatch(ControllersRoutes.LeadBirthDate)]
+    public ActionResult UpdateLeadBirthDate([FromRoute] Guid id, [FromBody] UpdateLeadBirthDateRequest request)
+    {
+        _logger.Information(LeadsControllerLogs.UpdateLeadBirthDate, id);
+        _leadsService.UpdateLeadBirthDate(id, request);
+
+        return NoContent();
     }
 }

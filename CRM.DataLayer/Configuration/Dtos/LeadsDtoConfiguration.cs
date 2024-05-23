@@ -15,7 +15,7 @@ public class LeadsDtoConfiguration : IEntityTypeConfiguration<LeadDto>
         builder
             .Property(u => u.Name)
             .IsRequired()
-            .HasMaxLength(DatabaseProperties.UserNameLength);
+            .HasMaxLength(DatabaseProperties.LeadNameLength);
         builder
             .Property(u => u.Mail)
             .IsRequired()

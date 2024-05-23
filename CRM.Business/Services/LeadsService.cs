@@ -83,6 +83,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         {
             new(ClaimTypes.NameIdentifier, leadDb.Id.ToString()),
             new(ClaimTypes.Email, leadDb.Mail),
+            new(ClaimTypes.Role, leadDb.Status.ToString()),
         };
 
         var accessToken = _tokensService.GenerateAccessToken(claims);
@@ -150,14 +151,14 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         _leadsRepository.UpdateLead(lead);
     }
 
-    public void UpdateLeadStatus(Guid leadId, UpdateLeadStatusRequest request)
+    public void UpdateLeadStatus(Guid id, UpdateLeadStatusRequest request)
     {
-        _logger.Information(LeadsServiceLogs.CheckLeadById, leadId);
-        var lead = _leadsRepository.GetLeadById(leadId)
-            ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
-        _logger.Information(LeadsServiceLogs.UpdateLeadStatus, leadId);
+        _logger.Information(LeadsServiceLogs.CheckLeadById, id);
+        var lead = _leadsRepository.GetLeadById(id)
+            ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, id));
+        _logger.Information(LeadsServiceLogs.UpdateLeadStatus, request.Status, id);
         lead.Status = request.Status;
-        _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
+        _logger.Information(LeadsServiceLogs.UpdateLeadById, id);
         _leadsRepository.UpdateLead(lead);
     }
 

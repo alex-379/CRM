@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
+using CRM.Business.Models.Leads.Requests;
 using CRM.Core.Constants.Exceptions.Business;
 using CRM.Core.Constants.Logs.Business;
 using CRM.Core.Dtos;
@@ -30,23 +31,14 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         return account.Id;
     }
 
-    public void BlockAccount(Guid id)
+    public void UpdateAccountStatus(Guid id, UpdateAccountStatusRequest request)
     {
+        _logger.Information(AccountsServiceLogs.CheckAccountById, id);
         var account = _accountsRepository.GetAccountById(id)
             ?? throw new NotFoundException(string.Format(AccountsServiceExceptions.NotFoundException, id));
-        _logger.Information(AccountsServiceLogs.BlockAccount, account.Id);
-        account.Status = AccountStatus.Block;
-        _logger.Information(AccountsServiceLogs.UpdateAccountById, account.Id);
-        _accountsRepository.UpdateAccount(account);
-    }
-
-    public void UnblockAccount(Guid id)
-    {
-        var account = _accountsRepository.GetAccountById(id)
-            ?? throw new NotFoundException(string.Format(AccountsServiceExceptions.NotFoundException, id));
-        _logger.Information(AccountsServiceLogs.BlockAccount, account.Id);
-        account.Status = AccountStatus.Active;
-        _logger.Information(AccountsServiceLogs.UpdateAccountById, account.Id);
+        _logger.Information(AccountsServiceLogs.UpdateAccountStatus, request.Status, id);
+        account.Status = request.Status;
+        _logger.Information(AccountsServiceLogs.UpdateAccountById, id);
         _accountsRepository.UpdateAccount(account);
     }
 }

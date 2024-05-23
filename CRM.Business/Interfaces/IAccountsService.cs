@@ -5,6 +5,5 @@ namespace CRM.Business.Interfaces;
 public interface IAccountsService
 {
     Guid AddAccount(Guid leadId, RegistrationAccountRequest request);
-    void BlockAccount(Guid id);
-    void UnblockAccount(Guid id);
+    void UpdateAccountStatus(Guid id, UpdateAccountStatusRequest request);
 }

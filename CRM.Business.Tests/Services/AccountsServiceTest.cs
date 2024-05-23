@@ -71,15 +71,16 @@ public class AccountsServiceTest
     }
 
     [Fact]
-    public void BlockAccount_GuidSent_NoErrorsReceived()
+    public void UpdateAccountStatus_GuidAndUpdateAccountStatusRequestSent_NoErrorsReceived()
     {
         //arrange
         var id = Guid.NewGuid();
+        var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
         _accountsRepositoryMock.Setup(x => x.GetAccountById(id)).Returns(new AccountDto());
         var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper);
 
         //act
-        sut.BlockAccount(id);
+        sut.UpdateAccountStatus(id, updateAccountStatusRequest);
 
         //assert
         _accountsRepositoryMock.Verify(m => m.GetAccountById(id), Times.Once);
@@ -87,15 +88,16 @@ public class AccountsServiceTest
     }
 
     [Fact]
-    public void BlockAccount_EmptyGuidSent_AccountNotFoundErrorReceived()
+    public void UpdateAccountStatus_EmptyGuidAndUpdateAccountStatusRequestSent_AccountNotFoundErrorReceived()
     {
         //arrange
-        var id = Guid.NewGuid();
+        var id = Guid.Empty;
+        var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
         _accountsRepositoryMock.Setup(x => x.GetAccountById(id)).Returns((AccountDto)null);
         var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper);
 
         //act
-        Action act = () => sut.BlockAccount(id);
+        Action act = () => sut.UpdateAccountStatus(id, updateAccountStatusRequest);
 
         //assert
         act.Should().Throw<NotFoundException>()

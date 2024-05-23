@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CRM.DataLayer", "CRM.DataLa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CRM.Business", "CRM.Business\CRM.Business.csproj", "{B46B322B-A992-4205-B052-22FEC137F87D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRM.DataLayer.Tests", "CRM.DataLayer.Tests\CRM.DataLayer.Tests.csproj", "{504410A5-C8F4-4E13-8063-A3917418A305}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CRM.DataLayer.Tests", "CRM.DataLayer.Tests\CRM.DataLayer.Tests.csproj", "{504410A5-C8F4-4E13-8063-A3917418A305}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRM.Business.Tests", "CRM.Business.Tests\CRM.Business.Tests.csproj", "{5AB65E41-1CE3-4030-9DA6-76C79424C3C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CRM.Business.Tests", "CRM.Business.Tests\CRM.Business.Tests.csproj", "{5AB65E41-1CE3-4030-9DA6-76C79424C3C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRM.API.Tests", "CRM.Api.Tests\CRM.API.Tests.csproj", "{E779419B-5749-4D46-A545-E3C19DC78BD5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{5AB65E41-1CE3-4030-9DA6-76C79424C3C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AB65E41-1CE3-4030-9DA6-76C79424C3C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AB65E41-1CE3-4030-9DA6-76C79424C3C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E779419B-5749-4D46-A545-E3C19DC78BD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E779419B-5749-4D46-A545-E3C19DC78BD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E779419B-5749-4D46-A545-E3C19DC78BD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E779419B-5749-4D46-A545-E3C19DC78BD5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

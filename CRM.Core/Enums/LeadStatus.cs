@@ -6,4 +6,5 @@ public enum LeadStatus
     Vip = 1,
     Regular = 2,
     Block = 3,
+    Administrator = 4,
 }

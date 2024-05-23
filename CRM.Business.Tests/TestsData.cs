@@ -110,4 +110,10 @@ public static class TestsData
         {
             Currency = Currency.Usd,
         };
+
+    public static UpdateAccountStatusRequest GetFakeUpdateAccountStatusRequest() =>
+        new()
+        {
+            Status = AccountStatus.Block,
+        };
 }
