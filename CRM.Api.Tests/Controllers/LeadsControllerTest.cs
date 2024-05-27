@@ -22,12 +22,12 @@ public class LeadsControllerTest
     public void RegistrationLead_RegistrationLeadRequestSent_CreatedResultReceived()
     {
         //arrange
-        var registrationLeadRequest = new RegistrationLeadRequest();
+        var registrationLeadRequest = new RegisterLeadRequest();
         _leadsServiceMock.Setup(x => x.AddLead(registrationLeadRequest)).Returns(new Guid());
         var sut = new LeadsController(_leadsServiceMock.Object);
 
         //act
-        var actual = sut.RegistrationLead(registrationLeadRequest);
+        var actual = sut.RegisterLead(registrationLeadRequest);
 
         //assert
         actual.Result.Should().BeOfType<CreatedResult>();

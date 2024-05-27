@@ -88,9 +88,9 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         };
     }
 
-    public void Revoke(string mail)
+    public void Revoke(Guid userId)
     {
-        var lead = _leadsRepository.GetLeadByMail(mail) ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundExceptionMail, mail));
+        var lead = _leadsRepository.GetLeadById(userId) ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, userId));
         lead.RefreshToken = null;
         lead.RefreshTokenExpiryTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified);
         _leadsRepository.UpdateLead(lead);

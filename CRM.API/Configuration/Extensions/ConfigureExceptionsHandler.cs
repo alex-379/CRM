@@ -1,8 +1,8 @@
 ﻿namespace CRM.API.Configuration.Extensions;
 
-public static class ConfigureExeptionsHandler
+public static class ConfigureExceptionsHandler
 {
-    public static void AddExeptionsHandler(this IServiceCollection services)
+    public static void AddExceptionsHandler(this IServiceCollection services)
     {
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();

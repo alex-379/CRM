@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using CRM.API.Configuration.Exceptions;
+using CRM.API.Configuration.Exceptions.Constants;
 
 namespace CRM.API.Configuration.Extensions;
 
@@ -24,7 +26,8 @@ public static class ConfigureAuthentication
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = configuration[ConfigurationSettings.ValidIssuer],
                 ValidAudience = configuration[ConfigurationSettings.ValidAudience],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[ConfigurationSettings.IssuerSigningKey]))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[ConfigurationSettings.IssuerSigningKey]
+                    ?? throw new ConfigurationMissingException(ConfigurationExceptions.ConfigurationKeyNull)))
             };
         });
     }

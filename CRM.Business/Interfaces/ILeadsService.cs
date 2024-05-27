@@ -6,7 +6,7 @@ namespace CRM.Business.Interfaces;
 
 public interface ILeadsService
 {
-    Guid AddLead(RegistrationLeadRequest request);
+    Guid AddLead(RegisterLeadRequest request);
     void DeleteLeadById(Guid id);
     LeadFullResponse GetLeadById(Guid id);
     List<LeadResponse> GetLeads();

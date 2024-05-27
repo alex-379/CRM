@@ -8,9 +8,8 @@ public static class ConfigureServices
     {
         services.AddControllers();
         services.AddEndpointsApiExplorer();
-        services.AddSwager(configuration);
-        services.AddExeptionsHandler();
-        services.AddDataBases(configuration);
+        services.AddSwagger(configuration);
+        services.AddExceptionsHandler();
         services.AddAuthenticationService(configuration);
         services.AddAutoMapper(typeof(LeadsMappingProfile).Assembly);
         services.AddValidation();

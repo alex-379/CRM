@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace CRM.API.Validators.Accounts;
 
-public class RegistrationAccountValidator : AbstractValidator<RegistrationAccountRequest>
+public class RegisterAccountValidator : AbstractValidator<RegisterAccountRequest>
 {
-    public RegistrationAccountValidator()
+    public RegisterAccountValidator()
     {
         RuleFor(r => r.Currency)
             .IsInEnum()

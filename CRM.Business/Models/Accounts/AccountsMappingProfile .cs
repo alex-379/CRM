@@ -9,7 +9,7 @@ public class AccountsMappingProfile : Profile
 {
     public AccountsMappingProfile()
     {
-        CreateMap<RegistrationAccountRequest, AccountDto>();
+        CreateMap<RegisterAccountRequest, AccountDto>();
 
         CreateMap<AccountDto, AccountResponse>();
     }

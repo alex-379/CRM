@@ -33,9 +33,9 @@ public class TokensController(ITokensService tokensService) : Controller
     [Route(ControllersRoutes.Revoke)]
     public ActionResult Revoke()
     {
-        var mail = User.FindFirst(ClaimTypes.Email).Value;
+        var currentUserId = OperationsWithUsers.GetCurrentUserFromClaims(HttpContext.User); 
         _logger.Information(TokensControllerLogs.Revoke);
-        _tokenService.Revoke(mail);
+        _tokenService.Revoke(currentUserId);
 
         return NoContent();
     }

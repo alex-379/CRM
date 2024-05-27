@@ -1,4 +1,4 @@
-﻿using CRM.Core.Constants.Exceptions;
+﻿using CRM.API.Configuration.Exceptions.Constants;
 using CRM.Core.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -59,6 +59,14 @@ public class GlobalExceptionHandler : IExceptionHandler
                     problemDetails.Title = GlobalExceptions.UnauthenticatedException;
                 };
 
+                break;
+
+            default:
+                {
+                    problemDetails.Status = StatusCodes.Status409Conflict;
+                    problemDetails.Title = GlobalExceptions.ConflictException;
+                };
+                
                 break;
         }
 

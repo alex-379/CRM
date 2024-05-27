@@ -2,7 +2,7 @@
 
 namespace CRM.Business.Models.Accounts.Requests;
 
-public class RegistrationAccountRequest
+public class RegisterAccountRequest
 {
     public Currency Currency { get; set; }
 }

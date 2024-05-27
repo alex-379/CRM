@@ -1,8 +1,9 @@
 ﻿using CRM.Core.Constants;
-using CRM.DataLayer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace CRM.API.Configuration.Extensions;
+namespace CRM.DataLayer.Configuration.Extensions;
 
 public static class ConfigureDataBase
 {

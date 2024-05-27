@@ -1,12 +1,12 @@
-﻿using CRM.Core.Constants;
-using CRM.Core.Constants.Exceptions;
-using CRM.Core.Exceptions;
+﻿using CRM.API.Configuration.Exceptions;
+using CRM.API.Configuration.Exceptions.Constants;
+using CRM.Core.Constants;
 
 namespace CRM.API.Configuration.Extensions;
 
-public static class ConfigureEnviroments
+public static class ConfigureEnvironments
 {
-    public static void ReadSettingsFromEnviroment(this IConfiguration configuration)
+    public static void ReadSettingsFromEnvironment(this IConfiguration configuration)
     {
         var secretSettings = configuration.GetSection(ConfigurationSettings.SecretSettings).GetChildren();
         configuration.ReadSection(secretSettings);
@@ -19,8 +19,8 @@ public static class ConfigureEnviroments
     {
         foreach (var key in section)
         {
-            var value = key.Value;
-            var env = configuration[value] ?? throw new ConfigurationMissingException(ConfigurationExceptions.ConfigurationMissingException);
+            var value = key.Value ?? throw new ConfigurationMissingException(ConfigurationExceptions.ConfigurationKeyNull);
+            var env = configuration[value] ?? throw new ConfigurationMissingException(ConfigurationExceptions.EnvironmentVariablesNotSpecified);
             key.Value = env;
         }
     }

@@ -8,7 +8,7 @@ namespace CRM.Business.Tests;
 
 public static class TestsData
 {
-    public static RegistrationLeadRequest GetFakeRegistrationLeadRequest() =>
+    public static RegisterLeadRequest GetFakeRegistrationLeadRequest() =>
         new()
         {
             Name = "TestLead01",
@@ -105,7 +105,7 @@ public static class TestsData
             BirthDate = new DateOnly(1990, 11, 20),
         };
 
-    public static RegistrationAccountRequest GetFakeRegistrationAccountRequest() =>
+    public static RegisterAccountRequest GetFakeRegistrationAccountRequest() =>
         new()
         {
             Currency = Currency.Usd,

@@ -10,7 +10,7 @@ namespace CRM.API.Configuration
         {
             return new UnprocessableEntityObjectResult(new
             {
-                Title = "Ошибки валидации",
+                Title = "Validation Errors",
                 Status = StatusCodes.Status422UnprocessableEntity,
                 ValidationErrors = validationProblemDetails?.Errors
             }

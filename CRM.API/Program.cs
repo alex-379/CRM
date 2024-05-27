@@ -1,11 +1,11 @@
 using CRM.API.Configuration.Extensions;
 using CRM.Business.Configuration;
-using CRM.DataLayer.Configuration;
+using CRM.DataLayer.Configuration.Extensions;
 using Serilog;
 
-namespace CRM.Core;
+namespace CRM.API;
 
-public class Program
+public static class Program
 {
     public static void Main(string[] args)
     {
@@ -18,12 +18,12 @@ public class Program
                 .ReadFrom.Configuration(builder.Configuration)
             .CreateLogger();
 
-            builder.Configuration.ReadSettingsFromEnviroment();
+            builder.Configuration.ReadSettingsFromEnvironment();
             builder.Host.UseSerilog();
             // Add services to the container.
             builder.Services.ConfigureApiServices(builder.Configuration);
             builder.Services.ConfigureBllServices();
-            builder.Services.ConfigureDalServices();
+            builder.Services.ConfigureDalServices(builder.Configuration);
 
             var app = builder.Build();
             // Configure the HTTP request pipeline.

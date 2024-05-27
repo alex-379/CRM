@@ -12,6 +12,6 @@ public static class ConfigureValidation
         {
             configuration.OverrideDefaultResultFactoryWith<ValidationResultFactory>();
         });
-        services.AddValidatorsFromAssemblyContaining<RegistrationLeadValidator>();
+        services.AddValidatorsFromAssemblyContaining<RegisterLeadValidator>();
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using System.Security.Claims;
+using CRM.API.Controllers.ExceptionsConstants;
+using CRM.Core.Exceptions;
 
 namespace CRM.API.Controllers;
 
@@ -19,10 +21,10 @@ public class AccountsController(IAccountsService accountsService) : Controller
     private readonly Serilog.ILogger _logger = Log.ForContext<LeadsController>();
 
     [HttpPost]
-    public ActionResult<Guid> RegistrationAccount([FromBody] RegistrationAccountRequest request)
+    public ActionResult<Guid> RegisterAccount([FromBody] RegisterAccountRequest request)
     {
         _logger.Information(AccountsControllerLogs.GetAuthorizedAccount);
-        var currentUserId = new Guid(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var currentUserId = OperationsWithUsers.GetCurrentUserFromClaims(HttpContext.User); 
         _logger.Information(AccountsControllerLogs.RegistrationAccount, request.Currency, currentUserId);
         var id = _accountsService.AddAccount(currentUserId, request);
 

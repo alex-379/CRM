@@ -17,7 +17,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
     private readonly IMapper _mapper = mapper;
     private readonly ILogger _logger = Log.ForContext<AccountsService>();
 
-    public Guid AddAccount(Guid leadId, RegistrationAccountRequest request)
+    public Guid AddAccount(Guid leadId, RegisterAccountRequest request)
     {
         var account = _mapper.Map<AccountDto>(request);
         account.Lead = _leadsRepository.GetLeadById(leadId)

@@ -4,6 +4,7 @@ public static class LeadsValidators
 {
     public const string Name = "You need to enter a name";
     public const string Mail = "Incorrect e-mail";
+    public const string MailLength = "The length of the mail should not be longer {0} characters";
     public const string Phone = "You need to enter a phone";
     public const string Address = "You need to enter an address";
     public const string BirthDate = "You need to enter a birth date";

@@ -1,6 +1,6 @@
 ﻿namespace CRM.Business.Models.Leads.Requests;
 
-public class RegistrationLeadRequest
+public class RegisterLeadRequest
 {
     public string Name { get; set; }
     public string Mail { get; set; }

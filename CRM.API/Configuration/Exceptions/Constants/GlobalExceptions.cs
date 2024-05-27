@@ -1,4 +1,4 @@
-﻿namespace CRM.Core.Constants.Exceptions;
+﻿namespace CRM.API.Configuration.Exceptions.Constants;
 
 public static class GlobalExceptions
 {

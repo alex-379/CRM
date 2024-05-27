@@ -9,7 +9,7 @@ public class LeadsMappingProfile : Profile
 {
     public LeadsMappingProfile()
     {
-        CreateMap<RegistrationLeadRequest, LeadDto>();
+        CreateMap<RegisterLeadRequest, LeadDto>();
         CreateMap<LoginLeadRequest, LeadDto>();
 
         CreateMap<LeadDto, LeadResponse>();

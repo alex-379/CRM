@@ -27,7 +27,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     private readonly JwtToken _jwt = jwt;
     private readonly ILogger _logger = Log.ForContext<LeadsService>();
 
-    public Guid AddLead(RegistrationLeadRequest request)
+    public Guid AddLead(RegisterLeadRequest request)
     {
         var lead = _mapper.Map<LeadDto>(request);
         if (_leadsRepository.GetLeadByMail(lead.Mail.ToLower()) is not null)
@@ -54,7 +54,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
 
             _logger.Information(AccountsServiceLogs.AddDefaultAccount);
             _accountsRepository.AddAccount(account);
-            _logger.Information(AccountsServiceLogs.CompleteAccount);
+            _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
             _transactionsRepository.CommitTransaction(transaction);
         }
         catch (Exception ex)

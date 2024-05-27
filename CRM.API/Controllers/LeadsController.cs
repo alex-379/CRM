@@ -22,7 +22,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
 
     [AllowAnonymous]
     [HttpPost]
-    public ActionResult<Guid> RegistrationLead([FromBody] RegistrationLeadRequest request)
+    public ActionResult<Guid> RegisterLead([FromBody] RegisterLeadRequest request)
     {
         _logger.Information(LeadsControllerLogs.RegistrationLead, request.Mail);
         var id = _leadsService.AddLead(request);

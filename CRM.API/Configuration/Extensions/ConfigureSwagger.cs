@@ -3,9 +3,9 @@ using Microsoft.OpenApi.Models;
 
 namespace CRM.API.Configuration.Extensions;
 
-public static class ConfigureSwager
+public static class ConfigureSwagger
 {
-    public static void AddSwager(this IServiceCollection services, IConfiguration configuration)
+    public static void AddSwagger(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSwaggerGen(opt =>
         {

@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace CRM.API.Validators.Leads;
 
-public class RegistrationLeadValidator : AbstractValidator<RegistrationLeadRequest>
+public abstract class RegisterLeadValidator : AbstractValidator<RegisterLeadRequest>
 {
-    public RegistrationLeadValidator()
+    protected RegisterLeadValidator()
     {
         RuleFor(r => r.Name)
             .NotEmpty()
