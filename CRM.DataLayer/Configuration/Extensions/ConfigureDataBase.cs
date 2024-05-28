@@ -1,4 +1,4 @@
-﻿using CRM.Core.Constants;
+﻿using CRM.DataLayer.Configuration.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

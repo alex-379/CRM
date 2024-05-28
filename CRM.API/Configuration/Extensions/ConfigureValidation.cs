@@ -1,4 +1,5 @@
-﻿using CRM.API.Validators.Leads;
+﻿using CRM.API.Configuration.Validation;
+using CRM.API.Validators.Leads;
 using FluentValidation;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 

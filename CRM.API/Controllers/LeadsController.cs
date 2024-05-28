@@ -1,10 +1,9 @@
 ﻿using CRM.API.Configuration.Filters;
+using CRM.API.Controllers.Logs;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
 using CRM.Business.Models.Tokens.Responses;
-using CRM.Core.Constants;
-using CRM.Core.Constants.Logs.API;
 using CRM.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +13,9 @@ namespace CRM.API.Controllers;
 
 [Authorize]
 [ApiController]
-[Route(ControllersRoutes.LeadsController)]
+[Route(Routes.LeadsController)]
 public class LeadsController(ILeadsService leadsService) : Controller
 {
-    private readonly ILeadsService _leadsService = leadsService;
     private readonly Serilog.ILogger _logger = Log.ForContext<LeadsController>();
 
     [AllowAnonymous]
@@ -25,17 +23,17 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public ActionResult<Guid> RegisterLead([FromBody] RegisterLeadRequest request)
     {
         _logger.Information(LeadsControllerLogs.RegistrationLead, request.Mail);
-        var id = _leadsService.AddLead(request);
+        var id = leadsService.AddLead(request);
 
-        return Created($"{ControllersRoutes.Host}{ControllersRoutes.LeadsController}/{id}", id);
+        return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
     }
 
     [AllowAnonymous]
-    [HttpPost(ControllersRoutes.Login)]
+    [HttpPost(Routes.Login)]
     public ActionResult<AuthenticatedResponse> Login([FromBody] LoginLeadRequest request)
     {
         _logger.Information(LeadsControllerLogs.Login);
-        var authenticatedResponse = _leadsService.LoginLead(request);
+        var authenticatedResponse = leadsService.LoginLead(request);
 
         return Ok(authenticatedResponse);
     }
@@ -46,74 +44,64 @@ public class LeadsController(ILeadsService leadsService) : Controller
     {
         _logger.Information(LeadsControllerLogs.GetLeads);
 
-        return Ok(_leadsService.GetLeads());
+        return Ok(leadsService.GetLeads());
     }
 
     [AuthorizationFilterByLeadId]
-    [HttpGet(ControllersRoutes.Id)]
+    [HttpGet(Routes.Id)]
     public ActionResult<LeadFullResponse> GetLeadById(Guid id)
     {
         _logger.Information(LeadsControllerLogs.GetLeadById, id);
 
-        return Ok(_leadsService.GetLeadById(id));
+        return Ok(leadsService.GetLeadById(id));
     }
 
     [AuthorizationFilterByLeadId]
-    [HttpPut(ControllersRoutes.Id)]
+    [HttpPut(Routes.Id)]
     public ActionResult UpdateLeadData([FromRoute] Guid id, [FromBody] UpdateLeadDataRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadData, id);
-        _leadsService.UpdateLead(id, request);
+        leadsService.UpdateLead(id, request);
 
         return NoContent();
     }
 
     [AuthorizationFilterByLeadId]
-    [HttpDelete(ControllersRoutes.Id)]
+    [HttpDelete(Routes.Id)]
     public ActionResult DeleteLeadById(Guid id)
     {
         _logger.Information(LeadsControllerLogs.DeleteLeadById, id);
-        _leadsService.DeleteLeadById(id);
+        leadsService.DeleteLeadById(id);
 
         return NoContent();
     }
 
     [AuthorizationFilterByLeadId]
-    [HttpPatch(ControllersRoutes.LeadPassword)]
+    [HttpPatch(Routes.LeadPassword)]
     public ActionResult UpdateLeadPassword([FromRoute] Guid id, [FromBody] UpdateLeadPasswordRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadPassword, id);
-        _leadsService.UpdateLeadPassword(id, request);
-
-        return NoContent();
-    }
-
-    [AuthorizationFilterByLeadId]
-    [HttpPatch(ControllersRoutes.LeadMail)]
-    public ActionResult UpdateLeadMail([FromRoute] Guid id, [FromBody] UpdateLeadMailRequest request)
-    {
-        _logger.Information(LeadsControllerLogs.UpdateLeadMail, id);
-        _leadsService.UpdateLeadMail(id, request);
+        leadsService.UpdateLeadPassword(id, request);
 
         return NoContent();
     }
 
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
-    [HttpPatch(ControllersRoutes.Status)]
+    [HttpPatch(Routes.Status)]
     public ActionResult UpdateLeadStatus([FromRoute] Guid id, [FromBody] UpdateLeadStatusRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadStatus, id);
-        _leadsService.UpdateLeadStatus(id, request);
+        leadsService.UpdateLeadStatus(id, request);
 
         return NoContent();
     }
 
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
-    [HttpPatch(ControllersRoutes.LeadBirthDate)]
+    [HttpPatch(Routes.LeadBirthDate)]
     public ActionResult UpdateLeadBirthDate([FromRoute] Guid id, [FromBody] UpdateLeadBirthDateRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadBirthDate, id);
-        _leadsService.UpdateLeadBirthDate(id, request);
+        leadsService.UpdateLeadBirthDate(id, request);
 
         return NoContent();
     }

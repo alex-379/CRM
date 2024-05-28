@@ -1,4 +1,6 @@
-﻿namespace CRM.API.Configuration.Extensions;
+﻿using CRM.API.Configuration.Exceptions;
+
+namespace CRM.API.Configuration.Extensions;
 
 public static class ConfigureExceptionsHandler
 {

@@ -1,6 +1,6 @@
-﻿using CRM.Business.Models.Leads.Requests;
+﻿using CRM.API.Validators.Messages;
+using CRM.Business.Models.Leads.Requests;
 using CRM.Core.Constants;
-using CRM.Core.Constants.ValidatorsMessages;
 using FluentValidation;
 
 namespace CRM.API.Validators.Leads;
@@ -10,12 +10,16 @@ public class LoginLeadValidator : AbstractValidator<LoginLeadRequest>
     public LoginLeadValidator()
     {
         RuleFor(r => r.Mail)
+            .NotNull()
+            .WithMessage(LeadsValidators.Mail)
             .EmailAddress()
-            .WithMessage(string.Format(LeadsValidators.MailLength, DatabaseProperties.MailLength))
+            .WithMessage(LeadsValidators.MailIncorrect)
             .MaximumLength(DatabaseProperties.MailLength)
-            .WithMessage(LeadsValidators.Mail);
+            .WithMessage(string.Format(LeadsValidators.MailLength, DatabaseProperties.MailLength));
         RuleFor(r => r.Password)
-            .Length(ValidationSettings.PasswordLength)
-            .WithMessage(LeadsValidators.Password);
+            .NotNull()
+            .WithMessage(LeadsValidators.Password)
+            .MinimumLength(ValidationSettings.PasswordLength)
+            .WithMessage(string.Format(LeadsValidators.PasswordLength, ValidationSettings.PasswordLength));
     }
 }

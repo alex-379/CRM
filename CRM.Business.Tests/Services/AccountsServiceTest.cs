@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using CRM.Business.Models.Accounts;
 using CRM.Business.Services;
-using CRM.Core.Constants.Exceptions.Business;
+using CRM.Business.Services.Constants.Exceptions;
 using CRM.Core.Dtos;
 using CRM.Core.Exceptions;
 using CRM.DataLayer.Interfaces;
@@ -77,7 +77,7 @@ public class AccountsServiceTest
         var id = Guid.NewGuid();
         var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
         _accountsRepositoryMock.Setup(x => x.GetAccountById(id)).Returns(new AccountDto());
-        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null);
 
         //act
         sut.UpdateAccountStatus(id, updateAccountStatusRequest);
@@ -94,10 +94,10 @@ public class AccountsServiceTest
         var id = Guid.Empty;
         var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
         _accountsRepositoryMock.Setup(x => x.GetAccountById(id)).Returns((AccountDto)null);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null);
 
         //act
-        Action act = () => sut.UpdateAccountStatus(id, updateAccountStatusRequest);
+        var act = () => sut.UpdateAccountStatus(id, updateAccountStatusRequest);
 
         //assert
         act.Should().Throw<NotFoundException>()

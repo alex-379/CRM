@@ -2,7 +2,7 @@
 
 public class UpdateLeadDataRequest
 {
-    public string Name { get; set; }
-    public string Phone { get; set; }
-    public string Address { get; set; }
+    public string Name { get; init; }
+    public string Phone { get; init; }
+    public string Address { get; init; }
 }

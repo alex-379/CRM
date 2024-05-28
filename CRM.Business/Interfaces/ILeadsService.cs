@@ -13,7 +13,6 @@ public interface ILeadsService
     AuthenticatedResponse LoginLead(LoginLeadRequest request);
     void UpdateLead(Guid leadId, UpdateLeadDataRequest request);
     void UpdateLeadBirthDate(Guid leadId, UpdateLeadBirthDateRequest request);
-    void UpdateLeadMail(Guid leadId, UpdateLeadMailRequest request);
     void UpdateLeadPassword(Guid leadId, UpdateLeadPasswordRequest request);
     void UpdateLeadStatus(Guid leadId, UpdateLeadStatusRequest request);
 }

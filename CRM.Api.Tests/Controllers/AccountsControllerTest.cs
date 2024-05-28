@@ -9,12 +9,7 @@ namespace CRM.API.Tests.Controllers;
 
 public class AccountsControllerTest
 {
-    private readonly Mock<IAccountsService> _accountsServiceMock;
-
-    public AccountsControllerTest()
-    {
-        _accountsServiceMock = new Mock<IAccountsService>();
-    }
+    private readonly Mock<IAccountsService> _accountsServiceMock = new();
 
     [Fact]
     public void UpdateAccountStatus_GuidAndUpdateAccountStatusRequestSent_NoContentResultReceived()

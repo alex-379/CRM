@@ -2,6 +2,6 @@
 
 public class LoginLeadRequest
 {
-    public string Mail { get; set; }
-    public string Password { get; set; }
+    public string Mail { get; init; }
+    public string Password { get; init; }
 }

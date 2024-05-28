@@ -2,10 +2,10 @@
 
 public class RegisterLeadRequest
 {
-    public string Name { get; set; }
-    public string Mail { get; set; }
-    public string Phone { get; set; }
-    public string Address { get; set; }
-    public DateOnly BirthDate { get; set; }
-    public string Password { get; set; }
+    public string Name { get; init; }
+    public string Mail { get; init; }
+    public string Phone { get; init; }
+    public string Address { get; init; }
+    public DateOnly BirthDate { get; init; }
+    public string Password { get; init; }
 }

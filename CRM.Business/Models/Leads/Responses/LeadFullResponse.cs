@@ -5,8 +5,8 @@ namespace CRM.Business.Models.Leads.Responses;
 
 public class LeadFullResponse : LeadResponse
 {
-    public string Address { get; set; }
-    public DateOnly BirthDate { get; set; }
-    public LeadStatus Status { get; set; }
-    public List<AccountResponse> Accounts { get; set; }
+    public string Address { get; init; }
+    public DateOnly BirthDate { get; init; }
+    public LeadStatus Status { get; init; }
+    public List<AccountResponse> Accounts { get; init; }
 }

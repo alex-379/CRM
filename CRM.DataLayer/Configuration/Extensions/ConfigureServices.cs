@@ -12,6 +12,6 @@ public static class ConfigureServices
         services.AddDataBases(configuration);
         services.AddScoped<ILeadsRepository, LeadsRepository>();
         services.AddScoped<IAccountsRepository, AccountsRepository>();
-        services.AddScoped<ITransactionsRepository, TransactionsRepository>();
+        services.AddScoped<ITransactionsManager, TransactionsManager>();
     }
 }

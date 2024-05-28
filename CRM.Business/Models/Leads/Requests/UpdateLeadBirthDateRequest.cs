@@ -2,5 +2,5 @@
 
 public class UpdateLeadBirthDateRequest
 {
-    public DateOnly BirthDate { get; set; }
+    public DateOnly BirthDate { get; init; }
 }

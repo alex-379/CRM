@@ -2,5 +2,5 @@
 
 public class UpdateLeadPasswordRequest
 {
-    public string Password { get; set; }
+    public string Password { get; init; }
 }

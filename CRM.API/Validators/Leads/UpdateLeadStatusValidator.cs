@@ -1,5 +1,5 @@
-﻿using CRM.Business.Models.Leads.Requests;
-using CRM.Core.Constants.ValidatorsMessages;
+﻿using CRM.API.Validators.Messages;
+using CRM.Business.Models.Leads.Requests;
 using FluentValidation;
 
 namespace CRM.API.Validators.Leads;

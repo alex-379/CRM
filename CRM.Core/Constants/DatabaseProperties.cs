@@ -2,7 +2,7 @@
 
 public static class DatabaseProperties
 {
-    public const int LeadNameLength = 30;
+    public const int NameLength = 30;
     public const int MailLength = 30;
     public const int PhoneLength = 12;
     public const int AddressLength = 50;

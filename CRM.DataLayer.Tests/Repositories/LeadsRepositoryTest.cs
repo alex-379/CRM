@@ -1,5 +1,6 @@
 ﻿using CRM.Core.Dtos;
 using CRM.DataLayer.Repositories;
+using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Moq.EntityFrameworkCore;
@@ -8,20 +9,16 @@ namespace CRM.DataLayer.Tests.Repositories;
 
 public class LeadsRepositoryTest
 {
-    private readonly Mock<CrmContext> _contextMock;
-
-    public LeadsRepositoryTest()
-    {
-        _contextMock = new Mock<CrmContext>();
-    }
+    private static readonly DbContextOptions<CrmContext> _options = new();
+    private readonly Mock<CrmContext> _contextMock = new(_options);
 
     [Fact]
-    public void AddLead_LeadDtoSent_GuidReceieved()
+    public void AddLead_LeadDtoSent_GuidReceived()
     {
         //arrange
-        var expected = 3;
-        var leads = TestsData.GetFakeLeadDtoList();
-        var lead = TestsData.GetFakeLeadDto();
+        const int expected = 3;
+        var leads = TestData.GetFakeLeadDtoList();
+        var lead = TestData.GetFakeLeadDto();
         var mock = leads.BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads.Add(lead))
             .Returns(mock.Object.Add(lead))
@@ -41,9 +38,9 @@ public class LeadsRepositoryTest
     public void GetLeads_Called_LeadDtoListReceived()
     {
         //arrange
-        var expected = 2;
+        const int expected = 2;
         _contextMock.Setup(x => x.Leads)
-            .ReturnsDbSet(TestsData.GetFakeLeadDtoList());
+            .ReturnsDbSet(TestData.GetFakeLeadDtoList());
         var sut = new LeadsRepository(_contextMock.Object);
 
         //act
@@ -55,11 +52,11 @@ public class LeadsRepositoryTest
     }
 
     [Fact]
-    public void GetLeadById_GuidSent_LeadDtoReceieved()
+    public void GetLeadById_GuidSent_LeadDtoReceived()
     {
         //arrange
         var expected = new Guid("4e7918d2-fdcd-4316-97bb-565f8f4a0566");
-        var mock = TestsData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
+        var mock = TestData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
         var sut = new LeadsRepository(_contextMock.Object);
@@ -73,12 +70,12 @@ public class LeadsRepositoryTest
     }
 
     [Fact]
-    public void GetLeadByMail_MailSent_LeadDtoReceieved()
+    public void GetLeadByMail_MailSent_LeadDtoReceived()
     {
         //arrange
-        var mail = "test02@test.test";
+        const string mail = "test02@test.test";
         var expected = new Guid("78fa8b9b-91fa-4e94-9a35-33d356d92890");
-        var mock = TestsData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
+        var mock = TestData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
         var sut = new LeadsRepository(_contextMock.Object);
@@ -92,10 +89,10 @@ public class LeadsRepositoryTest
     }
 
     [Fact]
-    public void UpdateLead_LeadDtoSent_NoErrorsReceieved()
+    public void UpdateLead_LeadDtoSent_NoErrorsReceived()
     {
         //arrange
-        var lead = TestsData.GetFakeLeadDtoList()[0];
+        var lead = TestData.GetFakeLeadDtoList()[0];
         var mock = Enumerable.Empty<LeadDto>().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads.Update(lead))
             .Returns(mock.Object.Update(lead));

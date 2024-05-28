@@ -2,8 +2,8 @@
 {
     public class LeadResponse
     {
-        public string Name { get; set; }
-        public string Mail { get; set; }
-        public string Phone { get; set; }
+        public string Name { get; init; }
+        public string Mail { get; init; }
+        public string Phone { get; init; }
     }
 }

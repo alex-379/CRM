@@ -4,18 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CRM.DataLayer;
 
-public class CrmContext : DbContext
+public class CrmContext(DbContextOptions<CrmContext> options) : DbContext(options)
 {
-    public CrmContext(DbContextOptions<CrmContext> options) : base(options)
-    {
-    }
-
-    public CrmContext()
-    {
-    }
-
-    public virtual DbSet<LeadDto> Leads { get; set; } = default;
-    public virtual DbSet<AccountDto> Accounts { get; set; } = default;
+    public virtual DbSet<LeadDto> Leads { get; init; } = default;
+    public virtual DbSet<AccountDto> Accounts { get; init; } = default;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

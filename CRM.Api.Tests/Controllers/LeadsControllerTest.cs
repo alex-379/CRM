@@ -11,12 +11,7 @@ namespace CRM.API.Tests.Controllers;
 
 public class LeadsControllerTest
 {
-    private readonly Mock<ILeadsService> _leadsServiceMock;
-
-    public LeadsControllerTest()
-    {
-        _leadsServiceMock = new Mock<ILeadsService>();
-    }
+    private readonly Mock<ILeadsService> _leadsServiceMock = new();
 
     [Fact]
     public void RegistrationLead_RegistrationLeadRequestSent_CreatedResultReceived()
@@ -130,23 +125,6 @@ public class LeadsControllerTest
         //assert
         actual.Should().BeOfType<NoContentResult>();
         _leadsServiceMock.Verify(m => m.UpdateLeadPassword(id, updateLeadPasswordRequest), Times.Once);
-    }
-
-    [Fact]
-    public void UpdateLeadMail_GuidAndUpdateLeadMailRequestSent_NoContentResultReceived()
-    {
-        //arrange
-        var id = new Guid();
-        var updateLeadMailRequest = new UpdateLeadMailRequest();
-        _leadsServiceMock.Setup(x => x.UpdateLeadMail(id, updateLeadMailRequest));
-        var sut = new LeadsController(_leadsServiceMock.Object);
-
-        //act
-        var actual = sut.UpdateLeadMail(id, updateLeadMailRequest);
-
-        //assert
-        actual.Should().BeOfType<NoContentResult>();
-        _leadsServiceMock.Verify(m => m.UpdateLeadMail(id, updateLeadMailRequest), Times.Once);
     }
 
     [Fact]

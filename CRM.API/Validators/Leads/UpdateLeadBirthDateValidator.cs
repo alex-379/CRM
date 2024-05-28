@@ -1,5 +1,5 @@
-﻿using CRM.Business.Models.Leads.Requests;
-using CRM.Core.Constants.ValidatorsMessages;
+﻿using CRM.API.Validators.Messages;
+using CRM.Business.Models.Leads.Requests;
 using FluentValidation;
 
 namespace CRM.API.Validators.Leads;
@@ -10,6 +10,10 @@ public class UpdateLeadBirthDateValidator : AbstractValidator<UpdateLeadBirthDat
     {
         RuleFor(r => r.BirthDate)
             .NotEmpty()
-            .WithMessage(LeadsValidators.BirthDate);
+            .WithMessage(LeadsValidators.BirthDate)
+            .LessThan(AgeSettings.AgeEnd)
+            .WithMessage(LeadsValidators.BirthDateMin)
+            .GreaterThan(AgeSettings.AgeStart)
+            .WithMessage(LeadsValidators.BirthDateMax);
     }
 }

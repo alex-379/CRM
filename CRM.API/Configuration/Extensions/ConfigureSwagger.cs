@@ -1,5 +1,4 @@
-﻿using CRM.Core.Constants;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 
 namespace CRM.API.Configuration.Extensions;
 

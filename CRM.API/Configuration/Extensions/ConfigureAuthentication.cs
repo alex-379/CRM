@@ -1,9 +1,7 @@
-﻿using CRM.Core.Constants;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CRM.API.Configuration.Exceptions;
-using CRM.API.Configuration.Exceptions.Constants;
 
 namespace CRM.API.Configuration.Extensions;
 

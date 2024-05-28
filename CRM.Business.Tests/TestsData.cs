@@ -1,4 +1,5 @@
 ﻿using CRM.Business.Models.Accounts.Requests;
+using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
 using CRM.Core.Dtos;
@@ -40,11 +41,11 @@ public static class TestsData
             Status = LeadStatus.Regular,
             Accounts =
             [
-                new()
+                new AccountDto
                 {
                     Currency = Currency.Eur,
                 },
-                new()
+                new AccountDto
                 {
                     Currency = Currency.Usd,
                 }
@@ -62,11 +63,11 @@ public static class TestsData
             Status = LeadStatus.Regular,
             Accounts =
         [
-            new()
+            new AccountResponse
             {
                 Currency = Currency.Eur,
             },
-            new()
+            new AccountResponse
             {
                 Currency = Currency.Usd,
             }
@@ -85,12 +86,6 @@ public static class TestsData
         new()
         {
             Password = "PassPass0012",
-        };
-
-    public static UpdateLeadMailRequest GetFakeUpdateLeadMailRequest() =>
-        new()
-        {
-            Mail = "test508@test.ru",
         };
 
     public static UpdateLeadStatusRequest GetFakeUpdateLeadStatusRequest() =>
@@ -114,18 +109,18 @@ public static class TestsData
     public static UpdateAccountStatusRequest GetFakeUpdateAccountStatusRequest() =>
         new()
         {
-            Status = AccountStatus.Block,
+            Status = AccountStatus.Blocked,
         };
 
     public static List<LeadResponse> GetFakeListLeadResponse() =>
         [
-        new()
+        new LeadResponse
         {
             Name = "TestLead01",
             Mail = "test01@test.test",
             Phone = "+78888888888",
         },
-        new()
+        new LeadResponse
         {
             Name = "TestLead02",
             Mail = "test02@test.test",
@@ -135,13 +130,13 @@ public static class TestsData
 
     public static List<LeadDto> GetFakeListLeadDto() =>
         [
-        new()
-            {
+        new LeadDto
+        {
                 Name = "TestLead01",
                 Mail = "test01@test.test",
                 Phone = "+78888888888",
             },
-            new()
+            new LeadDto
             {
                 Name = "TestLead02",
                 Mail = "test02@test.test",

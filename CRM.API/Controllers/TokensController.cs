@@ -1,41 +1,37 @@
-﻿using CRM.Business.Interfaces;
+﻿using CRM.API.Controllers.Logs;
+using CRM.Business.Interfaces;
 using CRM.Business.Models.Tokens.Requests;
 using CRM.Business.Models.Tokens.Responses;
-using CRM.Core.Constants;
-using CRM.Core.Constants.Logs.API;
 using CRM.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using System.Security.Claims;
 
 namespace CRM.API.Controllers;
 
-[Route(ControllersRoutes.TokensController)]
+[Authorize(Roles = nameof(LeadStatus.Administrator))]
 [ApiController]
+[Route(Routes.TokensController)]
 public class TokensController(ITokensService tokensService) : Controller
 {
-    private readonly ITokensService _tokenService = tokensService;
     private readonly Serilog.ILogger _logger = Log.ForContext<TokensController>();
 
     [HttpPost]
-    [Route(ControllersRoutes.Refresh)]
+    [Route(Routes.Refresh)]
     public ActionResult<AuthenticatedResponse> Refresh([FromBody] RefreshTokenRequest request)
     {
         _logger.Information(TokensControllerLogs.Refresh);
-        var authenticatedResponse = _tokenService.Refresh(request);
+        var authenticatedResponse = tokensService.Refresh(request);
 
         return Ok(authenticatedResponse);
     }
-
-    [Authorize(Roles = nameof(LeadStatus.Administrator))]
+    
     [HttpPost]
-    [Route(ControllersRoutes.Revoke)]
-    public ActionResult Revoke()
+    [Route(Routes.Revoke)]
+    public ActionResult Revoke([FromBody] Guid id)
     {
-        var currentUserId = OperationsWithUsers.GetCurrentUserFromClaims(HttpContext.User); 
         _logger.Information(TokensControllerLogs.Revoke);
-        _tokenService.Revoke(currentUserId);
+        tokensService.Revoke(id);
 
         return NoContent();
     }

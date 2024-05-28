@@ -13,6 +13,6 @@ public static class ConfigureServices
         services.AddAuthenticationService(configuration);
         services.AddAutoMapper(typeof(LeadsMappingProfile).Assembly);
         services.AddValidation();
-        services.AddConfigurationFromJson(configuration);
+        services.AddConfigurationServicesFromJson(configuration);
     }
 }

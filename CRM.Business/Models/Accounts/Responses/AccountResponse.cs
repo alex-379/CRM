@@ -4,6 +4,6 @@ namespace CRM.Business.Models.Accounts.Responses;
 
 public class AccountResponse
 {
-    public Currency Currency { get; set; }
-    public AccountStatus Status { get; set; }
+    public Currency Currency { get; init; }
+    public AccountStatus Status { get; init; }
 }

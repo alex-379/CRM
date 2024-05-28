@@ -1,6 +1,6 @@
-﻿using CRM.Core.Constants.Logs.DataLayer;
-using CRM.Core.Dtos;
+﻿using CRM.Core.Dtos;
 using CRM.DataLayer.Interfaces;
+using CRM.DataLayer.Repositories.Constants.Logs;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -19,12 +19,12 @@ public class LeadsRepository(CrmContext context) : BaseRepository(context), ILea
         return lead.Id;
     }
 
-    public IEnumerable<LeadDto> GetLeads()
+    public List<LeadDto> GetLeads()
     {
         _logger.Information(LeadsRepositoryLogs.GetLeads);
 
-        return _ctx.Leads
-            .Where(d => !d.IsDeleted);
+        return [.. _ctx.Leads
+            .Where(d => !d.IsDeleted)];
     }
 
     public LeadDto GetLeadById(Guid id)
