@@ -20,9 +20,7 @@ public class LeadsServiceTest
     private readonly Mock<IAccountsRepository> _accountsRepositoryMock;
     private readonly Mock<ITransactionsManager> _transactionsManagerMock;
     private readonly IPasswordsService _passwordsService;
-    private readonly ITokensService _tokensService;
     private readonly IMapper _mapper;
-    private readonly JwtToken _jwt;
 
     public LeadsServiceTest()
     {
@@ -30,9 +28,7 @@ public class LeadsServiceTest
         _accountsRepositoryMock = new Mock<IAccountsRepository>();
         _transactionsManagerMock = new Mock<ITransactionsManager>();
         var secret = new SecretSettings();
-        _jwt = new JwtToken();
         _passwordsService = new PasswordsService(secret);
-        _tokensService = new TokensService(secret, _jwt, _leadsRepositoryMock.Object);
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new LeadsMappingProfile());
