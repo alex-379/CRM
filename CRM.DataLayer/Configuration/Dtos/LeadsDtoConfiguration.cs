@@ -41,7 +41,8 @@ public class LeadsDtoConfiguration : IEntityTypeConfiguration<LeadDto>
             .HasMaxLength(DatabaseProperties.SaltLength);
         builder
             .Property(u => u.Status)
-            .HasDefaultValue(LeadStatus.Regular);
+            .HasDefaultValue(LeadStatus.Regular)
+            .HasSentinel(LeadStatus.Unknown);
         builder
             .Property(u => u.IsDeleted)
             .HasDefaultValue(false);

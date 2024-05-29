@@ -19,6 +19,7 @@ public class AccountsDtoConfiguration : IEntityTypeConfiguration<AccountDto>
             .IsRequired();
         builder
             .Property(u => u.Status)
-            .HasDefaultValue(AccountStatus.Active);
+            .HasDefaultValue(AccountStatus.Active)
+            .HasSentinel(AccountStatus.Unknown);
     }
 }
