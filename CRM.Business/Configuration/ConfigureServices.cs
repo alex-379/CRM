@@ -12,6 +12,7 @@ public static class ConfigureServices
         services.AddScoped<IAccountsService, AccountsService>();
         services.AddScoped<IPasswordsService, PasswordsService>();
         services.AddScoped<ITokensService, TokensService>();
+        services.AddHttpClient();
         services.AddScoped<IHttpClientTransactionStoreService, HttpClientTransactionStoreService>();
     }
 }

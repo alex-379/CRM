@@ -1,7 +1,7 @@
 using System.Text.Json;
 using CRM.Business.Interfaces;
+using CRM.Business.Models.Transactions.Responses;
 using CRM.Business.Services.Constants;
-using CRM.Core.Dtos;
 
 namespace CRM.Business.Services;
 
@@ -27,7 +27,7 @@ public class HttpClientTransactionStoreService : IHttpClientTransactionStoreServ
         var response = await _httpClient.GetAsync(Routes.Balance);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var companies = JsonSerializer.Deserialize<List<LeadDto>>(content, _options);
+        var balance = JsonSerializer.Deserialize<AccountBalanceResponse>(content, _options);
     }
     
 }
