@@ -1,5 +1,6 @@
 using CRM.API.Configuration.Extensions;
 using CRM.Business.Configuration;
+using CRM.Business.Interfaces;
 using CRM.DataLayer.Configuration.Extensions;
 using Serilog;
 
@@ -7,7 +8,7 @@ namespace CRM.API;
 
 public static class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         try
         {
@@ -23,6 +24,17 @@ public static class Program
             builder.Services.ConfigureApiServices(builder.Configuration);
             builder.Services.ConfigureBllServices();
             builder.Services.ConfigureDalServices(builder.Configuration);
+            
+            var provider = builder.Services.BuildServiceProvider();
+            try
+            {
+                await provider.GetRequiredService<IHttpClientTransactionStoreService>()
+                    .Execute();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Something went wrong: {ex}");
+            }
             
             var app = builder.Build();
             // Configure the HTTP request pipeline.
