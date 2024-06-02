@@ -17,7 +17,7 @@ public class AccountsControllerTest
         //arrange
         var id = new Guid();
         var updateAccountStatusRequest = new UpdateAccountStatusRequest();
-        _accountsServiceMock.Setup(x => x.UpdateAccountStatus(id, updateAccountStatusRequest));
+        _accountsServiceMock.Setup(x => x.UpdateAccountStatusAsync(id, updateAccountStatusRequest));
         var sut = new AccountsController(_accountsServiceMock.Object);
 
         //act
@@ -25,6 +25,6 @@ public class AccountsControllerTest
 
         //assert
         actual.Should().BeOfType<NoContentResult>();
-        _accountsServiceMock.Verify(m => m.UpdateAccountStatus(id, updateAccountStatusRequest), Times.Once);
+        _accountsServiceMock.Verify(m => m.UpdateAccountStatusAsync(id, updateAccountStatusRequest), Times.Once);
     }
 }

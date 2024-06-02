@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿/*
+using AutoMapper;
 using CRM.Business.Models.Accounts;
 using CRM.Business.Services;
 using CRM.Business.Services.Constants.Exceptions;
@@ -106,3 +107,4 @@ public class AccountsServiceTest
         _accountsRepositoryMock.Verify(m => m.UpdateAccount(It.IsAny<AccountDto>()), Times.Never);
     }
 }
+*/

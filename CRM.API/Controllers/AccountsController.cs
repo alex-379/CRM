@@ -23,7 +23,7 @@ public class AccountsController(IAccountsService accountsService) : Controller
         _logger.Information(AccountsControllerLogs.GetAuthorizedAccount);
         var currentLeadId = GetCurrentLeadFromClaims(HttpContext.User); 
         _logger.Information(AccountsControllerLogs.RegistrationAccount, request.Currency, currentLeadId);
-        var id = accountsService.AddAccount(currentLeadId, request);
+        var id = accountsService.AddAccountAsync(currentLeadId, request);
 
         return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
     }
@@ -41,7 +41,7 @@ public class AccountsController(IAccountsService accountsService) : Controller
     public ActionResult UpdateAccountStatus([FromRoute] Guid id, [FromBody] UpdateAccountStatusRequest request)
     {
         _logger.Information(AccountsControllerLogs.UpdateAccountStatus, id);
-        accountsService.UpdateAccountStatus(id, request);
+        accountsService.UpdateAccountStatusAsync(id, request);
 
         return NoContent();
     }

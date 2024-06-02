@@ -17,16 +17,24 @@ namespace CRM.Business.Services;
 
 public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository leadsRepository) : ITokensService
 {
-    public string GenerateAccessToken(LeadDto lead)
+    public static (string accessToken, string refreshToken) GenerateTokens(LeadDto lead, string secret, string jwtIssuer, string jwtAudience, double jwtLifeTime)
+    {
+        var accessToken = GenerateAccessToken(lead, secret, jwtIssuer, jwtAudience, jwtLifeTime);
+        var refreshToken = GenerateRefreshToken();
+        
+        return (accessToken, refreshToken);
+    }
+
+    private static string GenerateAccessToken(LeadDto lead, string secret, string jwtIssuer, string jwtAudience, double jwtLifeTime)
     {
         var claims = SetClaims(lead);
-        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret.SecretToken));
+        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha512);
         var tokenOptions = new JwtSecurityToken(
-            issuer: jwt.ValidIssuer,
-            audience: jwt.ValidAudience,
+            issuer: jwtIssuer,
+            audience: jwtAudience,
             claims: claims,
-            expires: DateTime.Now.AddDays(jwt.LifeTimeAccessToken),
+            expires: DateTime.Now.AddDays(jwtLifeTime),
             signingCredentials: signinCredentials
         );
         
@@ -44,7 +52,7 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         ];
     }
 
-    public string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[RandomNumbers.RandomNumber];
         using var rng = RandomNumberGenerator.Create();
@@ -74,12 +82,12 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         return principal;
     }
 
-    public AuthenticatedResponse Refresh(RefreshTokenRequest request)
+    public async Task<AuthenticatedResponse> RefreshAsync(RefreshTokenRequest request)
     {
         var principal = GetPrincipalFromExpiredToken(request.AccessToken);
         var leadId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
                      ?? throw new UnauthenticatedException(TokensServiceExceptions.UnauthenticatedException);
-        var lead = leadsRepository.GetLeadById(new Guid(leadId));
+        var lead = await leadsRepository.GetLeadByIdAsync(new Guid(leadId));
         if (lead is null || lead.RefreshToken != request.RefreshToken || lead.RefreshTokenExpiryTime <= DateTime.Now)
         {
             throw new UnauthenticatedException(TokensServiceExceptions.UnauthenticatedException);
@@ -96,19 +104,18 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
     
     private (string newAccessToken, string newRefreshToken) UpdateLeadTokens(LeadDto lead)
     {
-        var newAccessToken = GenerateAccessToken(lead);
-        var newRefreshToken = GenerateRefreshToken();
+        var (newAccessToken, newRefreshToken) = GenerateTokens(lead, secret.SecretPassword, jwt.ValidIssuer, jwt.ValidAudience, jwt.LifeTimeAccessToken);
         lead.RefreshToken = newRefreshToken;
-        leadsRepository.UpdateLead(lead);
+        leadsRepository.UpdateLeadAsync(lead);
         
         return (newAccessToken, newRefreshToken);
     }
 
-    public void Revoke(Guid userId)
+    public async Task RevokeAsync(Guid userId)
     {
-        var lead = leadsRepository.GetLeadById(userId) ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, userId));
+        var lead = await leadsRepository.GetLeadByIdAsync(userId) ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, userId));
         lead.RefreshToken = null;
         lead.RefreshTokenExpiryTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified);
-        leadsRepository.UpdateLead(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
     }
 }

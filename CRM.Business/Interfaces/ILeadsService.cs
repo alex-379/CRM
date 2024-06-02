@@ -6,13 +6,13 @@ namespace CRM.Business.Interfaces;
 
 public interface ILeadsService
 {
-    Guid AddLead(RegisterLeadRequest request);
-    void DeleteLeadById(Guid id);
-    LeadFullResponse GetLeadById(Guid id);
-    List<LeadResponse> GetLeads();
-    AuthenticatedResponse LoginLead(LoginLeadRequest request);
-    void UpdateLead(Guid leadId, UpdateLeadDataRequest request);
-    void UpdateLeadBirthDate(Guid leadId, UpdateLeadBirthDateRequest request);
-    void UpdateLeadPassword(Guid leadId, UpdateLeadPasswordRequest request);
-    void UpdateLeadStatus(Guid leadId, UpdateLeadStatusRequest request);
+    Task<Guid> AddLeadAsync(RegisterLeadRequest request);
+    Task DeleteLeadByIdAsync(Guid id);
+    Task<LeadFullResponse> GetLeadByIdAsync(Guid id);
+    Task<List<LeadResponse>> GetLeadsAsync();
+    Task<AuthenticatedResponse> LoginLeadAsync(LoginLeadRequest request);
+    Task UpdateLeadAsync(Guid leadId, UpdateLeadDataRequest request);
+    Task UpdateLeadBirthDateAsync(Guid leadId, UpdateLeadBirthDateRequest request);
+    Task UpdateLeadPasswordAsync(Guid leadId, UpdateLeadPasswordRequest request);
+    Task UpdateLeadStatusAsync(Guid leadId, UpdateLeadStatusRequest request);
 }

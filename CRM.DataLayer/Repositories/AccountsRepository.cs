@@ -23,7 +23,6 @@ namespace CRM.DataLayer.Repositories
         {
             _logger.Information(AccountsRepositoryLogs.GetAccountById, id);
             var account = await _ctx.Accounts
-                .AsQueryable()
                 .FirstOrDefaultAsync((d => d.Id == id));
 
             return account;

@@ -21,7 +21,7 @@ public class TokensController(ITokensService tokensService) : Controller
     public ActionResult<AuthenticatedResponse> Refresh([FromBody] RefreshTokenRequest request)
     {
         _logger.Information(TokensControllerLogs.Refresh);
-        var authenticatedResponse = tokensService.Refresh(request);
+        var authenticatedResponse = tokensService.RefreshAsync(request);
 
         return Ok(authenticatedResponse);
     }
@@ -31,7 +31,7 @@ public class TokensController(ITokensService tokensService) : Controller
     public ActionResult Revoke([FromBody] Guid id)
     {
         _logger.Information(TokensControllerLogs.Revoke);
-        tokensService.Revoke(id);
+        tokensService.RevokeAsync(id);
 
         return NoContent();
     }

@@ -10,7 +10,6 @@ public static class ConfigureServices
     {
         services.AddScoped<ILeadsService, LeadsService>();
         services.AddScoped<IAccountsService, AccountsService>();
-        services.AddScoped<IPasswordsService, PasswordsService>();
         services.AddScoped<ITokensService, TokensService>();
     }
 }

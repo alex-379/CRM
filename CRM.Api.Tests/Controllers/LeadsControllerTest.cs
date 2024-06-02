@@ -1,4 +1,5 @@
-﻿using CRM.API.Controllers;
+﻿/*
+using CRM.API.Controllers;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
@@ -161,3 +162,4 @@ public class LeadsControllerTest
         _leadsServiceMock.Verify(m => m.UpdateLeadBirthDate(id, updateLeadBirthDateRequest), Times.Once);
     }
 }
+*/

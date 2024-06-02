@@ -23,7 +23,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public ActionResult<Guid> RegisterLead([FromBody] RegisterLeadRequest request)
     {
         _logger.Information(LeadsControllerLogs.RegistrationLead, request.Mail);
-        var id = leadsService.AddLead(request);
+        var id = leadsService.AddLeadAsync(request);
 
         return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
     }
@@ -33,7 +33,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public ActionResult<AuthenticatedResponse> Login([FromBody] LoginLeadRequest request)
     {
         _logger.Information(LeadsControllerLogs.Login);
-        var authenticatedResponse = leadsService.LoginLead(request);
+        var authenticatedResponse = leadsService.LoginLeadAsync(request);
 
         return Ok(authenticatedResponse);
     }
@@ -44,7 +44,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     {
         _logger.Information(LeadsControllerLogs.GetLeads);
 
-        return Ok(leadsService.GetLeads());
+        return Ok(leadsService.GetLeadsAsync());
     }
 
     [AuthorizationFilterByLeadId]
@@ -53,7 +53,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     {
         _logger.Information(LeadsControllerLogs.GetLeadById, id);
 
-        return Ok(leadsService.GetLeadById(id));
+        return Ok(leadsService.GetLeadByIdAsync(id));
     }
 
     [AuthorizationFilterByLeadId]
@@ -61,7 +61,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public ActionResult UpdateLeadData([FromRoute] Guid id, [FromBody] UpdateLeadDataRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadData, id);
-        leadsService.UpdateLead(id, request);
+        leadsService.UpdateLeadAsync(id, request);
 
         return NoContent();
     }
@@ -71,7 +71,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public ActionResult DeleteLeadById(Guid id)
     {
         _logger.Information(LeadsControllerLogs.DeleteLeadById, id);
-        leadsService.DeleteLeadById(id);
+        leadsService.DeleteLeadByIdAsync(id);
 
         return NoContent();
     }
@@ -81,7 +81,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public ActionResult UpdateLeadPassword([FromRoute] Guid id, [FromBody] UpdateLeadPasswordRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadPassword, id);
-        leadsService.UpdateLeadPassword(id, request);
+        leadsService.UpdateLeadPasswordAsync(id, request);
 
         return NoContent();
     }
@@ -91,7 +91,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public ActionResult UpdateLeadStatus([FromRoute] Guid id, [FromBody] UpdateLeadStatusRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadStatus, id);
-        leadsService.UpdateLeadStatus(id, request);
+        leadsService.UpdateLeadStatusAsync(id, request);
 
         return NoContent();
     }
@@ -101,7 +101,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public ActionResult UpdateLeadBirthDate([FromRoute] Guid id, [FromBody] UpdateLeadBirthDateRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadBirthDate, id);
-        leadsService.UpdateLeadBirthDate(id, request);
+        leadsService.UpdateLeadBirthDateAsync(id, request);
 
         return NoContent();
     }

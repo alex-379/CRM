@@ -14,41 +14,41 @@ using Serilog;
 
 namespace CRM.Business.Services;
 
-public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository accountsRepository, ITransactionsManager transactionsManager,
-    IPasswordsService passwordsService, ITokensService tokensService, IMapper mapper, JwtToken jwt) : ILeadsService
+public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository accountsRepository, ITransactionsManager transactionsManager, 
+    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt) : ILeadsService
 {
     private readonly ILogger _logger = Log.ForContext<LeadsService>();
 
-    public Guid AddLead(RegisterLeadRequest request)
+    public async Task<Guid> AddLeadAsync(RegisterLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
-        var account = SetupDefaultRubAccount(SetupLead(lead));
-        using var transaction = transactionsManager.BeginTransaction();
+        var account = SetupDefaultRubAccount(await SetupLeadAsync(lead));
+        await using var transaction = await transactionsManager.BeginTransactionAsync();
         try
         {
-            AddLead(lead);
-            AddAccount(account);
-            transactionsManager.CommitTransaction(transaction);
+            var taskAddLead = AddToDatabaseLeadAsync(lead);
+            var taskAddAccount= AddToDatabaseAccountAsync(account);
+            await Task.WhenAll(taskAddLead, taskAddAccount);
+            await transactionsManager.CommitTransactionAsync(transaction);
         }
         catch (Exception ex)
         {
-            transaction.Rollback();
-            Log.Error(ex.Message);
+            await transactionsManager.RollbackTransactionAsync(transaction, ex);
         }
 
         return lead.Id;
     }
 
-    private LeadDto SetupLead(LeadDto lead)
+    private async Task<LeadDto> SetupLeadAsync(LeadDto lead)
     {
         var mailLower = lead.Mail.ToLower();
-        if (leadsRepository.GetLeadByMail(mailLower) is not null)
+        if (await leadsRepository.GetLeadByMailAsync(mailLower) is not null)
         {
             throw new ConflictException(LeadsServiceExceptions.ConflictException);
         }
         lead.Mail = mailLower;
         _logger.Information(LeadsServiceLogs.SetLowerRegister);
-        var (hash, salt) = passwordsService.HashPassword(lead.Password);
+        var (hash, salt) = PasswordsService.HashPassword(lead.Password, secret.SecretPassword);
         lead.Password = hash;
         lead.Salt = salt;
 
@@ -66,29 +66,29 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         return account;
     }
     
-    private void AddLead(LeadDto lead)
+    private async Task AddToDatabaseLeadAsync(LeadDto lead)
     {
         _logger.Information(LeadsServiceLogs.AddLead);
-        lead.Id = leadsRepository.AddLead(lead);
+        lead.Id = await leadsRepository.AddLeadAsync(lead);
         _logger.Information(LeadsServiceLogs.CompleteLead, lead.Id);
     }
     
-    private void AddAccount(AccountDto account)
+    private async Task  AddToDatabaseAccountAsync(AccountDto account)
     {
         _logger.Information(AccountsServiceLogs.AddDefaultAccount);
-        accountsRepository.AddAccount(account);
+        await accountsRepository.AddAccountAsync(account);
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
     }
 
-    public AuthenticatedResponse LoginLead(LoginLeadRequest request)
+    public async Task<AuthenticatedResponse> LoginLeadAsync(LoginLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
         _logger.Information(LeadsServiceLogs.CheckLeadByMail, lead.Mail);
-        var leadDb = leadsRepository.GetLeadByMail(lead.Mail.ToLower())
+        var leadDb = await leadsRepository.GetLeadByMailAsync(lead.Mail.ToLower())
             ?? throw new UnauthenticatedException();
         ConfirmPassword(lead,leadDb);
         var (accessToken, refreshToken) = SetTokens(leadDb);
-        leadsRepository.UpdateLead(leadDb);
+        await leadsRepository.UpdateLeadAsync(leadDb);
 
         return new AuthenticatedResponse
         {
@@ -100,7 +100,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     private void ConfirmPassword(LeadDto lead, LeadDto leadDb)
     {
         _logger.Information(LeadsServiceLogs.CheckLeadPassword);
-        var confirmPassword = passwordsService.VerifyPassword(lead.Password, leadDb.Password, leadDb.Salt);
+        var confirmPassword = PasswordsService.VerifyPassword(lead.Password, secret.SecretPassword, leadDb.Password, leadDb.Salt);
         if (!confirmPassword)
         {
             throw new UnauthenticatedException();
@@ -109,40 +109,39 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     
     private (string accessToken, string refreshToken) SetTokens(LeadDto leadDb)
     {
-        var accessToken = tokensService.GenerateAccessToken(leadDb);
-        var refreshToken = tokensService.GenerateRefreshToken();
+        var (accessToken, refreshToken) = TokensService.GenerateTokens(leadDb, secret.SecretPassword, jwt.ValidIssuer, jwt.ValidAudience, jwt.LifeTimeAccessToken);
         leadDb.RefreshToken = refreshToken;
         leadDb.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(jwt.LifeTimeRefreshToken);
 
         return (accessToken, refreshToken);
     }
 
-    public List<LeadResponse> GetLeads()
+    public async Task<List<LeadResponse>> GetLeadsAsync()
     {
         _logger.Information(LeadsServiceLogs.GetLeads);
-        var leads = mapper.Map<List<LeadResponse>>(leadsRepository.GetLeads());
+        var leads = mapper.Map<List<LeadResponse>>(await leadsRepository.GetLeadsAsync());
 
         return leads;
     }
 
-    public LeadFullResponse GetLeadById(Guid id)
+    public async Task<LeadFullResponse> GetLeadByIdAsync(Guid id)
     {
         _logger.Information(LeadsServiceLogs.GetLeadById, id);
-        var lead = leadsRepository.GetLeadById(id)
+        var lead = await leadsRepository.GetLeadByIdAsync(id)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, id));
         var leadResponse = mapper.Map<LeadFullResponse>(lead);
 
         return leadResponse;
     }
 
-    public void UpdateLead(Guid leadId, UpdateLeadDataRequest request)
+    public async Task UpdateLeadAsync(Guid leadId, UpdateLeadDataRequest request)
     {
         _logger.Information(LeadsServiceLogs.CheckLeadById, leadId);
-        var lead = leadsRepository.GetLeadById(leadId)
+        var lead = await leadsRepository.GetLeadByIdAsync(leadId)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
         SetLeadData(lead,request);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
-        leadsRepository.UpdateLead(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
     }
     
     private void SetLeadData(LeadDto lead, UpdateLeadDataRequest request)
@@ -153,84 +152,84 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         lead.Address = request.Address;
     }
 
-    public void UpdateLeadPassword(Guid leadId, UpdateLeadPasswordRequest request)
+    public async Task UpdateLeadPasswordAsync(Guid leadId, UpdateLeadPasswordRequest request)
     {
         _logger.Information(LeadsServiceLogs.CheckLeadById, leadId);
-        var lead = leadsRepository.GetLeadById(leadId)
+        var lead = await leadsRepository.GetLeadByIdAsync(leadId)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
         SetLeadPassword(lead,request);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
-        leadsRepository.UpdateLead(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
     }
     
     private void SetLeadPassword(LeadDto lead, UpdateLeadPasswordRequest request)
     {
         _logger.Information(LeadsServiceLogs.UpdateLeadPassword, lead.Id);
         lead.Password = request.Password;
-        var (hash, salt) = passwordsService.HashPassword(lead.Password);
+        var (hash, salt) = PasswordsService.HashPassword(lead.Password, secret.SecretPassword);
         lead.Password = hash;
         lead.Salt = salt;
     }
 
-    public void UpdateLeadStatus(Guid id, UpdateLeadStatusRequest request)
+    public async Task UpdateLeadStatusAsync(Guid id, UpdateLeadStatusRequest request)
     {
         _logger.Information(LeadsServiceLogs.CheckLeadById, id);
-        var lead = leadsRepository.GetLeadById(id)
+        var lead = await leadsRepository.GetLeadByIdAsync(id)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, id));
         _logger.Information(LeadsServiceLogs.UpdateLeadStatus, request.Status, id);
         lead.Status = request.Status;
         _logger.Information(LeadsServiceLogs.UpdateLeadById, id);
-        leadsRepository.UpdateLead(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
     }
 
-    public void UpdateLeadBirthDate(Guid leadId, UpdateLeadBirthDateRequest request)
+    public async Task UpdateLeadBirthDateAsync(Guid leadId, UpdateLeadBirthDateRequest request)
     {
         _logger.Information(LeadsServiceLogs.CheckLeadById, leadId);
-        var lead = leadsRepository.GetLeadById(leadId)
+        var lead = await leadsRepository.GetLeadByIdAsync(leadId)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
         _logger.Information(LeadsServiceLogs.UpdateLeadBirthDate, leadId);
         lead.BirthDate = request.BirthDate;
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
-        leadsRepository.UpdateLead(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
     }
 
-    public void DeleteLeadById(Guid id)
+    public async Task DeleteLeadByIdAsync(Guid id)
     {
         _logger.Information(LeadsServiceLogs.CheckLeadById, id);
-        var lead = leadsRepository.GetLeadById(id)
+        var lead = await leadsRepository.GetLeadByIdAsync(id)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, id));
         _logger.Information(LeadsServiceLogs.SetIsDeletedLeadById, id);
         lead.IsDeleted = true;
-        using var transaction = transactionsManager.BeginTransaction();
+        await using var transaction = await transactionsManager.BeginTransactionAsync();
         try
         {
-            BlockLead(lead);
+            var taskBlockLead = BlockLeadAsync(lead);
             foreach (var account in lead.Accounts)
             {
-                BlockAccount(account);
+                await BlockAccount(account);
             }
-            transactionsManager.CommitTransaction(transaction);
+            await taskBlockLead;
+            await transactionsManager.CommitTransactionAsync(transaction);
         }
         catch (Exception ex)
         {
-            transaction.Rollback();
-            Log.Error(ex.Message);
+            await transactionsManager.RollbackTransactionAsync(transaction, ex);
         }
     }
     
-    private void BlockLead(LeadDto lead)
+    private async Task BlockLeadAsync(LeadDto lead)
     {
         _logger.Information(LeadsServiceLogs.Revoke, lead.Id);
-        tokensService.Revoke(lead.Id);
+        await tokensService.RevokeAsync(lead.Id);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, lead.Id);
-        leadsRepository.UpdateLead(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
     }
     
-    private void BlockAccount(AccountDto account)
+    private async Task BlockAccount(AccountDto account)
     {
         _logger.Information(AccountsServiceLogs.BlockAccount, account.Id);
         account.Status = AccountStatus.Blocked;
         _logger.Information(AccountsServiceLogs.UpdateAccountById, account.Id);
-        accountsRepository.UpdateAccount(account);
+        await accountsRepository.UpdateAccountAsync(account);
     }
 }
