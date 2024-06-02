@@ -13,56 +13,57 @@ public class LeadsRepositoryTest
     private readonly Mock<CrmContext> _contextMock = new(_options);
 
     [Fact]
-    public void AddLead_LeadDtoSent_GuidReceived()
+    public async Task AddLeadAsync_LeadDtoSent_GuidReceived()
     {
         //arrange
-        const int expected = 3;
-        var leads = TestData.GetFakeLeadDtoList();
+        var leads = new List<LeadDto>();
         var lead = TestData.GetFakeLeadDto();
         var mock = leads.BuildMock().BuildMockDbSet();
-        _contextMock.Setup(x => x.Leads.Add(lead))
-            .Returns(mock.Object.Add(lead))
-            .Callback<LeadDto>(leads.Add);
+        _contextMock.Setup(x => x.Leads)
+            .Returns(mock.Object);
+        _contextMock.Setup(x => x.SaveChangesAsync(default))
+            .Callback<CancellationToken>(_ => leads.Add(lead));
         var sut = new LeadsRepository(_contextMock.Object);
 
         //act
-        var actual = sut.AddLead(lead);
+        var actual = await sut.AddLeadAsync(lead);
 
         //assert
-        Assert.Equal(expected, leads.Count);
-        mock.Verify(m => m.Add(lead), Times.Once());
-        _contextMock.Verify(m => m.SaveChanges(), Times.Once());
+        Assert.Matches(TestData.RegexGuid, actual.ToString());
+        Assert.Single(leads);
+        mock.Verify(m => m.AddAsync(lead,default), Times.Once());
+        _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
     }
 
     [Fact]
-    public void GetLeads_Called_LeadDtoListReceived()
+    public async Task GetLeadsAsync_Called_LeadDtoListReceived()
     {
         //arrange
-        const int expected = 2;
+        const int expected = TestData.LeadsCount;
         _contextMock.Setup(x => x.Leads)
             .ReturnsDbSet(TestData.GetFakeLeadDtoList());
         var sut = new LeadsRepository(_contextMock.Object);
 
         //act
-        var actual = sut.GetLeads();
+        var actual = await sut.GetLeadsAsync();
 
         //assert
         Assert.NotNull(actual);
-        Assert.Equal(expected, actual.Count());
+        Assert.Equal(expected, actual.Count);
     }
 
     [Fact]
-    public void GetLeadById_GuidSent_LeadDtoReceived()
+    public async Task GetLeadByIdAsync_GuidSent_LeadDtoReceived()
     {
         //arrange
-        var expected = new Guid("4e7918d2-fdcd-4316-97bb-565f8f4a0566");
+        var expected = new Guid(TestData.Guid);
         var mock = TestData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
         var sut = new LeadsRepository(_contextMock.Object);
 
         //act
-        var actual = sut.GetLeadById(expected);
+        var actual = await sut.GetLeadByIdAsync(expected);
 
         //assert
         Assert.NotNull(actual);
@@ -70,18 +71,18 @@ public class LeadsRepositoryTest
     }
 
     [Fact]
-    public void GetLeadByMail_MailSent_LeadDtoReceived()
+    public async Task GetLeadByMailAsync_MailSent_LeadDtoReceived()
     {
         //arrange
-        const string mail = "test02@test.test";
-        var expected = new Guid("78fa8b9b-91fa-4e94-9a35-33d356d92890");
+        const string mail = TestData.Mail;
+        var expected = new Guid(TestData.Guid);
         var mock = TestData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
         var sut = new LeadsRepository(_contextMock.Object);
 
         //act
-        var actual = sut.GetLeadByMail(mail);
+        var actual = await sut.GetLeadByMailAsync(mail);
 
         //assert
         Assert.NotNull(actual);
@@ -89,20 +90,20 @@ public class LeadsRepositoryTest
     }
 
     [Fact]
-    public void UpdateLead_LeadDtoSent_NoErrorsReceived()
+    public async Task UpdateLeadAsync_LeadDtoSent_NoErrorsReceived()
     {
         //arrange
-        var lead = TestData.GetFakeLeadDtoList()[0];
+        var lead = TestData.GetFakeLeadDto();
         var mock = Enumerable.Empty<LeadDto>().BuildMock().BuildMockDbSet();
-        _contextMock.Setup(x => x.Leads.Update(lead))
-            .Returns(mock.Object.Update(lead));
+        _contextMock.Setup(x => x.Leads)
+            .Returns(mock.Object);
         var sut = new LeadsRepository(_contextMock.Object);
 
         //act
-        sut.UpdateLead(lead);
+        await sut.UpdateLeadAsync(lead);
 
         //assert
         mock.Verify(m => m.Update(lead), Times.Once());
-        _contextMock.Verify(m => m.SaveChanges(), Times.Once());
+        _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
     }
 }
