@@ -26,9 +26,8 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         await using var transaction = await transactionsManager.BeginTransactionAsync();
         try
         {
-            var taskAddLead = AddToDatabaseLeadAsync(lead);
-            var taskAddAccount = AddToDatabaseAccountAsync(account);
-            await Task.WhenAll(taskAddLead, taskAddAccount);
+            await AddToDatabaseLeadAsync(lead);
+            await AddToDatabaseAccountAsync(account);
             await transactionsManager.CommitTransactionAsync(transaction);
         }
         catch (Exception ex)
@@ -203,9 +202,8 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         await using var transaction = await transactionsManager.BeginTransactionAsync();
         try
         {
-            var taskBlockLead = BlockLeadAsync(lead);
-            var taskBlockAccounts = accountsRepository.SetBlockedStatusForAccountsAsync(lead.Accounts);
-            await Task.WhenAll(taskBlockLead, taskBlockAccounts);
+            await BlockLeadAsync(lead);
+            await accountsRepository.SetBlockedStatusForAccountsAsync(lead.Accounts);
             await transactionsManager.CommitTransactionAsync(transaction);
         }
         catch (Exception ex)

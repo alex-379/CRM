@@ -6,9 +6,9 @@ using System.Security.Claims;
 namespace CRM.API.Configuration.Filters;
 
 [AttributeUsage(AttributeTargets.Method)]
-public class AuthorizationFilterByLeadId : Attribute, IAuthorizationFilter
+public class AuthorizationFilterByLeadId : Attribute, IAsyncAuthorizationFilter
 {
-    public void OnAuthorization(AuthorizationFilterContext context)
+    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         var currentUserId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var requestId = context.HttpContext.Request.RouteValues[RequestRouteKeys.Id] as string;
@@ -17,5 +17,7 @@ public class AuthorizationFilterByLeadId : Attribute, IAuthorizationFilter
         {
             throw new UnauthorizedException();
         }
+
+        return Task.CompletedTask;
     }
 }
