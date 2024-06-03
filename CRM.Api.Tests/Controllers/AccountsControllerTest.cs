@@ -12,7 +12,7 @@ public class AccountsControllerTest
     private readonly Mock<IAccountsService> _accountsServiceMock = new();
 
     [Fact]
-    public void UpdateAccountStatus_GuidAndUpdateAccountStatusRequestSent_NoContentResultReceived()
+    public async Task UpdateAccountStatusAsync_GuidAndUpdateAccountStatusRequestSent_NoContentResultReceived()
     {
         //arrange
         var id = new Guid();
@@ -21,7 +21,7 @@ public class AccountsControllerTest
         var sut = new AccountsController(_accountsServiceMock.Object);
 
         //act
-        var actual = sut.UpdateAccountStatus(id, updateAccountStatusRequest);
+        var actual = await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);
 
         //assert
         actual.Should().BeOfType<NoContentResult>();

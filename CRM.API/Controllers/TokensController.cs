@@ -1,4 +1,5 @@
-﻿using CRM.API.Controllers.Logs;
+﻿using CRM.API.Controllers.Constants;
+using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Tokens.Requests;
 using CRM.Business.Models.Tokens.Responses;
@@ -18,20 +19,20 @@ public class TokensController(ITokensService tokensService) : Controller
 
     [HttpPost]
     [Route(Routes.Refresh)]
-    public ActionResult<AuthenticatedResponse> Refresh([FromBody] RefreshTokenRequest request)
+    public async Task<ActionResult<AuthenticatedResponse>> RefreshAsync([FromBody] RefreshTokenRequest request)
     {
         _logger.Information(TokensControllerLogs.Refresh);
-        var authenticatedResponse = tokensService.RefreshAsync(request);
+        var authenticatedResponse = await tokensService.RefreshAsync(request);
 
         return Ok(authenticatedResponse);
     }
     
     [HttpPost]
     [Route(Routes.Revoke)]
-    public ActionResult Revoke([FromBody] Guid id)
+    public async Task<ActionResult> RevokeAsync([FromBody] Guid id)
     {
         _logger.Information(TokensControllerLogs.Revoke);
-        tokensService.RevokeAsync(id);
+        await tokensService.RevokeAsync(id);
 
         return NoContent();
     }

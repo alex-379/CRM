@@ -1,4 +1,4 @@
-namespace CRM.API.Controllers;
+namespace CRM.API.Controllers.Constants;
 
 public static class Exceptions
 {
