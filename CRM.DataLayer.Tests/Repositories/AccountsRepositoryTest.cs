@@ -1,5 +1,7 @@
 ﻿using CRM.Core.Dtos;
+using CRM.Core.Enums;
 using CRM.DataLayer.Repositories;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
@@ -32,6 +34,22 @@ public class AccountsRepositoryTest
         Assert.Single(accounts);
         mock.Verify(m => m.AddAsync(account,default), Times.Once());
         _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
+    }
+    
+    [Fact]
+    public async Task AddAccountAsync_NullSent_NullReferenceExceptionErrorReceived()
+    {
+        //arrange
+        var mock = Enumerable.Empty<AccountDto>().BuildMock().BuildMockDbSet();
+        _contextMock.Setup(x => x.Accounts)
+            .Returns(mock.Object);
+        var sut = new AccountsRepository(_contextMock.Object);
+
+        //act
+        var act = async () => await sut.AddAccountAsync(null);
+
+        //assert
+        await act.Should().ThrowAsync<NullReferenceException>();
     }
     
     [Fact]
@@ -68,5 +86,21 @@ public class AccountsRepositoryTest
         //assert
         mock.Verify(m => m.Update(account), Times.Once());
         _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
+    }
+    
+    [Fact]
+    public async Task UpdateAccountAsync_NullSent_NullReferenceExceptionErrorReceived()
+    {
+        //arrange
+        var mock = Enumerable.Empty<AccountDto>().BuildMock().BuildMockDbSet();
+        _contextMock.Setup(x => x.Accounts)
+            .Returns(mock.Object);
+        var sut = new AccountsRepository(_contextMock.Object);
+
+        //act
+        var act = async () => await sut.UpdateAccountAsync(null);
+
+        //assert
+        await act.Should().ThrowAsync<NullReferenceException>();
     }
 }

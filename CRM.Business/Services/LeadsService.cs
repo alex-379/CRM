@@ -27,7 +27,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         try
         {
             var taskAddLead = AddToDatabaseLeadAsync(lead);
-            var taskAddAccount= AddToDatabaseAccountAsync(account);
+            var taskAddAccount = AddToDatabaseAccountAsync(account);
             await Task.WhenAll(taskAddLead, taskAddAccount);
             await transactionsManager.CommitTransactionAsync(transaction);
         }
@@ -73,7 +73,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         _logger.Information(LeadsServiceLogs.CompleteLead, lead.Id);
     }
     
-    private async Task  AddToDatabaseAccountAsync(AccountDto account)
+    private async Task AddToDatabaseAccountAsync(AccountDto account)
     {
         _logger.Information(AccountsServiceLogs.AddDefaultAccount);
         await accountsRepository.AddAccountAsync(account);
@@ -204,11 +204,8 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         try
         {
             var taskBlockLead = BlockLeadAsync(lead);
-            foreach (var account in lead.Accounts)
-            {
-                await BlockAccount(account);
-            }
-            await taskBlockLead;
+            var taskBlockAccounts = accountsRepository.SetBlockedStatusForAccountsAsync(lead.Accounts);
+            await Task.WhenAll(taskBlockLead, taskBlockAccounts);
             await transactionsManager.CommitTransactionAsync(transaction);
         }
         catch (Exception ex)
@@ -223,13 +220,5 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         await tokensService.RevokeAsync(lead.Id);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, lead.Id);
         await leadsRepository.UpdateLeadAsync(lead);
-    }
-    
-    private async Task BlockAccount(AccountDto account)
-    {
-        _logger.Information(AccountsServiceLogs.BlockAccount, account.Id);
-        account.Status = AccountStatus.Blocked;
-        _logger.Information(AccountsServiceLogs.UpdateAccountById, account.Id);
-        await accountsRepository.UpdateAccountAsync(account);
     }
 }

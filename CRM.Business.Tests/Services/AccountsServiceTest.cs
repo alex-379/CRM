@@ -1,5 +1,4 @@
-﻿/*
-using AutoMapper;
+﻿using AutoMapper;
 using CRM.Business.Models.Accounts;
 using CRM.Business.Services;
 using CRM.Business.Services.Constants.Exceptions;
@@ -30,81 +29,80 @@ public class AccountsServiceTest
     }
 
     [Fact]
-    public void AddAccount_GuidLeadAndRegistrationAccountRequestSent_GuidReceived()
+    public async Task AddAccountAsync_GuidLeadAndRegistrationAccountRequestSent_GuidReceived()
     {
         //arrange
         var leadId = Guid.NewGuid();
         var registrationAccountRequest = TestsData.GetFakeRegistrationAccountRequest();
-        _leadsRepositoryMock.Setup(x => x.GetLeadById(leadId)).Returns(new LeadDto());
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(leadId)).ReturnsAsync(new LeadDto());
         var expectedGuid = Guid.NewGuid();
-        _accountsRepositoryMock.Setup(x => x.AddAccount(It.IsAny<AccountDto>())).Returns(expectedGuid);
+        _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
         var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper);
 
         //act
-        var actual = sut.AddAccount(leadId, registrationAccountRequest);
+        var actual = await sut.AddAccountAsync(leadId, registrationAccountRequest);
 
         //assert
         Assert.Equal(expectedGuid, actual);
-        _leadsRepositoryMock.Verify(m => m.GetLeadById(leadId), Times.Once);
-        _accountsRepositoryMock.Verify(m => m.AddAccount(It.IsAny<AccountDto>()), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(leadId), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Once);
     }
 
 
     [Fact]
-    public void AddAccountNoLead_EmptyGuidAndRegistrationAccountRequestSent_LeadNotFoundErrorReceived()
+    public async Task AddAccountAsyncNoLead_EmptyGuidAndRegistrationAccountRequestSent_LeadNotFoundErrorReceived()
     {
         //arrange
         var leadId = Guid.Empty;
         var registrationAccountRequest = TestsData.GetFakeRegistrationAccountRequest();
-        _leadsRepositoryMock.Setup(x => x.GetLeadById(leadId)).Returns((LeadDto)null);
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(leadId)).ReturnsAsync((LeadDto)null);
         var expectedGuid = Guid.NewGuid();
-        _accountsRepositoryMock.Setup(x => x.AddAccount(It.IsAny<AccountDto>())).Returns(expectedGuid);
+        _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
         var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper);
 
         //act
-        Action act = () => sut.AddAccount(leadId, registrationAccountRequest);
+        var act = async () => await sut.AddAccountAsync(leadId, registrationAccountRequest);
 
         //assert
-        act.Should().Throw<NotFoundException>()
+        await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
-        _leadsRepositoryMock.Verify(m => m.GetLeadById(leadId), Times.Once);
-        _accountsRepositoryMock.Verify(m => m.AddAccount(It.IsAny<AccountDto>()), Times.Never);
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(leadId), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Never);
     }
 
     [Fact]
-    public void UpdateAccountStatus_GuidAndUpdateAccountStatusRequestSent_NoErrorsReceived()
+    public async Task UpdateAccountStatusAsync_GuidAndUpdateAccountStatusRequestSent_NoErrorsReceived()
     {
         //arrange
         var id = Guid.NewGuid();
         var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
-        _accountsRepositoryMock.Setup(x => x.GetAccountById(id)).Returns(new AccountDto());
+        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync(new AccountDto());
         var sut = new AccountsService(_accountsRepositoryMock.Object, null, null);
 
         //act
-        sut.UpdateAccountStatus(id, updateAccountStatusRequest);
+        await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);
 
         //assert
-        _accountsRepositoryMock.Verify(m => m.GetAccountById(id), Times.Once);
-        _accountsRepositoryMock.Verify(m => m.UpdateAccount(It.IsAny<AccountDto>()), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.GetAccountByIdAsync(id), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.UpdateAccountAsync(It.IsAny<AccountDto>()), Times.Once);
     }
 
     [Fact]
-    public void UpdateAccountStatus_EmptyGuidAndUpdateAccountStatusRequestSent_AccountNotFoundErrorReceived()
+    public async Task UpdateAccountStatusAsync_EmptyGuidAndUpdateAccountStatusRequestSent_AccountNotFoundErrorReceived()
     {
         //arrange
         var id = Guid.Empty;
         var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
-        _accountsRepositoryMock.Setup(x => x.GetAccountById(id)).Returns((AccountDto)null);
+        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync((AccountDto)null);
         var sut = new AccountsService(_accountsRepositoryMock.Object, null, null);
 
         //act
-        var act = () => sut.UpdateAccountStatus(id, updateAccountStatusRequest);
+        var act = async () => await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);
 
         //assert
-        act.Should().Throw<NotFoundException>()
+        await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage(string.Format(AccountsServiceExceptions.NotFoundException, id));
-        _accountsRepositoryMock.Verify(m => m.GetAccountById(id), Times.Once);
-        _accountsRepositoryMock.Verify(m => m.UpdateAccount(It.IsAny<AccountDto>()), Times.Never);
+        _accountsRepositoryMock.Verify(m => m.GetAccountByIdAsync(id), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.UpdateAccountAsync(It.IsAny<AccountDto>()), Times.Never);
     }
 }
-*/

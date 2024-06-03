@@ -1,5 +1,6 @@
 ﻿using CRM.Core.Dtos;
 using CRM.DataLayer.Repositories;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
@@ -33,6 +34,22 @@ public class LeadsRepositoryTest
         Assert.Single(leads);
         mock.Verify(m => m.AddAsync(lead,default), Times.Once());
         _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
+    }
+    
+    [Fact]
+    public async Task AddLeadAsync_NullSent_NullReferenceExceptionErrorReceived()
+    {
+        //arrange
+        var mock = Enumerable.Empty<LeadDto>().BuildMock().BuildMockDbSet();
+        _contextMock.Setup(x => x.Leads)
+            .Returns(mock.Object);
+        var sut = new LeadsRepository(_contextMock.Object);
+
+        //act
+        var act = async () => await sut.AddLeadAsync(null);
+
+        //assert
+        await act.Should().ThrowAsync<NullReferenceException>();
     }
 
     [Fact]
@@ -105,5 +122,21 @@ public class LeadsRepositoryTest
         //assert
         mock.Verify(m => m.Update(lead), Times.Once());
         _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
+    }
+    
+    [Fact]
+    public async Task UpdateLeadAsync_NullSent_NullReferenceExceptionErrorReceived()
+    {
+        //arrange
+        var mock = Enumerable.Empty<LeadDto>().BuildMock().BuildMockDbSet();
+        _contextMock.Setup(x => x.Leads)
+            .Returns(mock.Object);
+        var sut = new LeadsRepository(_contextMock.Object);
+
+        //act
+        var act = async () => await sut.UpdateLeadAsync(null);
+
+        //assert
+        await act.Should().ThrowAsync<NullReferenceException>();
     }
 }

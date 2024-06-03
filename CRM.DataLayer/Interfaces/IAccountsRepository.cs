@@ -7,4 +7,5 @@ public interface IAccountsRepository
     Task<Guid> AddAccountAsync(AccountDto account);
     Task<AccountDto> GetAccountByIdAsync(Guid id);
     Task UpdateAccountAsync(AccountDto account);
+    Task SetBlockedStatusForAccountsAsync(List<AccountDto> accounts);
 }

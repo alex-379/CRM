@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using CRM.Business.Configuration;
-using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts;
 using CRM.Business.Models.Leads;
 using CRM.Business.Services;
@@ -60,278 +59,275 @@ public class LeadsServiceTest
         _transactionsManagerMock.Verify(m => m.CommitTransactionAsync(It.IsAny<IDbContextTransaction>()), Times.Once);
         _transactionsManagerMock.Verify(m => m.RollbackTransactionAsync(It.IsAny<IDbContextTransaction>(), It.IsAny<Exception>()), Times.Never);
     }
-}
-/*
-[Fact]
-public void AddLead_RegistrationLeadRequestSent_ConflictErrorReceived()
-{
-    //arrange
-    var registrationLeadRequestWithDuplicateMail = TestsData.GetFakeRegistrationLeadRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadByMail(registrationLeadRequestWithDuplicateMail.Mail)).Returns(new LeadDto());
-    _leadsRepositoryMock.Setup(x => x.AddLead(It.IsAny<LeadDto>())).Returns(Guid.NewGuid());
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, _mapper, null);
-
-    //act
-    var act = () => sut.AddLead(registrationLeadRequestWithDuplicateMail);
-
-    //assert
-    act.Should().Throw<ConflictException>()
+    
+    [Fact]
+    public async Task AddLeadAsync_RegistrationLeadRequestSent_ConflictErrorReceived()
+    {
+        //arrange
+        var registrationLeadRequestWithDuplicateMail = TestsData.GetFakeRegistrationLeadRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByMailAsync(registrationLeadRequestWithDuplicateMail.Mail)).ReturnsAsync(new LeadDto());
+        _leadsRepositoryMock.Setup(x => x.AddLeadAsync(It.IsAny<LeadDto>())).ReturnsAsync(Guid.NewGuid());
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null);
+        
+        //act
+        var act = async () => await sut.AddLeadAsync(registrationLeadRequestWithDuplicateMail);
+        
+        //assert
+        await act.Should().ThrowAsync<ConflictException>()
         .WithMessage(LeadsServiceExceptions.ConflictException);
-    _leadsRepositoryMock.Verify(m => m.AddLead(It.IsAny<LeadDto>()), Times.Never);
+        _leadsRepositoryMock.Verify(m => m.AddLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+        
+    }
+
+    [Fact]
+    public async Task LoginLeadAsync_LoginLeadRequestIncorrectMailSent_LeadUnauthenticatedErrorReceived()
+    {
+        //arrange
+        var loginLeadRequestIncorrectMail = TestsData.GetFakeLoginLeadRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByMailAsync(loginLeadRequestIncorrectMail.Mail)).ReturnsAsync((LeadDto)null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null);
+
+        //act
+        var act = async () => await sut.LoginLeadAsync(loginLeadRequestIncorrectMail);
+
+        //assert
+        await act.Should().ThrowAsync<UnauthenticatedException>();
+        _leadsRepositoryMock.Verify(m => m.GetLeadByMailAsync(loginLeadRequestIncorrectMail.Mail), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task LoginLeadAsync_LoginLeadRequestIncorrectPasswordSent_LeadUnauthenticatedErrorReceived()
+    {
+        //arrange
+        var loginLeadRequestIncorrectPassword = TestsData.GetFakeLoginLeadRequest();
+        var lead = TestsData.GetFakeLeadDto();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByMailAsync(loginLeadRequestIncorrectPassword.Mail)).ReturnsAsync(lead);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, _secret, null);
+
+        //act
+        var act = async () => await sut.LoginLeadAsync(loginLeadRequestIncorrectPassword);
+
+        //assert
+        await act.Should().ThrowAsync<UnauthenticatedException>();
+        _leadsRepositoryMock.Verify(m => m.GetLeadByMailAsync(loginLeadRequestIncorrectPassword.Mail), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetLeadsAsync_Called_ListLeadResponseReceived()
+    {
+        //arrange
+        var expected = TestsData.GetFakeListLeadResponse();
+        var expectedLeads = TestsData.GetFakeListLeadDto();
+        _leadsRepositoryMock.Setup(x => x.GetLeadsAsync()).ReturnsAsync(expectedLeads);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null);
+
+        //act
+        var actual = await sut.GetLeadsAsync();
+
+        //assert
+        actual.Should().BeEquivalentTo(expected);
+        _leadsRepositoryMock.Verify(m => m.GetLeadsAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetLeadByIdAsync_GuidSent_LeadResponseReceived()
+    {
+        //arrange
+        var expected = TestsData.GetFakeLeadFullResponse();
+        var expectedLead = TestsData.GetFakeLeadDto();
+        var id = Guid.NewGuid();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(expectedLead);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null);
+
+        //act
+        var actual = await sut.GetLeadByIdAsync(id);
+
+        //assert
+        actual.Should().BeEquivalentTo(expected);
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+    }
+
+    [Fact]
+    public void GetLeadByIdAsyncNoLead_EmptyGuidSent_LeadNotFoundErrorReceived()
+    {
+        //arrange
+        var id = Guid.Empty;
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        var act = async () => await sut.GetLeadByIdAsync(id);
+
+        //assert
+        act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateLeadAsync_GuidAndUpdateLeadDataRequestSent_NoErrorsReceived()
+    {
+        //arrange
+        var id = Guid.NewGuid();
+        var updateLeadDataRequest = TestsData.GetFakeUpdateLeadDataRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadDto());
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        await sut.UpdateLeadAsync(id, updateLeadDataRequest);
+
+        //assert
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateLeadAsyncNoLead_EmptyGuidAndUpdateLeadDataRequestSent_LeadNotFoundErrorReceived()
+    {
+        //arrange
+        var id = Guid.NewGuid();
+        var updateLeadDataRequest = TestsData.GetFakeUpdateLeadDataRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        var act = async () => await sut.UpdateLeadAsync(id, updateLeadDataRequest);
+
+        //assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateLeadPasswordAsync_GuidAndUpdateLeadPasswordRequestSent_NoErrorsReceived()
+    {
+        //arrange
+        var id = Guid.NewGuid();
+        var updateLeadPasswordRequest = TestsData.GetFakeUpdateLeadPasswordRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadDto());
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, _secret, null);
+
+        //act
+        await sut.UpdateLeadPasswordAsync(id, updateLeadPasswordRequest);
+
+        //assert
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateLeadPasswordAsyncNoLead_EmptyGuidAndUpdateLeadPasswordRequestSent_LeadNotFoundErrorReceived()
+    {
+        //arrange
+        var id = Guid.Empty;
+        var updateLeadPasswordRequest = TestsData.GetFakeUpdateLeadPasswordRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        var act = async () => await sut.UpdateLeadPasswordAsync(id, updateLeadPasswordRequest);
+
+        //assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateLeadStatusAsync_GuidAndUpdateLeadStatusRequestSent_NoErrorsReceived()
+    {
+        //arrange
+        var id = Guid.NewGuid();
+        var updateLeadStatusRequest = TestsData.GetFakeUpdateLeadStatusRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadDto());
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        await sut.UpdateLeadStatusAsync(id, updateLeadStatusRequest);
+
+        //assert
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Once);
+    }
+
+    [Fact]
+    public void UpdateLeadStatusAsyncNoLead_EmptyGuidAndUpdateLeadStatusRequestSent_LeadNotFoundErrorReceived()
+    {
+        //arrange
+        var id = Guid.Empty;
+        var updateLeadStatusRequest = TestsData.GetFakeUpdateLeadStatusRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        var act = () => sut.UpdateLeadStatusAsync(id, updateLeadStatusRequest);
+
+        //assert
+        act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateLeadBirthDateAsync_GuidAndUpdateLeadBirthDateRequestSent_NoErrorsReceived()
+    {
+        //arrange
+        var id = Guid.NewGuid();
+        var updateLeadBirthDateRequest = TestsData.GetFakeUpdateLeadBirthDateRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadDto());
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        await sut.UpdateLeadBirthDateAsync(id, updateLeadBirthDateRequest);
+
+        //assert
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateLeadBirthDateAsyncNoLead_EmptyGuidAndUpdateLeadBirthDateRequestSent_LeadNotFoundErrorReceived()
+    {
+        //arrange
+        var id = Guid.Empty;
+        var updateLeadBirthDateRequest = TestsData.GetFakeUpdateLeadBirthDateRequest();
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        var act = async () => await sut.UpdateLeadBirthDateAsync(id, updateLeadBirthDateRequest);
+
+        //assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteLeadByIdAsync_EmptyGuidSent_LeadNotFoundErrorReceived()
+    {
+        //arrange
+        var id = Guid.Empty;
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
+
+        //act
+        var act = async () => await sut.DeleteLeadByIdAsync(id);
+
+        //assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(id), Times.Once);
+        _transactionsManagerMock.Verify(m => m.BeginTransactionAsync(), Times.Never);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+        _accountsRepositoryMock.Verify(m => m.UpdateAccountAsync(It.IsAny<AccountDto>()), Times.Never);
+        _transactionsManagerMock.Verify(m => m.CommitTransactionAsync(It.IsAny<IDbContextTransaction>()), Times.Never);
+    } 
 }
-
-[Fact]
-public void LoginLead_LoginLeadRequestIncorrectMailSent_LeadUnauthenticatedErrorReceived()
-{
-    //arrange
-    var loginLeadRequestIncorrectMail = TestsData.GetFakeLoginLeadRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadByMail(loginLeadRequestIncorrectMail.Mail)).Returns((LeadDto)null);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, _mapper, null);
-
-    //act
-    var act = () => sut.LoginLead(loginLeadRequestIncorrectMail);
-
-    //assert
-    act.Should().Throw<UnauthenticatedException>();
-    _leadsRepositoryMock.Verify(m => m.GetLeadByMail(loginLeadRequestIncorrectMail.Mail), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Never);
-}
-
-[Fact]
-public void LoginLead_LoginLeadRequestIncorrectPasswordSent_LeadUnauthenticatedErrorReceived()
-{
-    //arrange
-    var loginLeadRequestIncorrectPassword = TestsData.GetFakeLoginLeadRequest();
-    var lead = TestsData.GetFakeLeadDto();
-    _leadsRepositoryMock.Setup(x => x.GetLeadByMail(loginLeadRequestIncorrectPassword.Mail)).Returns(lead);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, _passwordsService, null, _mapper, null);
-
-    //act
-    var act = () => sut.LoginLead(loginLeadRequestIncorrectPassword);
-
-    //assert
-    act.Should().Throw<UnauthenticatedException>();
-    _leadsRepositoryMock.Verify(m => m.GetLeadByMail(loginLeadRequestIncorrectPassword.Mail), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Never);
-}
-
-[Fact]
-public void GetLeads_Called_ListLeadResponseReceived()
-{
-    //arrange
-    var expected = TestsData.GetFakeListLeadResponse();
-    var expectedLeads = TestsData.GetFakeListLeadDto();
-    _leadsRepositoryMock.Setup(x => x.GetLeads()).Returns(expectedLeads);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, _mapper, null);
-
-    //act
-    var actual = sut.GetLeads();
-
-    //assert
-    actual.Should().BeEquivalentTo(expected);
-    _leadsRepositoryMock.Verify(m => m.GetLeads(), Times.Once);
-}
-
-[Fact]
-public void GetLeadById_GuidSent_LeadResponseReceived()
-{
-    //arrange
-    var expected = TestsData.GetFakeLeadFullResponse();
-    var expectedLead = TestsData.GetFakeLeadDto();
-    var id = Guid.NewGuid();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns(expectedLead);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, _mapper, null);
-
-    //act
-    var actual = sut.GetLeadById(id);
-
-    //assert
-    actual.Should().BeEquivalentTo(expected);
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-}
-
-[Fact]
-public void GetLeadByIdNoLead_EmptyGuidSent_LeadNotFoundErrorReceived()
-{
-    //arrange
-    var id = Guid.Empty;
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns((LeadDto)null);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    var act = () => sut.GetLeadById(id);
-
-    //assert
-    act.Should().Throw<NotFoundException>()
-        .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-}
-
-[Fact]
-public void UpdateLead_GuidAndUpdateLeadDataRequestSent_NoErrorsReceived()
-{
-    //arrange
-    var id = Guid.NewGuid();
-    var updateLeadDataRequest = TestsData.GetFakeUpdateLeadDataRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns(new LeadDto());
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    sut.UpdateLead(id, updateLeadDataRequest);
-
-    //assert
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Once);
-}
-
-[Fact]
-public void UpdateLeadNoLead_EmptyGuidAndUpdateLeadDataRequestSent_LeadNotFoundErrorReceived()
-{
-    //arrange
-    var id = Guid.NewGuid();
-    var updateLeadDataRequest = TestsData.GetFakeUpdateLeadDataRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns((LeadDto)null);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    var act = () => sut.UpdateLead(id, updateLeadDataRequest);
-
-    //assert
-    act.Should().Throw<NotFoundException>()
-        .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Never);
-}
-
-[Fact]
-public void UpdateLeadPassword_GuidAndUpdateLeadPasswordRequestSent_NoErrorsReceived()
-{
-    //arrange
-    var id = Guid.NewGuid();
-    var updateLeadPasswordRequest = TestsData.GetFakeUpdateLeadPasswordRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns(new LeadDto());
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, _passwordsService, null, null, null);
-
-    //act
-    sut.UpdateLeadPassword(id, updateLeadPasswordRequest);
-
-    //assert
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Once);
-}
-
-[Fact]
-public void UpdateLeadPasswordNoLead_EmptyGuidAndUpdateLeadPasswordRequestSent_LeadNotFoundErrorReceived()
-{
-    //arrange
-    var id = Guid.Empty;
-    var updateLeadPasswordRequest = TestsData.GetFakeUpdateLeadPasswordRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns((LeadDto)null);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    var act = () => sut.UpdateLeadPassword(id, updateLeadPasswordRequest);
-
-    //assert
-    act.Should().Throw<NotFoundException>()
-        .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Never);
-}
-
-[Fact]
-public void UpdateLeadStatus_GuidAndUpdateLeadStatusRequestSent_NoErrorsReceived()
-{
-    //arrange
-    var id = Guid.NewGuid();
-    var updateLeadStatusRequest = TestsData.GetFakeUpdateLeadStatusRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns(new LeadDto());
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    sut.UpdateLeadStatus(id, updateLeadStatusRequest);
-
-    //assert
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Once);
-}
-
-[Fact]
-public void UpdateLeadStatusNoLead_EmptyGuidAndUpdateLeadStatusRequestSent_LeadNotFoundErrorReceived()
-{
-    //arrange
-    var id = Guid.Empty;
-    var updateLeadStatusRequest = TestsData.GetFakeUpdateLeadStatusRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns((LeadDto)null);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    var act = () => sut.UpdateLeadStatus(id, updateLeadStatusRequest);
-
-    //assert
-    act.Should().Throw<NotFoundException>()
-        .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Never);
-}
-
-[Fact]
-public void UpdateLeadBirthDate_GuidAndUpdateLeadBirthDateRequestSent_NoErrorsReceived()
-{
-    //arrange
-    var id = Guid.NewGuid();
-    var updateLeadBirthDateRequest = TestsData.GetFakeUpdateLeadBirthDateRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns(new LeadDto());
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    sut.UpdateLeadBirthDate(id, updateLeadBirthDateRequest);
-
-    //assert
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Once);
-}
-
-[Fact]
-public void UpdateLeadBirthDateNoLead_EmptyGuidAndUpdateLeadBirthDateRequestSent_LeadNotFoundErrorReceived()
-{
-    //arrange
-    var id = Guid.Empty;
-    var updateLeadBirthDateRequest = TestsData.GetFakeUpdateLeadBirthDateRequest();
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns((LeadDto)null);
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    var act = () => sut.UpdateLeadBirthDate(id, updateLeadBirthDateRequest);
-
-    //assert
-    act.Should().Throw<NotFoundException>()
-        .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Never);
-}
-
-[Fact]
-public void DeleteLeadById_EmptyGuidSent_LeadNotFoundErrorReceived()
-{
-    //arrange
-    var id = Guid.Empty;
-    _leadsRepositoryMock.Setup(x => x.GetLeadById(id)).Returns((LeadDto)null);
-    _transactionsManagerMock.Setup(x => x.BeginTransaction()).Returns(It.IsAny<IDbContextTransaction>());
-    _transactionsManagerMock.Setup(x => x.CommitTransaction(It.IsAny<IDbContextTransaction>()));
-    var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null);
-
-    //act
-    var act = () => sut.DeleteLeadById(id);
-
-    //assert
-    act.Should().Throw<NotFoundException>()
-        .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, id));
-    _leadsRepositoryMock.Verify(m => m.GetLeadById(id), Times.Once);
-    _transactionsManagerMock.Verify(m => m.BeginTransaction(), Times.Never);
-    _leadsRepositoryMock.Verify(m => m.UpdateLead(It.IsAny<LeadDto>()), Times.Never);
-    _accountsRepositoryMock.Verify(m => m.UpdateAccount(It.IsAny<AccountDto>()), Times.Never);
-    _transactionsManagerMock.Verify(m => m.CommitTransaction(It.IsAny<IDbContextTransaction>()), Times.Never);
-}
-}
-*/
