@@ -108,7 +108,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     
     private (string accessToken, string refreshToken) SetTokens(LeadDto leadDb)
     {
-        var (accessToken, refreshToken) = TokensService.GenerateTokens(leadDb, secret.SecretPassword, jwt.ValidIssuer, jwt.ValidAudience, jwt.LifeTimeAccessToken);
+        var (accessToken, refreshToken) = tokensService.GenerateTokens(leadDb);
         leadDb.RefreshToken = refreshToken;
         leadDb.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(jwt.LifeTimeRefreshToken);
 

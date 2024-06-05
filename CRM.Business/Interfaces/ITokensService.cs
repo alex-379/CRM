@@ -9,4 +9,5 @@ public interface ITokensService
 {
     Task<AuthenticatedResponse> RefreshAsync(RefreshTokenRequest request);
     Task RevokeAsync(Guid userId);
+    (string accessToken, string refreshToken) GenerateTokens(LeadDto lead);
 }

@@ -17,24 +17,24 @@ namespace CRM.Business.Services;
 
 public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository leadsRepository) : ITokensService
 {
-    public static (string accessToken, string refreshToken) GenerateTokens(LeadDto lead, string secret, string jwtIssuer, string jwtAudience, double jwtLifeTime)
+    public (string accessToken, string refreshToken) GenerateTokens(LeadDto lead)
     {
-        var accessToken = GenerateAccessToken(lead, secret, jwtIssuer, jwtAudience, jwtLifeTime);
+        var accessToken = GenerateAccessToken(lead);
         var refreshToken = GenerateRefreshToken();
         
         return (accessToken, refreshToken);
     }
 
-    private static string GenerateAccessToken(LeadDto lead, string secret, string jwtIssuer, string jwtAudience, double jwtLifeTime)
+    private string GenerateAccessToken(LeadDto lead)
     {
         var claims = SetClaims(lead);
-        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret.SecretToken));
         var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha512);
         var tokenOptions = new JwtSecurityToken(
-            issuer: jwtIssuer,
-            audience: jwtAudience,
+            issuer: jwt.ValidIssuer,
+            audience: jwt.ValidAudience,
             claims: claims,
-            expires: DateTime.Now.AddDays(jwtLifeTime),
+            expires: DateTime.Now.AddDays(jwt.LifeTimeAccessToken),
             signingCredentials: signinCredentials
         );
         
@@ -104,7 +104,7 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
     
     private (string newAccessToken, string newRefreshToken) UpdateLeadTokens(LeadDto lead)
     {
-        var (newAccessToken, newRefreshToken) = GenerateTokens(lead, secret.SecretPassword, jwt.ValidIssuer, jwt.ValidAudience, jwt.LifeTimeAccessToken);
+        var (newAccessToken, newRefreshToken) = GenerateTokens(lead);
         lead.RefreshToken = newRefreshToken;
         leadsRepository.UpdateLeadAsync(lead);
         
