@@ -12,5 +12,6 @@ public class CrmContext(DbContextOptions<CrmContext> options) : DbContext(option
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsForEntitiesInContext();
+        modelBuilder.ConfigureEnums();
     }
 }

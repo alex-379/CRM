@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using CRM.Core.Enums;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,6 +12,11 @@ namespace CRM.DataLayer.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:Enum:account_status", "unknown,active,blocked")
+                .Annotation("Npgsql:Enum:currency", "unknown,rub,usd,eur,jpy,cny,rsd,bgn,ars")
+                .Annotation("Npgsql:Enum:lead_status", "unknown,vip,regular,blocked,administrator");
+
             migrationBuilder.CreateTable(
                 name: "leads",
                 columns: table => new
@@ -20,7 +27,7 @@ namespace CRM.DataLayer.Migrations
                     phone = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
                     address = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     birth_date = table.Column<DateOnly>(type: "date", nullable: false),
-                    status = table.Column<int>(type: "integer", nullable: false, defaultValue: 2),
+                    status = table.Column<LeadStatus>(type: "lead_status", nullable: false, defaultValue: LeadStatus.Regular),
                     password = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     salt = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     refresh_token = table.Column<string>(type: "text", nullable: true),
@@ -37,8 +44,8 @@ namespace CRM.DataLayer.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    currency = table.Column<int>(type: "integer", nullable: false),
-                    status = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
+                    currency = table.Column<Currency>(type: "currency", nullable: false),
+                    status = table.Column<AccountStatus>(type: "account_status", nullable: false, defaultValue: AccountStatus.Active),
                     lead_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>

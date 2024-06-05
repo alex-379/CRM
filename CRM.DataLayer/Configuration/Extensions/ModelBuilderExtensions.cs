@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using CRM.Core.Enums;
 
 namespace CRM.DataLayer.Configuration.Extensions;
 
@@ -16,5 +17,12 @@ public static class ModelBuilderExtensions
                     && i.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)
                     && types.Contains(i.GenericTypeArguments[0]))
                 );
+    }
+    
+    public static void ConfigureEnums(this ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasPostgresEnum<AccountStatus>();
+        modelBuilder.HasPostgresEnum<Currency>();
+        modelBuilder.HasPostgresEnum<LeadStatus>();
     }
 }
