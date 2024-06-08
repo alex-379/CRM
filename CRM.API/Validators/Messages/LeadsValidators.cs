@@ -16,6 +16,6 @@ public static class LeadsValidators
     public const string Status = "Incorrect lead status";
     public const string Password = "You need to enter a password";
     public const string PasswordLength = "The length of the password should not be longer {0} characters";
-    public const string PasswordRule = "The password must be at least {0} characters and contain lowercase, uppercase Latin letters, digit, special character";
+    public const string PasswordRule = "The password must be at least {0} characters and contain only Latin letters at least lowercase (a-z), uppercase (A-Z), digit, special character (@,$,!,%,*,?,&)";
     public const string PhoneRule = "The phone must be at format '(999)9999999'";
 }

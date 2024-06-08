@@ -5,4 +5,5 @@ public static class AccountsRepositoryLogs
     public const string AddAccount = "The account with ID {id} has been added to the database";
     public const string GetAccountById = "Search account with ID {id} at the database";
     public const string UpdateAccount = "The account with ID {id} has been updated";
+    public const string SetBlockedStatusForAccounts = "The accounts are blocked";
 }

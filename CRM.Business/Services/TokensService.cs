@@ -17,7 +17,15 @@ namespace CRM.Business.Services;
 
 public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository leadsRepository) : ITokensService
 {
-    public string GenerateAccessToken(LeadDto lead)
+    public (string accessToken, string refreshToken) GenerateTokens(LeadDto lead)
+    {
+        var accessToken = GenerateAccessToken(lead);
+        var refreshToken = GenerateRefreshToken();
+        
+        return (accessToken, refreshToken);
+    }
+
+    private string GenerateAccessToken(LeadDto lead)
     {
         var claims = SetClaims(lead);
         var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret.SecretToken));
@@ -44,7 +52,7 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         ];
     }
 
-    public string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[RandomNumbers.RandomNumber];
         using var rng = RandomNumberGenerator.Create();
@@ -74,12 +82,12 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         return principal;
     }
 
-    public AuthenticatedResponse Refresh(RefreshTokenRequest request)
+    public async Task<AuthenticatedResponse> RefreshAsync(RefreshTokenRequest request)
     {
         var principal = GetPrincipalFromExpiredToken(request.AccessToken);
         var leadId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
                      ?? throw new UnauthenticatedException(TokensServiceExceptions.UnauthenticatedException);
-        var lead = leadsRepository.GetLeadById(new Guid(leadId));
+        var lead = await leadsRepository.GetLeadByIdAsync(new Guid(leadId));
         if (lead is null || lead.RefreshToken != request.RefreshToken || lead.RefreshTokenExpiryTime <= DateTime.Now)
         {
             throw new UnauthenticatedException(TokensServiceExceptions.UnauthenticatedException);
@@ -96,19 +104,18 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
     
     private (string newAccessToken, string newRefreshToken) UpdateLeadTokens(LeadDto lead)
     {
-        var newAccessToken = GenerateAccessToken(lead);
-        var newRefreshToken = GenerateRefreshToken();
+        var (newAccessToken, newRefreshToken) = GenerateTokens(lead);
         lead.RefreshToken = newRefreshToken;
-        leadsRepository.UpdateLead(lead);
+        leadsRepository.UpdateLeadAsync(lead);
         
         return (newAccessToken, newRefreshToken);
     }
 
-    public void Revoke(Guid userId)
+    public async Task RevokeAsync(Guid userId)
     {
-        var lead = leadsRepository.GetLeadById(userId) ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, userId));
+        var lead = await leadsRepository.GetLeadByIdAsync(userId) ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, userId));
         lead.RefreshToken = null;
         lead.RefreshTokenExpiryTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified);
-        leadsRepository.UpdateLead(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
     }
 }

@@ -4,6 +4,7 @@ namespace CRM.DataLayer.Interfaces;
 
 public interface ITransactionsManager
 {
-    IDbContextTransaction BeginTransaction();
-    void CommitTransaction(IDbContextTransaction transactionContext);
+    Task<IDbContextTransaction> BeginTransactionAsync();
+    Task CommitTransactionAsync(IDbContextTransaction transactionContext);
+    Task RollbackTransactionAsync(IDbContextTransaction transactionContext, Exception ex);
 }

@@ -1,5 +1,7 @@
 ﻿using CRM.Core.Dtos;
+using CRM.Core.Enums;
 using CRM.DataLayer.Repositories;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
@@ -12,41 +14,93 @@ public class AccountsRepositoryTest
     private readonly Mock<CrmContext> _contextMock = new(_options);
 
     [Fact]
-    public void AddAccount_AccountDtoSent_GuidReceived()
+    public async Task AddAccountAsync_AccountDtoSent_GuidReceived()
     {
         //arrange
         var accounts = new List<AccountDto>();
         var account = TestData.GetFakeAccountDto();
         var mock = accounts.BuildMock().BuildMockDbSet();
-        _contextMock.Setup(x => x.Accounts.Add(account))
-            .Returns(mock.Object.Add(account))
-            .Callback<AccountDto>(accounts.Add);
+        _contextMock.Setup(x => x.Accounts)
+            .Returns(mock.Object);
+        _contextMock.Setup(x => x.SaveChangesAsync(default))
+            .Callback<CancellationToken>(_ => accounts.Add(account));
         var sut = new AccountsRepository(_contextMock.Object);
 
         //act
-        var actual = sut.AddAccount(account);
+        var actual = await sut.AddAccountAsync(account);
 
         //assert
+        Assert.Matches(TestData.RegexGuid, actual.ToString());
         Assert.Single(accounts);
-        mock.Verify(m => m.Add(account), Times.Once());
-        _contextMock.Verify(m => m.SaveChanges(), Times.Once());
+        mock.Verify(m => m.AddAsync(account,default), Times.Once());
+        _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
     }
-
+    
     [Fact]
-    public void UpdateAccount_AccountDtoSent_NoErrorsReceived()
+    public async Task AddAccountAsync_NullSent_NullReferenceExceptionErrorReceived()
+    {
+        //arrange
+        var mock = Enumerable.Empty<AccountDto>().BuildMock().BuildMockDbSet();
+        _contextMock.Setup(x => x.Accounts)
+            .Returns(mock.Object);
+        var sut = new AccountsRepository(_contextMock.Object);
+
+        //act
+        var act = async () => await sut.AddAccountAsync(null);
+
+        //assert
+        await act.Should().ThrowAsync<NullReferenceException>();
+    }
+    
+    [Fact]
+    public async Task GetAccountByIdAsync_GuidSent_AccountDtoReceived()
+    {
+        //arrange
+        var expected = new Guid(TestData.Guid);
+        var mock = TestData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
+        _contextMock.Setup(x => x.Leads)
+            .Returns(mock.Object);
+        var sut = new LeadsRepository(_contextMock.Object);
+
+        //act
+        var actual = await sut.GetLeadByIdAsync(expected);
+
+        //assert
+        Assert.NotNull(actual);
+        Assert.Equal(expected, actual.Id);
+    }
+    
+    [Fact]
+    public async Task UpdateAccountAsync_AccountDtoSent_NoErrorsReceived()
     {
         //arrange
         var account = TestData.GetFakeAccountDto();
         var mock = Enumerable.Empty<AccountDto>().BuildMock().BuildMockDbSet();
-        _contextMock.Setup(x => x.Accounts.Update(account))
-            .Returns(mock.Object.Update(account));
+        _contextMock.Setup(x => x.Accounts)
+            .Returns(mock.Object);
         var sut = new AccountsRepository(_contextMock.Object);
 
         //act
-        sut.UpdateAccount(account);
+        await sut.UpdateAccountAsync(account);
 
         //assert
         mock.Verify(m => m.Update(account), Times.Once());
-        _contextMock.Verify(m => m.SaveChanges(), Times.Once());
+        _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
+    }
+    
+    [Fact]
+    public async Task UpdateAccountAsync_NullSent_NullReferenceExceptionErrorReceived()
+    {
+        //arrange
+        var mock = Enumerable.Empty<AccountDto>().BuildMock().BuildMockDbSet();
+        _contextMock.Setup(x => x.Accounts)
+            .Returns(mock.Object);
+        var sut = new AccountsRepository(_contextMock.Object);
+
+        //act
+        var act = async () => await sut.UpdateAccountAsync(null);
+
+        //assert
+        await act.Should().ThrowAsync<NullReferenceException>();
     }
 }
