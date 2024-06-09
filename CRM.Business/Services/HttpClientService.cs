@@ -10,7 +10,7 @@ public class HttpClientService(BaseHttpClient httpClient) : IHttpClientService
 
     public async Task<List<T>> GetAsync<T>()
     {
-        using var response = await httpClient.Client.GetAsync("https://194.87.210.5:11000/api/accounts/3fa85f64-5717-4562-b3fc-2c963f66afa1/balance", HttpCompletionOption.ResponseHeadersRead);
+        using var response = await httpClient.Client.GetAsync("https://194.87.210.5:11000/api/accounts/3fa85f64-5717-4562-b3fc-2c963f66afa2/balance", HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
         var stream = await response.Content.ReadAsStreamAsync();
         var result = await JsonSerializer.DeserializeAsync<List<T>>(stream, _options);

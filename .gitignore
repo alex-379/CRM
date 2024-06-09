@@ -356,3 +356,6 @@ CRM.API/CRM.crt
 
 #launchsettings
 CRM.API/Properties/launchSettings.json
+
+#deploy
+CRM.API/.config
