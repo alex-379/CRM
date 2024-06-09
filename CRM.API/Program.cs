@@ -50,7 +50,7 @@ public static class Program
             Log.Fatal(ex.Message);
         }
         finally
-        {
+        { 
             Log.CloseAndFlush();
         }
     }

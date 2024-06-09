@@ -9,17 +9,23 @@ public class TransactionsManager(CrmContext context) : BaseRepository(context), 
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsManager>();
 
-    public IDbContextTransaction BeginTransaction()
+    public async Task<IDbContextTransaction> BeginTransactionAsync()
     {
-        var transactionContext = _ctx.Database.BeginTransaction();
+        var transactionContext = await _ctx.Database.BeginTransactionAsync();
         _logger.Information(TransactionsManagerLogs.BeginTransaction, _ctx);
 
         return transactionContext;
     }
 
-    public void CommitTransaction(IDbContextTransaction transactionContext)
+    public async Task CommitTransactionAsync(IDbContextTransaction transactionContext)
     {
-        transactionContext.Commit();
+        await transactionContext.CommitAsync();
         _logger.Information(TransactionsManagerLogs.CommitTransaction, _ctx);
+    }
+    
+    public async Task RollbackTransactionAsync(IDbContextTransaction transactionContext, Exception ex)
+    {
+        await transactionContext.RollbackAsync();
+        _logger.Error(ex, ex.Message);
     }
 }

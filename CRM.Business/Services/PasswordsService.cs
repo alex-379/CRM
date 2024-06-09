@@ -6,13 +6,13 @@ using System.Text;
 
 namespace CRM.Business.Services;
 
-public class PasswordsService(SecretSettings secret) : IPasswordsService
+public static class PasswordsService
 {
-    private readonly HashAlgorithmName _hashAlgorithm = HashAlgorithmName.SHA512;
+    private static readonly HashAlgorithmName _hashAlgorithm = HashAlgorithmName.SHA512;
 
-    public (string hash, string salt) HashPassword(string password)
+    public static (string hash, string salt) HashPassword(string password, string secret)
     {
-        password = $"{password}{secret.SecretPassword}";
+        password = $"{password}{secret}";
         var salt = RandomNumberGenerator.GetBytes(PasswordSettings.KeySize);
         var hash = Rfc2898DeriveBytes.Pbkdf2(
             Encoding.UTF8.GetBytes(password),
@@ -24,9 +24,9 @@ public class PasswordsService(SecretSettings secret) : IPasswordsService
         return (Convert.ToHexString(hash), Convert.ToHexString(salt));
     }
 
-    public bool VerifyPassword(string password, string hash, string salt)
+    public static bool VerifyPassword(string password, string secret, string hash, string salt)
     {
-        password = $"{password}{secret.SecretPassword}";
+        password = $"{password}{secret}";
         var hashToCompare = Rfc2898DeriveBytes.Pbkdf2(password, Convert.FromHexString(salt), PasswordSettings.Iterations, _hashAlgorithm, PasswordSettings.KeySize);
 
         return CryptographicOperations.FixedTimeEquals(hashToCompare, Convert.FromHexString(hash));

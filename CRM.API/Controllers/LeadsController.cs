@@ -1,5 +1,6 @@
 ﻿using CRM.API.Configuration.Filters;
-using CRM.API.Controllers.Logs;
+using CRM.API.Controllers.Constants;
+using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
@@ -20,88 +21,90 @@ public class LeadsController(ILeadsService leadsService) : Controller
 
     [AllowAnonymous]
     [HttpPost]
-    public ActionResult<Guid> RegisterLead([FromBody] RegisterLeadRequest request)
+    public async Task<ActionResult<Guid>> RegisterLeadAsync([FromBody] RegisterLeadRequest request)
     {
         _logger.Information(LeadsControllerLogs.RegistrationLead, request.Mail);
-        var id = leadsService.AddLead(request);
+        var id = await leadsService.AddLeadAsync(request);
 
         return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
     }
 
     [AllowAnonymous]
     [HttpPost(Routes.Login)]
-    public ActionResult<AuthenticatedResponse> Login([FromBody] LoginLeadRequest request)
+    public async Task<ActionResult<AuthenticatedResponse>> LoginAsync([FromBody] LoginLeadRequest request)
     {
         _logger.Information(LeadsControllerLogs.Login);
-        var authenticatedResponse = leadsService.LoginLead(request);
+        var authenticatedResponse = await leadsService.LoginLeadAsync(request);
 
         return Ok(authenticatedResponse);
     }
 
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
     [HttpGet]
-    public ActionResult<List<LeadResponse>> GetLeads()
+    public async Task<ActionResult<List<LeadResponse>>> GetLeadsAsync()
     {
         _logger.Information(LeadsControllerLogs.GetLeads);
+        var leads = await leadsService.GetLeadsAsync();
 
-        return Ok(leadsService.GetLeads());
+        return Ok(leads);
     }
 
     [AuthorizationFilterByLeadId]
     [HttpGet(Routes.Id)]
-    public ActionResult<LeadFullResponse> GetLeadById(Guid id)
+    public async Task<ActionResult<LeadFullResponse>> GetLeadByIdAsync(Guid id)
     {
         _logger.Information(LeadsControllerLogs.GetLeadById, id);
+        var lead = await leadsService.GetLeadByIdAsync(id);
 
-        return Ok(leadsService.GetLeadById(id));
+        return Ok(lead);
     }
 
     [AuthorizationFilterByLeadId]
     [HttpPut(Routes.Id)]
-    public ActionResult UpdateLeadData([FromRoute] Guid id, [FromBody] UpdateLeadDataRequest request)
+    public async Task<ActionResult> UpdateLeadDataAsync([FromRoute] Guid id, [FromBody] UpdateLeadDataRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadData, id);
-        leadsService.UpdateLead(id, request);
+        await leadsService.UpdateLeadAsync(id, request);
 
         return NoContent();
     }
 
     [AuthorizationFilterByLeadId]
     [HttpDelete(Routes.Id)]
-    public ActionResult DeleteLeadById(Guid id)
+    public async Task<ActionResult> DeleteLeadByIdAsync(Guid id)
     {
         _logger.Information(LeadsControllerLogs.DeleteLeadById, id);
-        leadsService.DeleteLeadById(id);
+        await leadsService.DeleteLeadByIdAsync(id);
 
         return NoContent();
     }
 
     [AuthorizationFilterByLeadId]
     [HttpPatch(Routes.LeadPassword)]
-    public ActionResult UpdateLeadPassword([FromRoute] Guid id, [FromBody] UpdateLeadPasswordRequest request)
+    public async Task<ActionResult> UpdateLeadPasswordAsync([FromRoute] Guid id, [FromBody] UpdateLeadPasswordRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadPassword, id);
-        leadsService.UpdateLeadPassword(id, request);
+        await leadsService.UpdateLeadPasswordAsync(id, request);
 
         return NoContent();
     }
 
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
     [HttpPatch(Routes.Status)]
-    public ActionResult UpdateLeadStatus([FromRoute] Guid id, [FromBody] UpdateLeadStatusRequest request)
+    public async Task<ActionResult> UpdateLeadStatusAsync([FromRoute] Guid id, [FromBody] UpdateLeadStatusRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadStatus, id);
-        leadsService.UpdateLeadStatus(id, request);
+        await leadsService.UpdateLeadStatusAsync(id, request);
 
         return NoContent();
     }
 
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
     [HttpPatch(Routes.LeadBirthDate)]
-    public ActionResult UpdateLeadBirthDate([FromRoute] Guid id, [FromBody] UpdateLeadBirthDateRequest request)
+    public async Task<ActionResult> UpdateLeadBirthDateAsync([FromRoute] Guid id, [FromBody] UpdateLeadBirthDateRequest request)
     {
         _logger.Information(LeadsControllerLogs.UpdateLeadBirthDate, id);
-        leadsService.UpdateLeadBirthDate(id, request);
+        await leadsService.UpdateLeadBirthDateAsync(id, request);
 
         return NoContent();
     }

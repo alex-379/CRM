@@ -10,46 +10,49 @@ public class LeadsRepository(CrmContext context) : BaseRepository(context), ILea
 {
     private readonly ILogger _logger = Log.ForContext<LeadsRepository>();
 
-    public Guid AddLead(LeadDto lead)
+    public async Task<Guid> AddLeadAsync(LeadDto lead)
     {
-        _ctx.Leads.Add(lead);
-        _ctx.SaveChanges();
+        await _ctx.Leads.AddAsync(lead);
+        await _ctx.SaveChangesAsync();
         _logger.Information(LeadsRepositoryLogs.AddLead, lead.Id);
 
         return lead.Id;
     }
 
-    public List<LeadDto> GetLeads()
+    public async Task<List<LeadDto>> GetLeadsAsync()
     {
         _logger.Information(LeadsRepositoryLogs.GetLeads);
+        var leads = await _ctx.Leads
+            .Where(d => !d.IsDeleted).ToListAsync();
 
-        return [.. _ctx.Leads
-            .Where(d => !d.IsDeleted)];
+        return leads;
     }
 
-    public LeadDto GetLeadById(Guid id)
+    public async Task<LeadDto> GetLeadByIdAsync(Guid id)
     {
         _logger.Information(LeadsRepositoryLogs.GetLeadById, id);
-
-        return _ctx.Leads
+        var lead = await _ctx.Leads
             .Include(d => d.Accounts)
-            .FirstOrDefault(d => d.Id == id
-                && !d.IsDeleted);
+            .FirstOrDefaultAsync(d => d.Id == id
+                                 && !d.IsDeleted);
+
+        return lead;
     }
 
-    public LeadDto GetLeadByMail(string mail)
+    public async Task<LeadDto> GetLeadByMailAsync(string mail)
     {
         _logger.Information(LeadsRepositoryLogs.GetLeadByMail, mail);
+        var lead = await _ctx.Leads
+            .FirstOrDefaultAsync(d => d.Mail == mail
+                                 && !d.IsDeleted);
 
-        return _ctx.Leads
-            .FirstOrDefault(d => d.Mail == mail
-                && !d.IsDeleted);
+        return lead;
     }
 
-    public void UpdateLead(LeadDto lead)
+    public async Task UpdateLeadAsync(LeadDto lead)
     {
         _ctx.Leads.Update(lead);
-        _ctx.SaveChanges();
+        await _ctx.SaveChangesAsync();
         _logger.Information(LeadsRepositoryLogs.UpdateLead, lead.Id);
     }
 }

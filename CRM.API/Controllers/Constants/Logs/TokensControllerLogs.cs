@@ -1,4 +1,4 @@
-﻿namespace CRM.API.Controllers.Logs;
+﻿namespace CRM.API.Controllers.Constants.Logs;
 
 public static class TokensControllerLogs
 {

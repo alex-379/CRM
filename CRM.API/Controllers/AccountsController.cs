@@ -1,11 +1,12 @@
 ﻿using System.Security.Claims;
+using CRM.API.Controllers.Constants;
+using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
 using CRM.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using CRM.API.Controllers.Logs;
 using CRM.Core.Exceptions;
 
 namespace CRM.API.Controllers;
@@ -18,12 +19,12 @@ public class AccountsController(IAccountsService accountsService) : Controller
     private readonly Serilog.ILogger _logger = Log.ForContext<LeadsController>();
 
     [HttpPost]
-    public ActionResult<Guid> RegisterAccount([FromBody] RegisterAccountRequest request)
+    public async Task<ActionResult<Guid>> RegisterAccountAsync([FromBody] RegisterAccountRequest request)
     {
         _logger.Information(AccountsControllerLogs.GetAuthorizedAccount);
         var currentLeadId = GetCurrentLeadFromClaims(HttpContext.User); 
         _logger.Information(AccountsControllerLogs.RegistrationAccount, request.Currency, currentLeadId);
-        var id = accountsService.AddAccount(currentLeadId, request);
+        var id = await accountsService.AddAccountAsync(currentLeadId, request);
 
         return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
     }
@@ -38,10 +39,10 @@ public class AccountsController(IAccountsService accountsService) : Controller
 
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
     [HttpPatch(Routes.Status)]
-    public ActionResult UpdateAccountStatus([FromRoute] Guid id, [FromBody] UpdateAccountStatusRequest request)
+    public async Task<ActionResult> UpdateAccountStatusAsync([FromRoute] Guid id, [FromBody] UpdateAccountStatusRequest request)
     {
         _logger.Information(AccountsControllerLogs.UpdateAccountStatus, id);
-        accountsService.UpdateAccountStatus(id, request);
+        await accountsService.UpdateAccountStatusAsync(id, request);
 
         return NoContent();
     }

@@ -4,9 +4,9 @@ namespace CRM.DataLayer.Interfaces;
 
 public interface ILeadsRepository
 {
-    Guid AddLead(LeadDto lead);
-    LeadDto GetLeadById(Guid id);
-    LeadDto GetLeadByMail(string mail);
-    List<LeadDto> GetLeads();
-    void UpdateLead(LeadDto lead);
+    Task<Guid> AddLeadAsync(LeadDto lead);
+    Task<LeadDto> GetLeadByIdAsync(Guid id);
+    Task<LeadDto> GetLeadByMailAsync(string mail);
+    Task<List<LeadDto>> GetLeadsAsync();
+    Task UpdateLeadAsync(LeadDto lead);
 }

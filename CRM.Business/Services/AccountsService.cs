@@ -14,26 +14,26 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
 {
     private readonly ILogger _logger = Log.ForContext<AccountsService>();
 
-    public Guid AddAccount(Guid leadId, RegisterAccountRequest request)
+    public async Task<Guid> AddAccountAsync(Guid leadId, RegisterAccountRequest request)
     {
         var account = mapper.Map<AccountDto>(request);
-        account.Lead = leadsRepository.GetLeadById(leadId)
+        account.Lead = await leadsRepository.GetLeadByIdAsync(leadId)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
         _logger.Information(AccountsServiceLogs.AddAccount, request.Currency);
-        account.Id = accountsRepository.AddAccount(account);
+        account.Id = await accountsRepository.AddAccountAsync(account);
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
 
         return account.Id;
     }
 
-    public void UpdateAccountStatus(Guid id, UpdateAccountStatusRequest request)
+    public async Task UpdateAccountStatusAsync(Guid id, UpdateAccountStatusRequest request)
     {
         _logger.Information(AccountsServiceLogs.CheckAccountById, id);
-        var account = accountsRepository.GetAccountById(id)
+        var account = await accountsRepository.GetAccountByIdAsync(id)
             ?? throw new NotFoundException(string.Format(AccountsServiceExceptions.NotFoundException, id));
         _logger.Information(AccountsServiceLogs.UpdateAccountStatus, request.Status, id);
         account.Status = request.Status;
         _logger.Information(AccountsServiceLogs.UpdateAccountById, id);
-        accountsRepository.UpdateAccount(account);
+        await accountsRepository.UpdateAccountAsync(account);
     }
 }
