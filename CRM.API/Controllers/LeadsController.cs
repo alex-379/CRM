@@ -23,7 +23,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpPost]
     public async Task<ActionResult<Guid>> RegisterLeadAsync([FromBody] RegisterLeadRequest request)
     {
-        _logger.Information(LeadsControllerLogs.RegistrationLead, request.Mail);
+        _logger.Information(LeadsControllerLogs.RegisterLead, request.Mail);
         var id = await leadsService.AddLeadAsync(request);
 
         return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);

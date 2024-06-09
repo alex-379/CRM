@@ -10,7 +10,7 @@ using Serilog;
 
 namespace CRM.API.Controllers;
 
-//[Authorize(Roles = nameof(LeadStatus.Administrator))]
+[Authorize(Roles = nameof(LeadStatus.Administrator))]
 [ApiController]
 [Route(Routes.TokensController)]
 public class TokensController(ITokensService tokensService) : Controller

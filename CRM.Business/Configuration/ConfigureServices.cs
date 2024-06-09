@@ -1,4 +1,5 @@
-﻿using CRM.Business.Interfaces;
+﻿using CRM.Business.Configuration.HttpClients;
+using CRM.Business.Interfaces;
 using CRM.Business.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,7 +12,6 @@ public static class ConfigureServices
         services.AddScoped<ILeadsService, LeadsService>();
         services.AddScoped<IAccountsService, AccountsService>();
         services.AddScoped<ITokensService, TokensService>();
-        services.AddHttpClient();
-        services.AddScoped<IHttpClientTransactionStoreService, HttpClientTransactionStoreService>();
+        services.AddHttpClientService();
     }
 }

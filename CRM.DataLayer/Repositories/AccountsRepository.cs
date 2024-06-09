@@ -9,7 +9,7 @@ namespace CRM.DataLayer.Repositories
 {
     public class AccountsRepository(CrmContext context) : BaseRepository(context), IAccountsRepository
     {
-        private readonly ILogger _logger = Log.ForContext<LeadsRepository>();
+        private readonly ILogger _logger = Log.ForContext<AccountsRepository>();
 
         public async Task<Guid> AddAccountAsync(AccountDto account)
         {

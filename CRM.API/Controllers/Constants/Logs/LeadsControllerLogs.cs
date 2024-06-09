@@ -2,7 +2,7 @@
 
 public static class LeadsControllerLogs
 {
-    public const string RegistrationLead = "Creating lead with mail: {request.Mail}";
+    public const string RegisterLead = "Creating lead with mail: {request.Mail}";
     public const string Login = "Lead authentication";
     public const string GetLeads = "Getting all leads at the database";
     public const string GetLeadById = "Getting the lead by ID: {id}";
