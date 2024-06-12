@@ -1,3 +1,5 @@
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
@@ -7,6 +9,39 @@ namespace CRM.Business.Services;
 public class HttpClientService(BaseHttpClient httpClient) : IHttpClientService
 {
     private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
+    
+    public async Task<Guid> AddAsync<T>(T request)
+    {
+        var ms = new MemoryStream();
+        await JsonSerializer.SerializeAsync(ms, request);
+        ms.Seek(0, SeekOrigin.Begin);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "companies");
+        requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        
+        
+        
+        
+        
+        
+        /*var requestContent = new StringContent(company, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("companies", requestContent);
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        var createdCompany = JsonSerializer.Deserialize<CompanyDto>(content, _options);
+        
+        
+        
+        
+        
+        
+        using var response = await httpClient.Client.GetAsync("https://194.87.210.5:11000/api/accounts/3fa85f64-5717-4562-b3fc-2c963f66afa2/balance", HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
+        var stream = await response.Content.ReadAsStreamAsync();
+        var result = await JsonSerializer.DeserializeAsync<List<T>>(stream, _options);
+
+        return result;*/
+        return Guid.Empty;
+    }
 
     public async Task<List<T>> GetAsync<T>()
     {

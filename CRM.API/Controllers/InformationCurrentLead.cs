@@ -4,7 +4,7 @@ using CRM.Core.Exceptions;
 
 namespace CRM.API.Controllers;
 
-public static class InformationFromClaims
+public static class InformationCurrentLead
 {
     public static Guid GetCurrentLeadFromClaims(ClaimsPrincipal claimsPrincipal)
     {

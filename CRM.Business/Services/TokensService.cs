@@ -43,14 +43,11 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         return tokenString;
     }
     
-    private static List<Claim> SetClaims(LeadDto lead)
-    {
-        return
-        [
-            new Claim(ClaimTypes.NameIdentifier, lead.Id.ToString()),
-            new Claim(ClaimTypes.Role, lead.Status.ToString())
-        ];
-    }
+    private static List<Claim> SetClaims(LeadDto lead) =>
+    [
+        new Claim(ClaimTypes.NameIdentifier, lead.Id.ToString()),
+        new Claim(ClaimTypes.Role, lead.Status.ToString())
+    ];
 
     private static string GenerateRefreshToken()
     {
