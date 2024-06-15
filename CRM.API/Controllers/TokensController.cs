@@ -21,7 +21,7 @@ public class TokensController(ITokensService tokensService) : Controller
     [Route(Routes.Refresh)]
     public async Task<ActionResult<AuthenticatedResponse>> RefreshAsync([FromBody] RefreshTokenRequest request)
     {
-        _logger.Information(TokensControllerLogs.Refresh);
+        _logger.Information(TokensLogs.Refresh);
         var authenticatedResponse = await tokensService.RefreshAsync(request);
 
         return Ok(authenticatedResponse);
@@ -31,7 +31,7 @@ public class TokensController(ITokensService tokensService) : Controller
     [Route(Routes.Revoke)]
     public async Task<ActionResult> RevokeAsync([FromBody] Guid id)
     {
-        _logger.Information(TokensControllerLogs.Revoke);
+        _logger.Information(TokensLogs.Revoke);
         await tokensService.RevokeAsync(id);
 
         return NoContent();

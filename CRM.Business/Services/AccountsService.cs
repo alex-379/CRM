@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
+using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Services.Constants.Exceptions;
 using CRM.Business.Services.Constants.Logs;
 using CRM.Core.Dtos;
@@ -24,6 +25,16 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
 
         return account.Id;
+    }
+    
+    public async Task<AccountForTransactionResponse> GetAccountByIdAsync(Guid id)
+    {
+        _logger.Information(AccountsServiceLogs.GetAccountById, id);
+        var account = await accountsRepository.GetAccountByIdAsync(id)
+                   ?? throw new NotFoundException(string.Format(AccountsServiceExceptions.NotFoundException, id));
+        var accountResponse = mapper.Map<AccountForTransactionResponse>(account);
+
+        return accountResponse;
     }
 
     public async Task UpdateAccountStatusAsync(Guid id, UpdateAccountStatusRequest request)

@@ -1,6 +1,6 @@
 ﻿namespace CRM.API.Controllers.Constants.Logs;
 
-public static class LeadsControllerLogs
+public static class LeadsLogs
 {
     public const string RegisterLead = "Creating lead with mail: {request.Mail}";
     public const string Login = "Lead authentication";
@@ -11,4 +11,5 @@ public static class LeadsControllerLogs
     public const string UpdateLeadPassword = "Updating lead password with ID: {id}";
     public const string UpdateLeadStatus = "Updating lead status with ID: {id}";
     public const string UpdateLeadBirthDate = "Updating lead birth date with ID: {id}";
+    public const string GetAuthorizedLead = "Getting the current authorized lead";
 }

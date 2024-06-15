@@ -12,5 +12,6 @@ public class AccountsMappingProfile : Profile
         CreateMap<RegisterAccountRequest, AccountDto>();
 
         CreateMap<AccountDto, AccountResponse>();
+        CreateMap<AccountDto, AccountForTransactionResponse>();
     }
 }

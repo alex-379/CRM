@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
@@ -10,7 +9,7 @@ public class HttpClientService(BaseHttpClient httpClient) : IHttpClientService
 {
     private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
     
-    public async Task<Guid> AddAsync<T>(T request)
+    public async Task<T> AddAsync<T>(T request, string url)
     {
         var ms = new MemoryStream();
         await JsonSerializer.SerializeAsync(ms, request);

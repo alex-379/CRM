@@ -23,7 +23,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpPost]
     public async Task<ActionResult<Guid>> RegisterLeadAsync([FromBody] RegisterLeadRequest request)
     {
-        _logger.Information(LeadsControllerLogs.RegisterLead, request.Mail);
+        _logger.Information(LeadsLogs.RegisterLead, request.Mail);
         var id = await leadsService.AddLeadAsync(request);
 
         return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
@@ -33,7 +33,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpPost(Routes.Login)]
     public async Task<ActionResult<AuthenticatedResponse>> LoginAsync([FromBody] LoginLeadRequest request)
     {
-        _logger.Information(LeadsControllerLogs.Login);
+        _logger.Information(LeadsLogs.Login);
         var authenticatedResponse = await leadsService.LoginLeadAsync(request);
 
         return Ok(authenticatedResponse);
@@ -43,7 +43,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpGet]
     public async Task<ActionResult<List<LeadResponse>>> GetLeadsAsync()
     {
-        _logger.Information(LeadsControllerLogs.GetLeads);
+        _logger.Information(LeadsLogs.GetLeads);
         var leads = await leadsService.GetLeadsAsync();
 
         return Ok(leads);
@@ -53,7 +53,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpGet(Routes.Id)]
     public async Task<ActionResult<LeadFullResponse>> GetLeadByIdAsync(Guid id)
     {
-        _logger.Information(LeadsControllerLogs.GetLeadById, id);
+        _logger.Information(LeadsLogs.GetLeadById, id);
         var lead = await leadsService.GetLeadByIdAsync(id);
 
         return Ok(lead);
@@ -63,7 +63,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpPut(Routes.Id)]
     public async Task<ActionResult> UpdateLeadDataAsync([FromRoute] Guid id, [FromBody] UpdateLeadDataRequest request)
     {
-        _logger.Information(LeadsControllerLogs.UpdateLeadData, id);
+        _logger.Information(LeadsLogs.UpdateLeadData, id);
         await leadsService.UpdateLeadAsync(id, request);
 
         return NoContent();
@@ -73,7 +73,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpDelete(Routes.Id)]
     public async Task<ActionResult> DeleteLeadByIdAsync(Guid id)
     {
-        _logger.Information(LeadsControllerLogs.DeleteLeadById, id);
+        _logger.Information(LeadsLogs.DeleteLeadById, id);
         await leadsService.DeleteLeadByIdAsync(id);
 
         return NoContent();
@@ -83,7 +83,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpPatch(Routes.LeadPassword)]
     public async Task<ActionResult> UpdateLeadPasswordAsync([FromRoute] Guid id, [FromBody] UpdateLeadPasswordRequest request)
     {
-        _logger.Information(LeadsControllerLogs.UpdateLeadPassword, id);
+        _logger.Information(LeadsLogs.UpdateLeadPassword, id);
         await leadsService.UpdateLeadPasswordAsync(id, request);
 
         return NoContent();
@@ -93,7 +93,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpPatch(Routes.Status)]
     public async Task<ActionResult> UpdateLeadStatusAsync([FromRoute] Guid id, [FromBody] UpdateLeadStatusRequest request)
     {
-        _logger.Information(LeadsControllerLogs.UpdateLeadStatus, id);
+        _logger.Information(LeadsLogs.UpdateLeadStatus, id);
         await leadsService.UpdateLeadStatusAsync(id, request);
 
         return NoContent();
@@ -103,7 +103,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
     [HttpPatch(Routes.LeadBirthDate)]
     public async Task<ActionResult> UpdateLeadBirthDateAsync([FromRoute] Guid id, [FromBody] UpdateLeadBirthDateRequest request)
     {
-        _logger.Information(LeadsControllerLogs.UpdateLeadBirthDate, id);
+        _logger.Information(LeadsLogs.UpdateLeadBirthDate, id);
         await leadsService.UpdateLeadBirthDateAsync(id, request);
 
         return NoContent();

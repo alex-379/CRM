@@ -1,4 +1,3 @@
-using System.Text.Json;
 using CRM.Business.Services.Constants;
 
 namespace CRM.Business.Configuration.HttpClients;

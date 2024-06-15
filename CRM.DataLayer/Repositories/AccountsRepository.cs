@@ -31,20 +31,20 @@ namespace CRM.DataLayer.Repositories
 
         public async Task UpdateAccountAsync(AccountDto account)
         {
-            _logger.Information(AccountsRepositoryLogs.UpdateAccount, account.Id);
             _ctx.Accounts.Update(account);
             await _ctx.SaveChangesAsync();
+            _logger.Information(AccountsRepositoryLogs.UpdateAccount, account.Id);
         }
 
         public async Task SetBlockedStatusForAccountsAsync(List<AccountDto> accounts)
         {
-            _logger.Information(AccountsRepositoryLogs.SetBlockedStatusForAccounts);
             await _ctx.Accounts
                 .Where(d => accounts.Select(a => a.Id)
                     .Contains(d.Id))
                 .ExecuteUpdateAsync(s => s
                 .SetProperty(d => d.Status,  d => AccountStatus.Blocked));
             await _ctx.SaveChangesAsync();
+            _logger.Information(AccountsRepositoryLogs.SetBlockedStatusForAccounts);
         }
     }
 }

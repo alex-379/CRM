@@ -1,10 +1,9 @@
 using CRM.Core.Enums;
 
-namespace CRM.Business.Models.Transactions.Responses;
+namespace CRM.Business.Models.Transactions.Requests;
 
-public class TransactionResponse
+public class Transaction2Request
 {
-    public Guid Id { get; set; }
     public Guid AccountId { get; set; }
     public TransactionType TransactionType { get; set; }
     public Currency Currency { get; set; }

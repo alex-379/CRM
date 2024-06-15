@@ -20,9 +20,9 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     [HttpPost]
     public async Task<ActionResult<Guid>> RegisterAccountAsync([FromBody] RegisterAccountRequest request)
     {
-        _logger.Information(AccountsControllerLogs.GetAuthorizedAccount);
+        _logger.Information(LeadsLogs.GetAuthorizedLead);
         var currentLeadId = InformationCurrentLead.GetCurrentLeadFromClaims(HttpContext.User); 
-        _logger.Information(AccountsControllerLogs.RegisterAccount, request.Currency, currentLeadId);
+        _logger.Information(AccountsLogs.RegisterAccount, request.Currency, currentLeadId);
         var id = await accountsService.AddAccountAsync(currentLeadId, request);
 
         return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
@@ -32,7 +32,7 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     [HttpPatch(Routes.Status)]
     public async Task<ActionResult> UpdateAccountStatusAsync([FromRoute] Guid id, [FromBody] UpdateAccountStatusRequest request)
     {
-        _logger.Information(AccountsControllerLogs.UpdateAccountStatus, id);
+        _logger.Information(AccountsLogs.UpdateAccountStatus, id);
         await accountsService.UpdateAccountStatusAsync(id, request);
 
         return NoContent();
