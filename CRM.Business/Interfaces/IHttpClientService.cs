@@ -1,7 +1,8 @@
 namespace CRM.Business.Interfaces;
 
-public interface IHttpClientService
+public interface IHttpClientService<in THttpClient>
+    where THttpClient : IBaseHttpClient
 {
-    Task<T> AddAsync<T>(T request, string url);
-    Task<List<T>> GetAsync<T>();
+    Task<TResponse> SendAsync<TRequest,TResponse>(TRequest request, HttpRequestMessage requestMessage);
+    Task<TResponse> GetAsync<TRequest,TResponse>(TRequest request, string uri);
 }

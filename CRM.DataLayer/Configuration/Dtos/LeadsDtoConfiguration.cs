@@ -21,6 +21,9 @@ public class LeadsDtoConfiguration : IEntityTypeConfiguration<LeadDto>
             .IsRequired()
             .HasMaxLength(DatabaseProperties.MailLength);
         builder
+            .HasIndex(u => u.Mail)
+            .IsUnique();
+        builder
             .Property(u => u.Phone)
             .IsRequired()
             .HasMaxLength(DatabaseProperties.PhoneLength);

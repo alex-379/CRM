@@ -1,5 +1,7 @@
-﻿using CRM.API.Controllers.Constants;
+﻿using CRM.API.Configuration.Filters;
+using CRM.API.Controllers.Constants;
 using CRM.API.Controllers.Constants.Logs;
+using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
 using CRM.Business.Models.Transactions.Responses;
@@ -13,7 +15,7 @@ namespace CRM.API.Controllers;
 [Authorize]
 [ApiController]
 [Route(Routes.AccountsController)]
-public class AccountsController(IAccountsService accountsService, IHttpClientService httpClientService) : Controller
+public class AccountsController(IAccountsService accountsService, IHttpClientService<TransactionStoreHttpClient> httpClientService) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<AccountsController>();
 
@@ -38,12 +40,23 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
         return NoContent();
     }
     
-    [AllowAnonymous]
-    [HttpGet("{id}/balance")]
+    [AuthorizationFilterByAccountId]
+    [HttpGet(Routes.Transactions)]
+    public async Task<ActionResult<List<TransactionResponse>>> GetTransactionsByAccountId(Guid id)
+    {
+        _logger.Information(AccountsLogs.GetTransactions, id);
+        var transactions = await httpClientService.GetAsync<Guid, List<TransactionResponse>>(id, string.Format(Routes.TransactionsTStore, id));
+
+        return Ok(transactions);
+    }
+    
+    [AuthorizationFilterByAccountId]
+    [HttpGet(Routes.Balance)]
     public async Task<ActionResult<AccountBalanceResponse>> GetBalanceByAccountId(Guid id)
     {
-        _logger.Information($"Getting the account balance by its Id {id}. / Получаем баланс аккаунта по его Id {id}.");
-        var balance = await httpClientService.GetAsync<AccountBalanceResponse>();
+        _logger.Information(AccountsLogs.GetBalance, id);
+        var balance = await httpClientService.GetAsync<Guid, AccountBalanceResponse>(id, string.Format(Routes.BalanceTStore, id));
+
         return Ok(balance);
     }
 }

@@ -215,22 +215,9 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     
     private async Task BlockLeadAsync(LeadDto lead)
     {
-        _logger.Information(LeadsServiceLogs.Revoke, lead.Id);
+        _logger.Information(LeadsServiceLogs.Revoke);
         await tokensService.RevokeAsync(lead.Id);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, lead.Id);
         await leadsRepository.UpdateLeadAsync(lead);
-    }
-    
-    public async Task CheckLeadRightsOnAccount(Guid leadId, Guid accountId)
-    {
-        _logger.Information(LeadsServiceLogs.CheckLeadById, leadId);
-        var lead = await leadsRepository.GetLeadByIdAsync(leadId)
-                   ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
-        var accounts = lead.Accounts;
-        var confirmRights = lead.Accounts.Select(d => d.Id).Contains(accountId);
-        if (!confirmRights)
-        {
-            throw new UnauthenticatedException();
-        }
     }
 }

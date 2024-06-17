@@ -1,5 +1,4 @@
-﻿using CRM.Business.Configuration.HttpClients;
-using CRM.Business.Interfaces;
+﻿using CRM.Business.Interfaces;
 using CRM.Business.Services;
 using Microsoft.Extensions.DependencyInjection;
 

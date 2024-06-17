@@ -51,7 +51,7 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
 
     private static string GenerateRefreshToken()
     {
-        var randomNumber = new byte[NumericData.RandomNumber];
+        var randomNumber = new byte[Data.RandomNumber];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
 

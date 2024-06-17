@@ -15,6 +15,4 @@ public interface ILeadsService
     Task UpdateLeadBirthDateAsync(Guid leadId, UpdateLeadBirthDateRequest request);
     Task UpdateLeadPasswordAsync(Guid leadId, UpdateLeadPasswordRequest request);
     Task UpdateLeadStatusAsync(Guid leadId, UpdateLeadStatusRequest request);
-    Task CheckLeadRightsOnAccount(Guid leadId, Guid accountId);
-
 }
