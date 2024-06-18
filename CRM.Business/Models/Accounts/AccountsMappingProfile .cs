@@ -12,7 +12,7 @@ public class AccountsMappingProfile : Profile
         CreateMap<RegisterAccountRequest, AccountDto>();
 
         CreateMap<AccountDto, AccountResponse>();
-        CreateMap<AccountDto, AccountForTransactionRequest>();
+        CreateMap<AccountDto, AccountForTransactionResponse>();
         CreateMap<AccountDto, AccountForAuthorizationFilterResponse>();
     }
 }

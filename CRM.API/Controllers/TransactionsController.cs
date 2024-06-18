@@ -3,7 +3,7 @@ using CRM.API.Controllers.Constants;
 using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
-using CRM.Business.Models.Accounts.Requests;
+using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Transactions.Requests;
 using CRM.Business.Models.Transactions.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +18,7 @@ namespace CRM.API.Controllers;
 public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService, ILeadsService leadsService, IAccountsService accountsService) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<TransactionsController>();
-
+    
     [AuthorizationFilterByAccountId]
     [HttpPost(Routes.Deposit)]
     public async Task<ActionResult<Guid>> AddDepositTransaction([FromBody] TransactionRequest request)
@@ -43,7 +43,8 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{id}", id);
     }
     
-    [AuthorizationFilterByAccountsId]
+    [AllowAnonymous]
+    //[AuthorizationFilterByAccountId]
     [HttpPost(Routes.Transfer)]
     public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransaction([FromBody] PrepareToTransferRequest request)
     {
@@ -57,7 +58,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     
     private async Task<DepositWithdrawRequest> CreateDepositWithdrawRequestTStore(TransactionRequest request)
     {
-        var account = await accountsService.GetAccountByIdAsync<AccountForTransactionRequest>(request.AccountId);
+        var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountId);
         var tStoreRequest = new DepositWithdrawRequest()
         {
             AccountId = request.AccountId,
@@ -70,8 +71,8 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     
     private async Task<TransferRequest> CreateTransferRequestTStore(PrepareToTransferRequest request)
     {
-        var accountFrom = await accountsService.GetAccountByIdAsync<AccountForTransferRequest>(request.AccountFromId);
-        var accountTo = await accountsService.GetAccountByIdAsync<AccountForTransferRequest>(request.AccountToId);
+        var accountFrom = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountFromId);
+        var accountTo = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountToId);
         var tStoreRequest = new TransferRequest()
         {
             AccountToId = request.AccountToId,

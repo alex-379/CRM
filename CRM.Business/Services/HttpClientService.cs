@@ -2,12 +2,13 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using CRM.Business.Interfaces;
 using CRM.Business.Services.Constants;
+using CRM.Core;
 
 namespace CRM.Business.Services;
 
 public class HttpClientService<THttpClient>(THttpClient httpClient) : IHttpClientService<THttpClient> where THttpClient : IBaseHttpClient
 {
-    private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
+    private readonly JsonSerializerOptions _options = JsonSerializerOptionsProvider.GetJsonSerializerOptions();
 
     public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, HttpRequestMessage requestMessage)
     {
@@ -26,7 +27,7 @@ public class HttpClientService<THttpClient>(THttpClient httpClient) : IHttpClien
         return result;
     }
 
-    public async Task<TResponse> GetAsync<TRequest, TResponse>(TRequest request, string uri)
+    public async Task<TResponse> GetAsync<TResponse>(string uri)
     {
         using var response = await httpClient.Client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();

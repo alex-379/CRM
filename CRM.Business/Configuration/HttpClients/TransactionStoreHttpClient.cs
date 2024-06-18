@@ -9,8 +9,8 @@ public class TransactionStoreHttpClient : IBaseHttpClient
     public TransactionStoreHttpClient(HttpClient client)
     {
         Client = client;
-        Client.Timeout = new TimeSpan(Settings.HttpClientTimeoutHour, Settings.HttpClientTimeoutMin, Settings.HttpClientTimeoutSec);
+        Client.Timeout = new TimeSpan(HttpClientSettings.HttpClientTimeoutHour, HttpClientSettings.HttpClientTimeoutMin, HttpClientSettings.HttpClientTimeoutSec);
         Client.DefaultRequestHeaders.Clear();
-        Client.BaseAddress = new Uri(Settings.TransactionStoreApi);
+        Client.BaseAddress = new Uri(HttpClientSettings.TransactionStoreApi);
     }
 }
