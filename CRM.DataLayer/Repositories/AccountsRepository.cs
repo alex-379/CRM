@@ -24,6 +24,7 @@ namespace CRM.DataLayer.Repositories
         {
             _logger.Information(AccountsRepositoryLogs.GetAccountById, id);
             var account = await _ctx.Accounts
+                .Include(d => d.Lead)
                 .FirstOrDefaultAsync((d => d.Id == id));
 
             return account;

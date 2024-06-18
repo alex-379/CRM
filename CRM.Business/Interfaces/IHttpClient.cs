@@ -1,6 +1,6 @@
 namespace CRM.Business.Interfaces;
 
-public interface IBaseHttpClient
+public interface IHttpClient
 {
     public HttpClient Client { get; }
 }

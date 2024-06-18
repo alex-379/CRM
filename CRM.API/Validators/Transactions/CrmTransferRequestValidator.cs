@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace CRM.API.Validators.Transactions;
 
-public class TransferRequestValidator : AbstractValidator<TransferRequest>
+public class CrmTransferRequestValidator : AbstractValidator<CrmTransferRequest>
 {
-    public TransferRequestValidator()
+    public CrmTransferRequestValidator()
     {
         RuleFor(r => r.Amount)
             .GreaterThan(0)

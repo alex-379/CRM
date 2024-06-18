@@ -1,6 +1,6 @@
 namespace CRM.Business.Models.Transactions.Requests;
 
-public class PrepareToTransferRequest
+public class CrmTransferRequest
 {
     public Guid AccountFromId { get; set; }
     public Guid AccountToId { get; set; }

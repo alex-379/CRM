@@ -6,6 +6,7 @@ using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Transactions.Requests;
 using CRM.Business.Models.Transactions.Responses;
+using CRM.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -15,11 +16,11 @@ namespace CRM.API.Controllers;
 [Authorize]
 [ApiController]
 [Route(Routes.TransactionsController)]
-public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService, ILeadsService leadsService, IAccountsService accountsService) : Controller
+public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService, IAccountsService accountsService) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<TransactionsController>();
     
-    [AuthorizationFilterByAccountId]
+    [AuthorizationFilterForTransactionByAccountId]
     [HttpPost(Routes.Deposit)]
     public async Task<ActionResult<Guid>> AddDepositTransaction([FromBody] TransactionRequest request)
     {
@@ -31,7 +32,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{id}", id);
     }
     
-    [AuthorizationFilterByAccountId]
+    [AuthorizationFilterForTransactionByAccountId]
     [HttpPost(Routes.Withdraw)]
     public async Task<ActionResult<Guid>> AddWithdrawTransaction([FromBody] TransactionRequest request)
     {
@@ -43,10 +44,9 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{id}", id);
     }
     
-    [AllowAnonymous]
-    //[AuthorizationFilterByAccountId]
+    [AuthorizationFilterForTransferByAccountsId]
     [HttpPost(Routes.Transfer)]
-    public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransaction([FromBody] PrepareToTransferRequest request)
+    public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransaction([FromBody] CrmTransferRequest request)
     {
         var tStoreRequest = await CreateTransferRequestTStore(request);
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.TransferTStore);
@@ -54,6 +54,16 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         var response = await httpClientService.SendAsync<TransferRequest,TransferGuidsResponse>(tStoreRequest, requestMessage);
         
         return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{response}", response);
+    }
+    
+    [Authorize(Roles = nameof(LeadStatus.Administrator))]
+    [HttpGet(Routes.Id)]
+    public async Task<ActionResult<TransferGuidsResponse>> GetTransactionById(Guid id)
+    {
+        _logger.Information(TransactionsLogs.GetTransaction, id);
+        var transactions = await httpClientService.GetAsync<List<TransactionWithAccountIdResponse>>(string.Format(Routes.TransactionsTStore, id));
+        
+        return Ok(transactions.FirstOrDefault());
     }
     
     private async Task<DepositWithdrawRequest> CreateDepositWithdrawRequestTStore(TransactionRequest request)
@@ -69,7 +79,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         return tStoreRequest;
     }
     
-    private async Task<TransferRequest> CreateTransferRequestTStore(PrepareToTransferRequest request)
+    private async Task<TransferRequest> CreateTransferRequestTStore(CrmTransferRequest request)
     {
         var accountFrom = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountFromId);
         var accountTo = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountToId);

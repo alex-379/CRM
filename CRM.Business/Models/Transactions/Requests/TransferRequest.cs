@@ -4,9 +4,9 @@ namespace CRM.Business.Models.Transactions.Requests;
 
 public class TransferRequest
 {
-    public Guid AccountFromId { get; set; }
-    public Guid AccountToId { get; set; }
-    public Currency CurrencyFromType { get; set; }
-    public Currency CurrencyToType { get; set; }
-    public decimal Amount { get; set; }
+    public Guid AccountFromId { get; init; }
+    public Guid AccountToId { get; init; }
+    public Currency CurrencyFromType { get; init; }
+    public Currency CurrencyToType { get; init; }
+    public decimal Amount { get; init; }
 }

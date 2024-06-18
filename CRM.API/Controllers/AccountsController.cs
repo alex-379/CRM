@@ -45,7 +45,7 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     public async Task<ActionResult<List<TransactionResponse>>> GetTransactionsByAccountId(Guid id)
     {
         _logger.Information(AccountsLogs.GetTransactions, id);
-        var transactions = await httpClientService.GetAsync<List<TransactionResponse>>(string.Format(Routes.TransactionsTStore, id));
+        var transactions = await httpClientService.GetAsync<List<TransactionResponse>>(string.Format(Routes.TransactionsByAccountIdTStore, id));
 
         return Ok(transactions);
     }
@@ -55,7 +55,7 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     public async Task<ActionResult<AccountBalanceResponse>> GetBalanceByAccountId(Guid id)
     {
         _logger.Information(AccountsLogs.GetBalance, id);
-        var balance = await httpClientService.GetAsync<AccountBalanceResponse>(string.Format(Routes.BalanceTStore, id));
+        var balance = await httpClientService.GetAsync<AccountBalanceResponse>(string.Format(Routes.BalanceByAccountIdTStore, id));
 
         return Ok(balance);
     }

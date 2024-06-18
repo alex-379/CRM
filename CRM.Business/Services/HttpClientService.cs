@@ -6,7 +6,7 @@ using CRM.Core;
 
 namespace CRM.Business.Services;
 
-public class HttpClientService<THttpClient>(THttpClient httpClient) : IHttpClientService<THttpClient> where THttpClient : IBaseHttpClient
+public class HttpClientService<THttpClient>(THttpClient httpClient) : IHttpClientService<THttpClient> where THttpClient : IHttpClient
 {
     private readonly JsonSerializerOptions _options = JsonSerializerOptionsProvider.GetJsonSerializerOptions();
 
