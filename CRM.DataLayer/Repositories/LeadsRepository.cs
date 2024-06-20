@@ -23,7 +23,9 @@ public class LeadsRepository(CrmContext context) : BaseRepository(context), ILea
     {
         _logger.Information(LeadsRepositoryLogs.GetLeads);
         var leads = await _ctx.Leads
-            .Where(d => !d.IsDeleted).ToListAsync();
+            .Where(d => !d.IsDeleted)
+            .AsNoTracking()
+            .ToListAsync();
 
         return leads;
     }

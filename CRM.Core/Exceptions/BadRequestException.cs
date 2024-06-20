@@ -1,5 +1,5 @@
 namespace CRM.Core.Exceptions;
 
-public class BadRequestException(string message = "Incorrect request") : Exception(message)
+public class BadRequestException(string message = DefaultMessages.BadRequestException) : Exception(message)
 {
 }

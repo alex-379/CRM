@@ -17,20 +17,17 @@ public static class Program
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration)
             .CreateLogger();
-            
+
             builder.Host.UseSerilog();
             // Add services to the container.
             builder.Services.ConfigureApiServices(builder.Configuration);
             builder.Services.ConfigureBllServices();
             builder.Services.ConfigureDalServices(builder.Configuration);
-            
+
             var app = builder.Build();
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseApp();
             app.MapControllers();

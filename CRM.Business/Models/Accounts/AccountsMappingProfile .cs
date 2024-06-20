@@ -12,5 +12,8 @@ public class AccountsMappingProfile : Profile
         CreateMap<RegisterAccountRequest, AccountDto>();
 
         CreateMap<AccountDto, AccountResponse>();
+        CreateMap<AccountDto, AccountForTransactionResponse>();
+        CreateMap<AccountDto, AccountForAuthorizationFilterResponse>()
+            .ForMember(d => d.LeadId, o => o.MapFrom(s => s.Lead.Id));
     }
 }

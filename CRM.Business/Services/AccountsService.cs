@@ -25,6 +25,16 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
 
         return account.Id;
     }
+    
+    public async Task<T> GetAccountByIdAsync<T>(Guid id)
+    {
+        _logger.Information(AccountsServiceLogs.GetAccountById, id);
+        var account = await accountsRepository.GetAccountByIdAsync(id)
+                   ?? throw new NotFoundException(string.Format(AccountsServiceExceptions.NotFoundException, id));
+        var accountResponse = mapper.Map<T>(account);
+
+        return accountResponse;
+    }
 
     public async Task UpdateAccountStatusAsync(Guid id, UpdateAccountStatusRequest request)
     {

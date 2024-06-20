@@ -1,5 +1,4 @@
 ﻿using CRM.Core.Dtos;
-using CRM.Core.Enums;
 using CRM.DataLayer.Repositories;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;

@@ -18,7 +18,7 @@ namespace CRM.DataLayer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.5")
+                .HasAnnotation("ProductVersion", "8.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "account_status", new[] { "unknown", "active", "blocked" });
@@ -125,6 +125,10 @@ namespace CRM.DataLayer.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_leads");
+
+                    b.HasIndex("Mail")
+                        .IsUnique()
+                        .HasDatabaseName("ix_leads_mail");
 
                     b.ToTable("leads", (string)null);
                 });
