@@ -1,6 +1,4 @@
-﻿using CRM.Business.Configuration;
-using CRM.Business.Interfaces;
-using CRM.Core.Constants;
+﻿using CRM.Core.Constants;
 using System.Security.Cryptography;
 using System.Text;
 

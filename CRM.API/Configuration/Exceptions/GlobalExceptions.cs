@@ -8,4 +8,5 @@ public static class GlobalExceptions
     public const string NotFoundException = "No data found for the query";
     public const string UnauthorizedException = "Authorization failed";
     public const string UnauthenticatedException = "Invalid authentication data";
+    public const string ServiceUnavailableException = "Service unavailable";
 }

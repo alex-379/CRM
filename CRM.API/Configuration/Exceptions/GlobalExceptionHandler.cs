@@ -58,6 +58,14 @@ public class GlobalExceptionHandler : IExceptionHandler
 
                 break;
 
+            case nameof(ServiceUnavailableException):
+            {
+                problemDetails.Status = StatusCodes.Status503ServiceUnavailable;
+                problemDetails.Title = GlobalExceptions.ServiceUnavailableException;
+            };
+
+                break;
+            
             default:
                 {
                     problemDetails.Status = StatusCodes.Status500InternalServerError;

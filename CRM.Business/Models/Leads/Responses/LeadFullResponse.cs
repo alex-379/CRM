@@ -5,6 +5,7 @@ namespace CRM.Business.Models.Leads.Responses;
 
 public class LeadFullResponse : LeadResponse
 {
+    public Guid Id { get; init;  }
     public string Address { get; init; }
     public DateOnly BirthDate { get; init; }
     public LeadStatus Status { get; init; }

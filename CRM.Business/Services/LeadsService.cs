@@ -203,6 +203,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         try
         {
             await BlockLeadAsync(lead);
+            _logger.Information(AccountsServiceLogs.BlockAccount);
             await accountsRepository.SetBlockedStatusForAccountsAsync(lead.Accounts);
             await transactionsManager.CommitTransactionAsync(transaction);
         }
@@ -214,7 +215,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     
     private async Task BlockLeadAsync(LeadDto lead)
     {
-        _logger.Information(LeadsServiceLogs.Revoke, lead.Id);
+        _logger.Information(LeadsServiceLogs.Revoke);
         await tokensService.RevokeAsync(lead.Id);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, lead.Id);
         await leadsRepository.UpdateLeadAsync(lead);
