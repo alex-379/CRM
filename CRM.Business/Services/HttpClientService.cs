@@ -3,6 +3,7 @@ using System.Text.Json;
 using CRM.Business.Interfaces;
 using CRM.Business.Services.Constants;
 using CRM.Core;
+using CRM.Core.Exceptions;
 using Serilog;
 
 namespace CRM.Business.Services;
@@ -15,19 +16,26 @@ public class HttpClientService<THttpClient>(THttpClient httpClient, Cancellation
     
     public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, HttpRequestMessage requestMessage)
     {
-        var ms = new MemoryStream();
-        await JsonSerializer.SerializeAsync(ms, request, cancellationToken: _token);
-        ms.Seek(0, SeekOrigin.Begin);
-        requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Data.ApplicationType));
-        using var requestContent = new StreamContent(ms);
-        requestMessage.Content = requestContent;
-        requestContent.Headers.ContentType = new MediaTypeHeaderValue(Data.ApplicationType);
-        using var response = await httpClient.Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, _token);
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStreamAsync(_token);
-        var result = await JsonSerializer.DeserializeAsync<TResponse>(content, _options, _token);
+        try
+        {
+            var ms = new MemoryStream();
+            await JsonSerializer.SerializeAsync(ms, request, cancellationToken: _token);
+            ms.Seek(0, SeekOrigin.Begin);
+            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Data.ApplicationType));
+            using var requestContent = new StreamContent(ms);
+            requestMessage.Content = requestContent;
+            requestContent.Headers.ContentType = new MediaTypeHeaderValue(Data.ApplicationType);
+            using var response = await httpClient.Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, _token);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStreamAsync(_token);
+            var result = await JsonSerializer.DeserializeAsync<TResponse>(content, _options, _token);
         
-        return result;
+            return result;
+        }
+        catch (OperationCanceledException ex)
+        {
+            throw new GatewayTimeoutException(ex.Message);
+        }
     }
 
     public async Task<TResponse> GetAsync<TResponse>(string uri)
@@ -43,8 +51,7 @@ public class HttpClientService<THttpClient>(THttpClient httpClient, Cancellation
         }
         catch (OperationCanceledException ex)
         {
-            Log.Error(ex.Message);
-            throw;
+            throw new GatewayTimeoutException(ex.Message);
         }
     }
 }

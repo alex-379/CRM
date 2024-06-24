@@ -8,4 +8,5 @@ public static class DefaultMessages
     public const string NotFoundException = "Object not found";
     public const string UnauthenticatedException = "Authentication failed";
     public const string UnauthorizedException = "Access denied";
+    public const string GatewayTimeoutException = "The gateway is not responding";
 }
