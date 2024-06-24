@@ -3,13 +3,16 @@ using System.Text.Json;
 using CRM.Business.Interfaces;
 using CRM.Business.Services.Constants;
 using CRM.Core;
+using Serilog;
 
 namespace CRM.Business.Services;
 
-public class HttpClientService<THttpClient>(THttpClient httpClient) : IHttpClientService<THttpClient> where THttpClient : IHttpClient
+public class HttpClientService<THttpClient>(THttpClient httpClient, CancellationTokenSource cancellationTokenSource) : IHttpClientService<THttpClient> where THttpClient : IHttpClient
 {
     private readonly JsonSerializerOptions _options = JsonSerializerOptionsProvider.GetJsonSerializerOptions();
-
+    private readonly ILogger _logger = Log.ForContext<HttpClientService<THttpClient>>();
+    private readonly CancellationToken _token = cancellationTokenSource.Token;
+    
     public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, HttpRequestMessage requestMessage)
     {
         var ms = new MemoryStream();
@@ -29,11 +32,19 @@ public class HttpClientService<THttpClient>(THttpClient httpClient) : IHttpClien
 
     public async Task<TResponse> GetAsync<TResponse>(string uri)
     {
-        using var response = await httpClient.Client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
-        response.EnsureSuccessStatusCode();
-        var stream = await response.Content.ReadAsStreamAsync();
-        var result = await JsonSerializer.DeserializeAsync<TResponse>(stream, _options);
-
-        return result;
+        try
+        {
+            using var response = await httpClient.Client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, _token);
+            response.EnsureSuccessStatusCode();
+            var stream = await response.Content.ReadAsStreamAsync(_token);
+            var result = await JsonSerializer.DeserializeAsync<TResponse>(stream, _options, _token);
+            
+            return result;
+        }
+        catch (OperationCanceledException ex)
+        {
+            Log.Error(ex.Message);
+            throw;
+        }
     }
 }

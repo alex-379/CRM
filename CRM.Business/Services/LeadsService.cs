@@ -249,7 +249,5 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         {
             await messagesService.PublishAsync<AccountBlocked, AccountDto>(account);
         }
-
-
     }
 }

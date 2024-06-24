@@ -19,4 +19,5 @@ public static class ConfigurationSettings
     public const string RabbitMqHost = "RabbitMqSettings:Host";
     public const string RabbitMqUserName = "RabbitMqSettings:UserName";
     public const string RabbitMqPassword = "RabbitMqSettings:Password";
+    public const int TimeCansel = 60000;
 }
