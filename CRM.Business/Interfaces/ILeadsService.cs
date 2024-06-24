@@ -6,7 +6,7 @@ namespace CRM.Business.Interfaces;
 
 public interface ILeadsService
 {
-    Task<Guid> AddLeadAsync(RegisterLeadRequest request);
+    Task<(Guid leadId, Guid accountId)> AddLeadAsync(RegisterLeadRequest request);
     Task DeleteLeadByIdAsync(Guid id);
     Task<LeadFullResponse> GetLeadByIdAsync(Guid id);
     Task<List<LeadResponse>> GetLeadsAsync();

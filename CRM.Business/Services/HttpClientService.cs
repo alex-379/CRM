@@ -16,16 +16,16 @@ public class HttpClientService<THttpClient>(THttpClient httpClient, Cancellation
     public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, HttpRequestMessage requestMessage)
     {
         var ms = new MemoryStream();
-        await JsonSerializer.SerializeAsync(ms, request);
+        await JsonSerializer.SerializeAsync(ms, request, cancellationToken: _token);
         ms.Seek(0, SeekOrigin.Begin);
         requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Data.ApplicationType));
         using var requestContent = new StreamContent(ms);
         requestMessage.Content = requestContent;
         requestContent.Headers.ContentType = new MediaTypeHeaderValue(Data.ApplicationType);
-        using var response = await httpClient.Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+        using var response = await httpClient.Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, _token);
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStreamAsync();
-        var result = await JsonSerializer.DeserializeAsync<TResponse>(content, _options);
+        var content = await response.Content.ReadAsStreamAsync(_token);
+        var result = await JsonSerializer.DeserializeAsync<TResponse>(content, _options, _token);
         
         return result;
     }

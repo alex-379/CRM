@@ -5,6 +5,7 @@ using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
+using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Transactions.Responses;
 using CRM.Core.Enums;
 using CRM.Core.Exceptions;
@@ -56,6 +57,11 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     {
         _logger.Information(AccountsLogs.GetTransactions, id);
         var transactions = await httpClientService.GetAsync<List<TransactionResponse>>(string.Format(Routes.TransactionsByAccountIdTStore, id));
+        foreach (var transaction in transactions)
+        { 
+            var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(transaction.AccountId);
+            transaction.Currency = account.Currency;
+        }
 
         return Ok(transactions);
     }
@@ -66,6 +72,8 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     {
         _logger.Information(AccountsLogs.GetBalance, id);
         var balance = await httpClientService.GetAsync<AccountBalanceResponse>(string.Format(Routes.BalanceByAccountIdTStore, id));
+        var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(balance.AccountId);
+        balance.Currency = account.Currency;
 
         return Ok(balance);
     }

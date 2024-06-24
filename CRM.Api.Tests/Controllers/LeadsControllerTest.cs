@@ -18,7 +18,7 @@ public class LeadsControllerTest
     {
         //arrange
         var registrationLeadRequest = new RegisterLeadRequest();
-        _leadsServiceMock.Setup(x => x.AddLeadAsync(registrationLeadRequest)).ReturnsAsync(new Guid());
+        _leadsServiceMock.Setup(x => x.AddLeadAsync(registrationLeadRequest)).ReturnsAsync((new Guid(), new Guid()));
         var sut = new LeadsController(_leadsServiceMock.Object);
 
         //act

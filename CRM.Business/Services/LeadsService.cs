@@ -20,7 +20,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
 {
     private readonly ILogger _logger = Log.ForContext<LeadsService>();
 
-    public async Task<Guid> AddLeadAsync(RegisterLeadRequest request)
+    public async Task<(Guid leadId, Guid accountId)> AddLeadAsync(RegisterLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
         var account = SetupDefaultRubAccount(await SetupLeadAsync(lead));
@@ -37,7 +37,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         }
         await PublishAddLeadAsync(lead);
 
-        return lead.Id;
+        return (lead.Id,account.Id);
     }
 
     private async Task<LeadDto> SetupLeadAsync(LeadDto lead)

@@ -51,7 +51,7 @@ public class LeadsServiceTest
         var actual = await sut.AddLeadAsync(registrationLeadRequest);
 
         //assert
-        Assert.Equal(expectedGuid, actual);
+        Assert.Equal(expectedGuid, actual.leadId);
         _leadsRepositoryMock.Verify(m => m.GetLeadByMailAsync(It.IsAny<string>()), Times.Once);
         _transactionsManagerMock.Verify(m => m.BeginTransactionAsync(), Times.Once);
         _leadsRepositoryMock.Verify(m => m.AddLeadAsync(It.IsAny<LeadDto>()), Times.Once);
