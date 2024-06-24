@@ -1,6 +1,6 @@
 namespace Messaging.Shared;
 
-public class LeadDeleted
+public class AccountBlocked
 {
     public Guid Id { get; init; }
 }

@@ -45,12 +45,11 @@ public class LeadsRepository(CrmContext context) : BaseRepository(context), ILea
     {
         _logger.Information(LeadsRepositoryLogs.GetLeadByMail, mail);
         var lead = await _ctx.Leads
-            .FirstOrDefaultAsync(d => d.Mail == mail
-                                 && !d.IsDeleted);
+            .FirstOrDefaultAsync(d => d.Mail == mail);
 
         return lead;
     }
-
+    
     public async Task UpdateLeadAsync(LeadDto lead)
     {
         _ctx.Leads.Update(lead);

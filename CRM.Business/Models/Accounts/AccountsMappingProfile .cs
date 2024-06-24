@@ -19,5 +19,6 @@ public class AccountsMappingProfile : Profile
         CreateMap<AccountDto, AccountCreated>()
             .ForMember(d => d.LeadId, o => o.MapFrom(s => s.Lead.Id));
         CreateMap<AccountDto, AccountUpdatedStatus>();
+        CreateMap<AccountDto, AccountBlocked>();
     }
 }
