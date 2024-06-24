@@ -1,4 +1,5 @@
-﻿using CRM.API.Configuration.Filters;
+﻿using System.Security.Claims;
+using CRM.API.Configuration.Filters;
 using CRM.API.Controllers.Constants;
 using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Configuration.HttpClients;
@@ -6,6 +7,7 @@ using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
 using CRM.Business.Models.Transactions.Responses;
 using CRM.Core.Enums;
+using CRM.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -23,11 +25,19 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     public async Task<ActionResult<Guid>> RegisterAccountAsync([FromBody] RegisterAccountRequest request)
     {
         _logger.Information(LeadsLogs.GetAuthorizedLead);
-        var currentLeadId = InformationCurrentLead.GetCurrentLeadFromClaims(HttpContext.User); 
+        var currentLeadId = GetCurrentLeadFromClaims(HttpContext.User); 
         _logger.Information(AccountsLogs.RegisterAccount, request.Currency, currentLeadId);
         var id = await accountsService.AddAccountAsync(currentLeadId, request);
 
         return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
+    }
+    
+    private static Guid GetCurrentLeadFromClaims(ClaimsPrincipal claimsPrincipal)
+    {
+        var currentLeadId = new Guid(claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier)
+                                     ?? throw new NotFoundException(Exceptions.ClaimNotFound));
+
+        return currentLeadId;
     }
     
     [Authorize(Roles = nameof(LeadStatus.Administrator))]

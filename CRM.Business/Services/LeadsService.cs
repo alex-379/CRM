@@ -10,12 +10,13 @@ using CRM.Core.Dtos;
 using CRM.Core.Enums;
 using CRM.Core.Exceptions;
 using CRM.DataLayer.Interfaces;
+using Messaging.Shared;
 using Serilog;
 
 namespace CRM.Business.Services;
 
 public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository accountsRepository, ITransactionsManager transactionsManager, 
-    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt) : ILeadsService
+    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt, IMessagesService messagesService) : ILeadsService
 {
     private readonly ILogger _logger = Log.ForContext<LeadsService>();
 
@@ -34,6 +35,9 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         {
             await transactionsManager.RollbackTransactionAsync(transaction, ex);
         }
+        
+        await messagesService.PublishAsync<LeadCreated, LeadDto>(lead);
+        await messagesService.PublishAsync<AccountCreated, AccountDto>(lead.Accounts.FirstOrDefault());
 
         return lead.Id;
     }
@@ -141,6 +145,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         SetLeadData(lead,request);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
         await leadsRepository.UpdateLeadAsync(lead);
+        await messagesService.PublishAsync<LeadUpdated, LeadDto>(lead);
     }
     
     private void SetLeadData(LeadDto lead, UpdateLeadDataRequest request)
@@ -159,6 +164,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         SetLeadPassword(lead,request);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
         await leadsRepository.UpdateLeadAsync(lead);
+        await messagesService.PublishAsync<LeadPasswordUpdated, LeadDto>(lead);
     }
     
     private void SetLeadPassword(LeadDto lead, UpdateLeadPasswordRequest request)
@@ -179,6 +185,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         lead.Status = request.Status;
         _logger.Information(LeadsServiceLogs.UpdateLeadById, id);
         await leadsRepository.UpdateLeadAsync(lead);
+        await messagesService.PublishAsync<LeadStatusUpdated, LeadDto>(lead);
     }
 
     public async Task UpdateLeadBirthDateAsync(Guid leadId, UpdateLeadBirthDateRequest request)
@@ -190,6 +197,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         lead.BirthDate = request.BirthDate;
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
         await leadsRepository.UpdateLeadAsync(lead);
+        await messagesService.PublishAsync<LeadBirthDateUpdated, LeadDto>(lead);
     }
 
     public async Task DeleteLeadByIdAsync(Guid id)

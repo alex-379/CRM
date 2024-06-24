@@ -37,7 +37,7 @@ public class AccountsServiceTest
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(leadId)).ReturnsAsync(new LeadDto());
         var expectedGuid = Guid.NewGuid();
         _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper, null);
 
         //act
         var actual = await sut.AddAccountAsync(leadId, registrationAccountRequest);
@@ -58,7 +58,7 @@ public class AccountsServiceTest
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(leadId)).ReturnsAsync((LeadDto)null);
         var expectedGuid = Guid.NewGuid();
         _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper, null);
 
         //act
         var act = async () => await sut.AddAccountAsync(leadId, registrationAccountRequest);
@@ -77,7 +77,7 @@ public class AccountsServiceTest
         var id = Guid.NewGuid();
         var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
         _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync(new AccountDto());
-        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, null);
 
         //act
         await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);
@@ -94,7 +94,7 @@ public class AccountsServiceTest
         var id = Guid.Empty;
         var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
         _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync((AccountDto)null);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, null);
 
         //act
         var act = async () => await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);

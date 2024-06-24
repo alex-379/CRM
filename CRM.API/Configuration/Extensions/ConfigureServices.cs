@@ -14,5 +14,6 @@ public static class ConfigureServices
         services.AddAutoMapper(typeof(LeadsMappingProfile).Assembly);
         services.AddValidation();
         services.AddConfigurationServicesFromJson(configuration);
+        services.AddRabbitMq(configuration);
     }
 }

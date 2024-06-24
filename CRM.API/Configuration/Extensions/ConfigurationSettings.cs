@@ -15,4 +15,8 @@ public static class ConfigurationSettings
     public const string OpenApiDescription = "OpenApiSettings:Description";
     public const string OpenApiName = "OpenApiSettings:Name";
     public const string OpenApiBearerFormat = "OpenApiSettings:BearerFormat";
+    public const string RabbitMqSettings = "RabbitMqSettings";
+    public const string RabbitMqHost = "RabbitMqSettings:Host";
+    public const string RabbitMqUserName = "RabbitMqSettings:UserName";
+    public const string RabbitMqPassword = "RabbitMqSettings:Password";
 }
