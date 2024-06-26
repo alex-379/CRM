@@ -4,14 +4,12 @@ using CRM.Business.Interfaces;
 using CRM.Business.Services.Constants;
 using CRM.Core;
 using CRM.Core.Exceptions;
-using Serilog;
 
 namespace CRM.Business.Services;
 
 public class HttpClientService<THttpClient>(THttpClient httpClient, CancellationTokenSource cancellationTokenSource) : IHttpClientService<THttpClient> where THttpClient : IHttpClient
 {
     private readonly JsonSerializerOptions _options = JsonSerializerOptionsProvider.GetJsonSerializerOptions();
-    private readonly ILogger _logger = Log.ForContext<HttpClientService<THttpClient>>();
     private readonly CancellationToken _token = cancellationTokenSource.Token;
     
     public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, HttpRequestMessage requestMessage)
@@ -25,16 +23,21 @@ public class HttpClientService<THttpClient>(THttpClient httpClient, Cancellation
             using var requestContent = new StreamContent(ms);
             requestMessage.Content = requestContent;
             requestContent.Headers.ContentType = new MediaTypeHeaderValue(Data.ApplicationType);
-            using var response = await httpClient.Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, _token);
+            using var response =
+                await httpClient.Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, _token);
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStreamAsync(_token);
             var result = await JsonSerializer.DeserializeAsync<TResponse>(content, _options, _token);
-        
+
             return result;
         }
-        catch (OperationCanceledException ex)
+        catch (Exception ex) when (ex is OperationCanceledException or HttpRequestException)
         {
-            throw new GatewayTimeoutException(ex.Message);
+            throw ex switch
+            {
+                OperationCanceledException => new GatewayTimeoutException(ex.Message),
+                HttpRequestException => new BadGatewayException(ex.Message)
+            };
         }
     }
 
@@ -49,9 +52,13 @@ public class HttpClientService<THttpClient>(THttpClient httpClient, Cancellation
             
             return result;
         }
-        catch (OperationCanceledException ex)
+        catch (Exception ex) when (ex is OperationCanceledException or HttpRequestException)
         {
-            throw new GatewayTimeoutException(ex.Message);
+            throw ex switch
+            {
+                OperationCanceledException => new GatewayTimeoutException(ex.Message),
+                HttpRequestException => new BadGatewayException(ex.Message)
+            };
         }
     }
 }
