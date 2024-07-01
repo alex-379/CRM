@@ -6,7 +6,7 @@ namespace CRM.Business.Interfaces;
 
 public interface ITokensService
 {
-    Task<AuthenticatedResponse> RefreshAsync(RefreshTokenRequest request);
+    Task<Authenticated2FaResponse> RefreshAsync(RefreshTokenRequest request);
     Task RevokeAsync(Guid userId);
     (string accessToken, string refreshToken) GenerateTokens(LeadDto lead);
 }

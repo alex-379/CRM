@@ -34,7 +34,7 @@ public class LeadsControllerTest
     {
         //arrange
         var loginLeadRequest = new LoginLeadRequest();
-        _leadsServiceMock.Setup(x => x.LoginLeadAsync(loginLeadRequest)).ReturnsAsync(new AuthenticatedResponse());
+        _leadsServiceMock.Setup(x => x.LoginLeadAsync(loginLeadRequest)).ReturnsAsync(new Authenticated2FaResponse());
         var sut = new LeadsController(_leadsServiceMock.Object);
 
         //act

@@ -4,6 +4,7 @@ public static class LeadsLogs
 {
     public const string RegisterLead = "Creating lead with mail: {request.Mail}";
     public const string Login = "Lead authentication";
+    public const string Login2Fa = "Lead 2fa authentication";
     public const string GetLeads = "Getting all leads at the database";
     public const string GetLeadById = "Getting the lead by ID: {id}";
     public const string UpdateLeadData = "Updating lead data with ID: {id}";

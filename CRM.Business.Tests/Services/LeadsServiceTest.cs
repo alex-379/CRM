@@ -45,7 +45,7 @@ public class LeadsServiceTest
         _leadsRepositoryMock.Setup(x => x.GetLeadByMailAsync(It.IsAny<string>())).ReturnsAsync((LeadDto)null);
         _leadsRepositoryMock.Setup(x => x.AddLeadAsync(It.IsAny<LeadDto>())).ReturnsAsync(expectedGuid);
         var sut = new LeadsService(_leadsRepositoryMock.Object, _accountsRepositoryMock.Object,
-            _transactionsManagerMock.Object, null, _mapper, _secret, null, null);
+            _transactionsManagerMock.Object, null, _mapper, _secret, null, null, null);
 
         //act
         var actual = await sut.AddLeadAsync(registrationLeadRequest);
@@ -67,7 +67,7 @@ public class LeadsServiceTest
         var registrationLeadRequestWithDuplicateMail = TestsData.GetFakeRegistrationLeadRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByMailAsync(registrationLeadRequestWithDuplicateMail.Mail)).ReturnsAsync(new LeadDto());
         _leadsRepositoryMock.Setup(x => x.AddLeadAsync(It.IsAny<LeadDto>())).ReturnsAsync(Guid.NewGuid());
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null, null, null);
         
         //act
         var act = async () => await sut.AddLeadAsync(registrationLeadRequestWithDuplicateMail);
@@ -85,7 +85,7 @@ public class LeadsServiceTest
         //arrange
         var loginLeadRequestIncorrectMail = TestsData.GetFakeLoginLeadRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByMailAsync(loginLeadRequestIncorrectMail.Mail)).ReturnsAsync((LeadDto)null);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null, null, null);
 
         //act
         var act = async () => await sut.LoginLeadAsync(loginLeadRequestIncorrectMail);
@@ -103,7 +103,7 @@ public class LeadsServiceTest
         var loginLeadRequestIncorrectPassword = TestsData.GetFakeLoginLeadRequest();
         var lead = TestsData.GetFakeLeadDto();
         _leadsRepositoryMock.Setup(x => x.GetLeadByMailAsync(loginLeadRequestIncorrectPassword.Mail)).ReturnsAsync(lead);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, _secret, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, _secret, null, null, null);
 
         //act
         var act = async () => await sut.LoginLeadAsync(loginLeadRequestIncorrectPassword);
@@ -121,7 +121,7 @@ public class LeadsServiceTest
         var expected = TestsData.GetFakeListLeadResponse();
         var expectedLeads = TestsData.GetFakeListLeadDto();
         _leadsRepositoryMock.Setup(x => x.GetLeadsAsync()).ReturnsAsync(expectedLeads);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null, null, null);
 
         //act
         var actual = await sut.GetLeadsAsync();
@@ -139,7 +139,7 @@ public class LeadsServiceTest
         var expectedLead = TestsData.GetFakeLeadDto();
         var id = Guid.NewGuid();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(expectedLead);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, null, null, null, null);
 
         //act
         var actual = await sut.GetLeadByIdAsync(id);
@@ -155,7 +155,7 @@ public class LeadsServiceTest
         //arrange
         var id = Guid.Empty;
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         var act = async () => await sut.GetLeadByIdAsync(id);
@@ -173,7 +173,7 @@ public class LeadsServiceTest
         var id = Guid.NewGuid();
         var updateLeadDataRequest = TestsData.GetFakeUpdateLeadDataRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadDto());
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         await sut.UpdateLeadAsync(id, updateLeadDataRequest);
@@ -190,7 +190,7 @@ public class LeadsServiceTest
         var id = Guid.NewGuid();
         var updateLeadDataRequest = TestsData.GetFakeUpdateLeadDataRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         var act = async () => await sut.UpdateLeadAsync(id, updateLeadDataRequest);
@@ -209,7 +209,7 @@ public class LeadsServiceTest
         var id = Guid.NewGuid();
         var updateLeadPasswordRequest = TestsData.GetFakeUpdateLeadPasswordRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadDto());
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, _secret, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, _secret, null, null, null);
 
         //act
         await sut.UpdateLeadPasswordAsync(id, updateLeadPasswordRequest);
@@ -226,7 +226,7 @@ public class LeadsServiceTest
         var id = Guid.Empty;
         var updateLeadPasswordRequest = TestsData.GetFakeUpdateLeadPasswordRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         var act = async () => await sut.UpdateLeadPasswordAsync(id, updateLeadPasswordRequest);
@@ -245,7 +245,7 @@ public class LeadsServiceTest
         var id = Guid.NewGuid();
         var updateLeadStatusRequest = TestsData.GetFakeUpdateLeadStatusRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadDto());
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         await sut.UpdateLeadStatusAsync(id, updateLeadStatusRequest);
@@ -262,7 +262,7 @@ public class LeadsServiceTest
         var id = Guid.Empty;
         var updateLeadStatusRequest = TestsData.GetFakeUpdateLeadStatusRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         var act = () => sut.UpdateLeadStatusAsync(id, updateLeadStatusRequest);
@@ -281,7 +281,7 @@ public class LeadsServiceTest
         var id = Guid.NewGuid();
         var updateLeadBirthDateRequest = TestsData.GetFakeUpdateLeadBirthDateRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadDto());
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         await sut.UpdateLeadBirthDateAsync(id, updateLeadBirthDateRequest);
@@ -298,7 +298,7 @@ public class LeadsServiceTest
         var id = Guid.Empty;
         var updateLeadBirthDateRequest = TestsData.GetFakeUpdateLeadBirthDateRequest();
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         var act = async () => await sut.UpdateLeadBirthDateAsync(id, updateLeadBirthDateRequest);
@@ -316,7 +316,7 @@ public class LeadsServiceTest
         //arrange
         var id = Guid.Empty;
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync((LeadDto)null);
-        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, null, null, null, null, null);
 
         //act
         var act = async () => await sut.DeleteLeadByIdAsync(id);

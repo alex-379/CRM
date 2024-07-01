@@ -16,5 +16,6 @@ public static class ConfigureServices
         services.AddConfigurationServicesFromJson(configuration);
         services.AddRabbitMq(configuration);
         services.AddTransient(_ => new CancellationTokenSource(ConfigurationSettings.TimeCansel));
+        services.AddMemoryCache();
     }
 }

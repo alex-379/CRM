@@ -10,6 +10,7 @@ public static class Routes
     public const string TransactionsController = "api/transactions";
     public const string Id = "{id}";
     public const string Login = "login";
+    public const string Login2Fa = "login-2fa";
     public const string LeadPassword = "{id}/password";
     public const string Status = "{id}/status";
     public const string LeadBirthDate = "{id}/birthdate";

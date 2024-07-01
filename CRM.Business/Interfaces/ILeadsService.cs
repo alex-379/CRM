@@ -10,7 +10,7 @@ public interface ILeadsService
     Task DeleteLeadByIdAsync(Guid id);
     Task<LeadFullResponse> GetLeadByIdAsync(Guid id);
     Task<List<LeadResponse>> GetLeadsAsync();
-    Task<AuthenticatedResponse> LoginLeadAsync(LoginLeadRequest request);
+    Task<Authenticated2FaResponse> LoginLeadAsync(LoginLeadRequest request);
     Task UpdateLeadAsync(Guid leadId, UpdateLeadDataRequest request);
     Task UpdateLeadBirthDateAsync(Guid leadId, UpdateLeadBirthDateRequest request);
     Task UpdateLeadPasswordAsync(Guid leadId, UpdateLeadPasswordRequest request);

@@ -11,12 +11,13 @@ using CRM.Core.Enums;
 using CRM.Core.Exceptions;
 using CRM.DataLayer.Interfaces;
 using Messaging.Shared;
+using Microsoft.Extensions.Caching.Memory;
 using Serilog;
 
 namespace CRM.Business.Services;
 
 public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository accountsRepository, ITransactionsManager transactionsManager, 
-    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt, IMessagesService messagesService) : ILeadsService
+    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt, IMessagesService messagesService, IMemoryCache memoryCache) : ILeadsService
 {
     private readonly ILogger _logger = Log.ForContext<LeadsService>();
 
@@ -92,7 +93,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         await messagesService.PublishAsync<AccountCreated, AccountDto>(lead.Accounts.FirstOrDefault());
     }
 
-    public async Task<AuthenticatedResponse> LoginLeadAsync(LoginLeadRequest request)
+    public async Task<Authenticated2FaResponse> LoginLeadAsync(LoginLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
         _logger.Information(LeadsServiceLogs.CheckLeadByMail, lead.Mail);
@@ -105,7 +106,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         var (accessToken, refreshToken) = SetTokens(leadDb);
         await leadsRepository.UpdateLeadAsync(leadDb);
 
-        return new AuthenticatedResponse
+        return new Authenticated2FaResponse
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken
