@@ -79,7 +79,7 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         return principal;
     }
 
-    public async Task<Authenticated2FaResponse> RefreshAsync(RefreshTokenRequest request)
+    public async Task<AuthenticatedResponse> RefreshAsync(RefreshTokenRequest request)
     {
         var principal = GetPrincipalFromExpiredToken(request.AccessToken);
         var leadId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -92,7 +92,7 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         
         var (newAccessToken, newRefreshToken) = UpdateLeadTokens(lead);
         
-        return new Authenticated2FaResponse()
+        return new AuthenticatedResponse()
         {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,

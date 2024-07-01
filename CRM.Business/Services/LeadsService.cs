@@ -4,6 +4,7 @@ using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
 using CRM.Business.Models.Tokens.Responses;
+using CRM.Business.Services.Constants;
 using CRM.Business.Services.Constants.Exceptions;
 using CRM.Business.Services.Constants.Logs;
 using CRM.Core.Dtos;
@@ -93,7 +94,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         await messagesService.PublishAsync<AccountCreated, AccountDto>(lead.Accounts.FirstOrDefault());
     }
 
-    public async Task<Authenticated2FaResponse> LoginLeadAsync(LoginLeadRequest request)
+    public async Task<Guid> LoginLeadAsync(LoginLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
         _logger.Information(LeadsServiceLogs.CheckLeadByMail, lead.Mail);
@@ -103,14 +104,12 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
             throw new UnauthenticatedException();
         }
         ConfirmPassword(lead,leadDb);
-        var (accessToken, refreshToken) = SetTokens(leadDb);
-        await leadsRepository.UpdateLeadAsync(leadDb);
+        var token = Guid.NewGuid();
+        var code = await PublishMailRequest(lead);
+        var options = MemoryCacheEntryOptionsProvider.GetMemoryCacheEntryOptions();
+        memoryCache.Set(lead.Mail, (token,code), options);
 
-        return new Authenticated2FaResponse
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        };
+        return token;
     }
     
     private void ConfirmPassword(LeadDto lead, LeadDto leadDb)
@@ -123,6 +122,42 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         }
     }
     
+    private async Task<int> PublishMailRequest(LeadDto lead)
+    {
+        var code = GenerateRandomNumber();
+        var mailRequest = new MailRequest()
+        {
+            To = [lead.Mail],
+            Subject = Data.AuthorizationCode,
+            Body = $"{Data.AuthorizationCode}: {code}"
+        };
+        await messagesService.PublishAsync(mailRequest);
+        
+        return code;
+    }
+    
+    private static int GenerateRandomNumber()
+    {
+        const int min = 1000;
+        const int max = 9999;
+        var rdm = new Random();
+        return rdm.Next(min, max);
+    }
+
+    /*public async Task<AuthenticatedResponse> LoginLead2FaAsync(Login2FaLeadRequest request)
+    {
+        memoryCache.TryGetValue(lead.Mail);
+        var (accessToken, refreshToken) = SetTokens(leadDb);
+        await leadsRepository.UpdateLeadAsync(leadDb);
+
+        return new AuthenticatedResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
+    }*/
+    
+    
     private (string accessToken, string refreshToken) SetTokens(LeadDto leadDb)
     {
         var (accessToken, refreshToken) = tokensService.GenerateTokens(leadDb);
@@ -131,7 +166,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
 
         return (accessToken, refreshToken);
     }
-
+    
     public async Task<List<LeadResponse>> GetLeadsAsync()
     {
         _logger.Information(LeadsServiceLogs.GetLeads);

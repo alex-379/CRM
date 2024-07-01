@@ -18,4 +18,11 @@ public class MessagesService(IPublishEndpoint publishEndpoint, IMapper mapper) :
         _logger.Debug(LeadsServiceLogs.SendInfoToRabbitMq);
         await publishEndpoint.Publish(message);
     }
+    
+    public async Task PublishAsync<TMessage>(TMessage message)
+        where TMessage : class
+    {
+        _logger.Debug(LeadsServiceLogs.SendInfoToRabbitMq);
+        await publishEndpoint.Publish(message);
+    }
 }

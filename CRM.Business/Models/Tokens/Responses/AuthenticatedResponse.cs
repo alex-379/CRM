@@ -1,6 +1,7 @@
-﻿namespace CRM.Business.Models.Tokens.Responses;
+namespace CRM.Business.Models.Tokens.Responses;
 
 public class AuthenticatedResponse
 {
-    public Guid Token { get; init; }
+    public string AccessToken { get; set; }
+    public string RefreshToken { get; set; }
 }
