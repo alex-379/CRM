@@ -39,19 +39,19 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public async Task<ActionResult<AuthenticatedResponse>> LoginAsync([FromBody] LoginLeadRequest request)
     {
         _logger.Information(LeadsLogs.Login);
-        var authenticatedResponse = await leadsService.LoginLeadAsync(request);
+        var token = await leadsService.LoginLeadAsync(request);
 
-        return Ok(authenticatedResponse);
+        return Ok(token);
     }
     
     [AllowAnonymous]
     [HttpPost(Routes.Login2Fa)]
-    public async Task<ActionResult<AuthenticatedResponse>> Login2FaAsync([FromBody] LoginLeadRequest request)
+    public async Task<ActionResult<AuthenticatedResponse>> Login2FaAsync([FromBody] Login2FaLeadRequest request)
     {
         _logger.Information(LeadsLogs.Login2Fa);
-        var authenticated2FaResponse = await leadsService.LoginLeadAsync(request);
+        var authenticatedResponse = await leadsService.Login2FaLeadAsync(request);
 
-        return Ok(authenticated2FaResponse);
+        return Ok(authenticatedResponse);
     }
 
     [Authorize(Roles = nameof(LeadStatus.Administrator))]

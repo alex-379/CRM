@@ -1,5 +1,6 @@
 ﻿using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
+using CRM.Business.Models.Tokens.Responses;
 
 namespace CRM.Business.Interfaces;
 
@@ -10,6 +11,7 @@ public interface ILeadsService
     Task<LeadFullResponse> GetLeadByIdAsync(Guid id);
     Task<List<LeadResponse>> GetLeadsAsync();
     Task<Guid> LoginLeadAsync(LoginLeadRequest request);
+    Task<AuthenticatedResponse> Login2FaLeadAsync(Login2FaLeadRequest request);
     Task UpdateLeadAsync(Guid leadId, UpdateLeadDataRequest request);
     Task UpdateLeadBirthDateAsync(Guid leadId, UpdateLeadBirthDateRequest request);
     Task UpdateLeadPasswordAsync(Guid leadId, UpdateLeadPasswordRequest request);

@@ -2,7 +2,6 @@
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
-using CRM.Business.Models.Tokens.Responses;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;

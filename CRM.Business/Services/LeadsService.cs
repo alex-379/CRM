@@ -107,7 +107,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         var token = Guid.NewGuid();
         var code = await PublishMailRequest(lead);
         var options = MemoryCacheEntryOptionsProvider.GetMemoryCacheEntryOptions();
-        memoryCache.Set(lead.Mail, (token,code), options);
+        memoryCache.Set(token, code, options);
 
         return token;
     }
@@ -144,25 +144,29 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         return rdm.Next(min, max);
     }
 
-    /*public async Task<AuthenticatedResponse> LoginLead2FaAsync(Login2FaLeadRequest request)
+    public async Task<AuthenticatedResponse> Login2FaLeadAsync(Login2FaLeadRequest request)
     {
-        memoryCache.TryGetValue(lead.Mail);
-        var (accessToken, refreshToken) = SetTokens(leadDb);
-        await leadsRepository.UpdateLeadAsync(leadDb);
+        var cacheIsTrue = memoryCache.TryGetValue(request.Token, out int code);
+        if (!cacheIsTrue || request.Code != code)
+        {
+            throw new UnauthenticatedException();
+        }
+        var lead = await leadsRepository.GetLeadByMailAsync(request.Mail.ToLower());
+        var (accessToken, refreshToken) = SetTokens(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
 
         return new AuthenticatedResponse
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken
         };
-    }*/
+    }
     
-    
-    private (string accessToken, string refreshToken) SetTokens(LeadDto leadDb)
+    private (string accessToken, string refreshToken) SetTokens(LeadDto lead)
     {
-        var (accessToken, refreshToken) = tokensService.GenerateTokens(leadDb);
-        leadDb.RefreshToken = refreshToken;
-        leadDb.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(jwt.LifeTimeRefreshToken);
+        var (accessToken, refreshToken) = tokensService.GenerateTokens(lead);
+        lead.RefreshToken = refreshToken;
+        lead.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(jwt.LifeTimeRefreshToken);
 
         return (accessToken, refreshToken);
     }
