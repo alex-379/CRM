@@ -106,7 +106,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         ConfirmPassword(lead,leadDb);
         var token = Guid.NewGuid();
         var code = await PublishMailRequest(lead);
-        var options = MemoryCacheEntryOptionsProvider.GetMemoryCacheEntryOptions();
+        var options = MemoryCacheEntryOptionsProvider.GetMemoryCacheEntryOptionsForToken();
         memoryCache.Set(token, code, options);
 
         return token;
