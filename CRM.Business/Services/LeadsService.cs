@@ -4,22 +4,25 @@ using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
 using CRM.Business.Models.Tokens.Responses;
+using CRM.Business.Services.Constants;
 using CRM.Business.Services.Constants.Exceptions;
 using CRM.Business.Services.Constants.Logs;
 using CRM.Core.Dtos;
 using CRM.Core.Enums;
 using CRM.Core.Exceptions;
 using CRM.DataLayer.Interfaces;
+using Messaging.Shared;
+using Microsoft.Extensions.Caching.Memory;
 using Serilog;
 
 namespace CRM.Business.Services;
 
 public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository accountsRepository, ITransactionsManager transactionsManager, 
-    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt) : ILeadsService
+    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt, IMessagesService messagesService, IMemoryCache memoryCache) : ILeadsService
 {
     private readonly ILogger _logger = Log.ForContext<LeadsService>();
 
-    public async Task<Guid> AddLeadAsync(RegisterLeadRequest request)
+    public async Task<(Guid leadId, Guid accountId)> AddLeadAsync(RegisterLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
         var account = SetupDefaultRubAccount(await SetupLeadAsync(lead));
@@ -34,16 +37,22 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         {
             await transactionsManager.RollbackTransactionAsync(transaction, ex);
         }
+        await PublishAddLeadAsync(lead);
 
-        return lead.Id;
+        return (lead.Id,account.Id);
     }
 
     private async Task<LeadDto> SetupLeadAsync(LeadDto lead)
     {
         var mailLower = lead.Mail.ToLower();
-        if (await leadsRepository.GetLeadByMailAsync(mailLower) is not null)
+        var leadDb = await leadsRepository.GetLeadByMailAsync(mailLower);
+        if (leadDb is not null)
         {
-            throw new ConflictException(LeadsServiceExceptions.ConflictException);
+            throw leadDb.IsDeleted switch
+            {
+                true => new ConflictException(LeadsServiceExceptions.ConflictExceptionIsDeleted),
+                false => new ConflictException(LeadsServiceExceptions.ConflictException)
+            };
         }
         lead.Mail = mailLower;
         _logger.Information(LeadsServiceLogs.SetLowerRegister);
@@ -79,21 +88,28 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
     }
 
-    public async Task<AuthenticatedResponse> LoginLeadAsync(LoginLeadRequest request)
+    private async Task PublishAddLeadAsync(LeadDto lead)
+    {
+        await messagesService.PublishAsync<LeadCreated, LeadDto>(lead);
+        await messagesService.PublishAsync<AccountCreated, AccountDto>(lead.Accounts.FirstOrDefault());
+    }
+
+    public async Task<Guid> LoginLeadAsync(LoginLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
         _logger.Information(LeadsServiceLogs.CheckLeadByMail, lead.Mail);
-        var leadDb = await leadsRepository.GetLeadByMailAsync(lead.Mail.ToLower())
-            ?? throw new UnauthenticatedException();
-        ConfirmPassword(lead,leadDb);
-        var (accessToken, refreshToken) = SetTokens(leadDb);
-        await leadsRepository.UpdateLeadAsync(leadDb);
-
-        return new AuthenticatedResponse
+        var leadDb = await leadsRepository.GetLeadByMailAsync(lead.Mail.ToLower());
+        if (leadDb == null || leadDb.IsDeleted)
         {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        };
+            throw new UnauthenticatedException();
+        }
+        ConfirmPassword(lead,leadDb);
+        var token = Guid.NewGuid();
+        var code = await PublishMailRequest(lead);
+        var options = MemoryCacheEntryOptionsProvider.GetMemoryCacheEntryOptionsForToken();
+        memoryCache.Set(token, code, options);
+
+        return token;
     }
     
     private void ConfirmPassword(LeadDto lead, LeadDto leadDb)
@@ -106,15 +122,55 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         }
     }
     
-    private (string accessToken, string refreshToken) SetTokens(LeadDto leadDb)
+    private async Task<int> PublishMailRequest(LeadDto lead)
     {
-        var (accessToken, refreshToken) = tokensService.GenerateTokens(leadDb);
-        leadDb.RefreshToken = refreshToken;
-        leadDb.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(jwt.LifeTimeRefreshToken);
+        var code = GenerateRandomNumber();
+        var mailRequest = new MailRequest()
+        {
+            To = [lead.Mail],
+            Subject = Data.AuthorizationCode,
+            Body = $"{Data.AuthorizationCode}: {code}"
+        };
+        await messagesService.PublishAsync(mailRequest);
+        
+        return code;
+    }
+    
+    private static int GenerateRandomNumber()
+    {
+        const int min = 1000;
+        const int max = 9999;
+        var rdm = new Random();
+        return rdm.Next(min, max);
+    }
+
+    public async Task<AuthenticatedResponse> Login2FaLeadAsync(Login2FaLeadRequest request)
+    {
+        var cacheIsTrue = memoryCache.TryGetValue(request.Token, out int code);
+        if (!cacheIsTrue || request.Code != code)
+        {
+            throw new UnauthenticatedException();
+        }
+        var lead = await leadsRepository.GetLeadByMailAsync(request.Mail.ToLower());
+        var (accessToken, refreshToken) = SetTokens(lead);
+        await leadsRepository.UpdateLeadAsync(lead);
+
+        return new AuthenticatedResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
+    }
+    
+    private (string accessToken, string refreshToken) SetTokens(LeadDto lead)
+    {
+        var (accessToken, refreshToken) = tokensService.GenerateTokens(lead);
+        lead.RefreshToken = refreshToken;
+        lead.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(jwt.LifeTimeRefreshToken);
 
         return (accessToken, refreshToken);
     }
-
+    
     public async Task<List<LeadResponse>> GetLeadsAsync()
     {
         _logger.Information(LeadsServiceLogs.GetLeads);
@@ -141,6 +197,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         SetLeadData(lead,request);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
         await leadsRepository.UpdateLeadAsync(lead);
+        await messagesService.PublishAsync<LeadUpdated, LeadDto>(lead);
     }
     
     private void SetLeadData(LeadDto lead, UpdateLeadDataRequest request)
@@ -159,6 +216,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         SetLeadPassword(lead,request);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
         await leadsRepository.UpdateLeadAsync(lead);
+        await messagesService.PublishAsync<LeadPasswordUpdated, LeadDto>(lead);
     }
     
     private void SetLeadPassword(LeadDto lead, UpdateLeadPasswordRequest request)
@@ -179,6 +237,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         lead.Status = request.Status;
         _logger.Information(LeadsServiceLogs.UpdateLeadById, id);
         await leadsRepository.UpdateLeadAsync(lead);
+        await messagesService.PublishAsync<LeadStatusUpdated, LeadDto>(lead);
     }
 
     public async Task UpdateLeadBirthDateAsync(Guid leadId, UpdateLeadBirthDateRequest request)
@@ -190,6 +249,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         lead.BirthDate = request.BirthDate;
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
         await leadsRepository.UpdateLeadAsync(lead);
+        await messagesService.PublishAsync<LeadBirthDateUpdated, LeadDto>(lead);
     }
 
     public async Task DeleteLeadByIdAsync(Guid id)
@@ -211,6 +271,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         {
             await transactionsManager.RollbackTransactionAsync(transaction, ex);
         }
+        await PublishDeleteLeadAsync(lead);
     }
     
     private async Task BlockLeadAsync(LeadDto lead)
@@ -219,5 +280,14 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         await tokensService.RevokeAsync(lead.Id);
         _logger.Information(LeadsServiceLogs.UpdateLeadById, lead.Id);
         await leadsRepository.UpdateLeadAsync(lead);
+    }
+    
+    private async Task PublishDeleteLeadAsync(LeadDto lead)
+    {
+        await messagesService.PublishAsync<LeadDeleted, LeadDto>(lead);
+        foreach (var account in lead.Accounts)
+        {
+            await messagesService.PublishAsync<AccountBlocked, AccountDto>(account);
+        }
     }
 }

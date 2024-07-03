@@ -21,12 +21,17 @@ public class LeadsController(ILeadsService leadsService) : Controller
 
     [AllowAnonymous]
     [HttpPost]
-    public async Task<ActionResult<Guid>> RegisterLeadAsync([FromBody] RegisterLeadRequest request)
+    public async Task<ActionResult<(Guid leadId, Guid accountId)>> RegisterLeadAsync([FromBody] RegisterLeadRequest request)
     {
         _logger.Information(LeadsLogs.RegisterLead, request.Mail);
-        var id = await leadsService.AddLeadAsync(request);
-
-        return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
+        var lead = await leadsService.AddLeadAsync(request);
+        var response = new
+        {
+            lead.leadId,
+            lead.accountId
+        };
+        
+        return Created($"{Routes.Host}{Routes.LeadsController}/{lead.leadId}", response);
     }
 
     [AllowAnonymous]
@@ -34,7 +39,17 @@ public class LeadsController(ILeadsService leadsService) : Controller
     public async Task<ActionResult<AuthenticatedResponse>> LoginAsync([FromBody] LoginLeadRequest request)
     {
         _logger.Information(LeadsLogs.Login);
-        var authenticatedResponse = await leadsService.LoginLeadAsync(request);
+        var token = await leadsService.LoginLeadAsync(request);
+
+        return Ok(token);
+    }
+    
+    [AllowAnonymous]
+    [HttpPost(Routes.Login2Fa)]
+    public async Task<ActionResult<AuthenticatedResponse>> Login2FaAsync([FromBody] Login2FaLeadRequest request)
+    {
+        _logger.Information(LeadsLogs.Login2Fa);
+        var authenticatedResponse = await leadsService.Login2FaLeadAsync(request);
 
         return Ok(authenticatedResponse);
     }

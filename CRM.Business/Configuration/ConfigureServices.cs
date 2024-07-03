@@ -11,6 +11,7 @@ public static class ConfigureServices
         services.AddScoped<ILeadsService, LeadsService>();
         services.AddScoped<IAccountsService, AccountsService>();
         services.AddScoped<ITokensService, TokensService>();
+        services.AddScoped<IMessagesService, MessagesService>();
         services.AddHttpClientService();
     }
 }

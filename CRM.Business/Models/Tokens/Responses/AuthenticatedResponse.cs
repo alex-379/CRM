@@ -1,4 +1,4 @@
-﻿namespace CRM.Business.Models.Tokens.Responses;
+namespace CRM.Business.Models.Tokens.Responses;
 
 public class AuthenticatedResponse
 {

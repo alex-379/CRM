@@ -17,4 +17,6 @@ public static class LeadsServiceLogs
     public const string UpdateLeadBirthDate = "Updating lead's birth date with ID: {id}";
     public const string UpdateLeadStatus = "Updating lead's status on {status} with ID: {id}";
     public const string SetIsDeletedLeadById = "The parameter \"IsDeleted=true\" is set for lead with ID {id}";
+    public const string SendInfoToRabbitMq = "Sending info to RabbitMQ";
+
 }
