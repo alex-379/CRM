@@ -26,7 +26,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     {
         var tStoreRequest = await CreateDepositWithdrawRequestTStore(request);
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.DepositTStore);
-        _logger.Information(TransactionsLogs.AddDepositTransaction, tStoreRequest.AccountId, tStoreRequest.CurrencyType);
+        _logger.Information(TransactionsLogs.AddDepositTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
         var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
         
         return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{id}", id);
@@ -38,7 +38,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     {
         var tStoreRequest = await CreateDepositWithdrawRequestTStore(request);
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.WithdrawTStore);
-        _logger.Information(TransactionsLogs.AddWithdrawTransaction, tStoreRequest.AccountId, tStoreRequest.CurrencyType);
+        _logger.Information(TransactionsLogs.AddWithdrawTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
         var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
         
         return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{id}", id);
@@ -58,12 +58,12 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
     [HttpGet(Routes.Id)]
-    public async Task<ActionResult<TransferGuidsResponse>> GetTransactionById(Guid id)
+    public async Task<ActionResult<FullTransactionResponse>> GetTransactionById(Guid id)
     {
         _logger.Information(TransactionsLogs.GetTransaction, id);
-        var transactions = await httpClientService.GetAsync<List<TransactionWithAccountIdResponse>>(string.Format(Routes.TransactionsTStore, id));
+        var transactions = await httpClientService.GetAsync<FullTransactionResponse>(string.Format(Routes.TransactionsTStore, id));
         
-        return Ok(transactions.FirstOrDefault());
+        return Ok(transactions);
     }
     
     private async Task<DepositWithdrawRequest> CreateDepositWithdrawRequestTStore(TransactionRequest request)
@@ -72,7 +72,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         var tStoreRequest = new DepositWithdrawRequest()
         {
             AccountId = request.AccountId,
-            CurrencyType = account.Currency,
+            Currency = account.Currency,
             Amount = request.Amount
         };
 
@@ -87,8 +87,8 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         {
             AccountToId = request.AccountToId,
             AccountFromId = request.AccountFromId,
-            CurrencyToType = accountTo.Currency,
-            CurrencyFromType = accountFrom.Currency,
+            CurrencyTo = accountTo.Currency,
+            CurrencyFrom = accountFrom.Currency,
             Amount = request.Amount
         };
 

@@ -6,7 +6,7 @@ public class TransferRequest
 {
     public Guid AccountFromId { get; init; }
     public Guid AccountToId { get; init; }
-    public Currency CurrencyFromType { get; init; }
-    public Currency CurrencyToType { get; init; }
+    public Currency CurrencyFrom { get; init; }
+    public Currency CurrencyTo { get; init; }
     public decimal Amount { get; init; }
 }

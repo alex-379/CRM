@@ -14,5 +14,8 @@ public static class ConfigureServices
         services.AddAutoMapper(typeof(LeadsMappingProfile).Assembly);
         services.AddValidation();
         services.AddConfigurationServicesFromJson(configuration);
+        services.AddRabbitMq(configuration);
+        services.AddTransient(_ => new CancellationTokenSource(ConfigurationSettings.TimeCansel));
+        services.AddMemoryCache();
     }
 }

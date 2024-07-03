@@ -9,4 +9,6 @@ public static class GlobalExceptions
     public const string UnauthorizedException = "Authorization failed";
     public const string UnauthenticatedException = "Invalid authentication data";
     public const string ServiceUnavailableException = "Service unavailable";
+    public const string GatewayTimeoutException = "Gateway timeout";
+    public const string BadGatewayException = "Gateway error";
 }

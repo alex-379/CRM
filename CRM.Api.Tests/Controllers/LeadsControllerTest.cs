@@ -2,7 +2,6 @@
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
-using CRM.Business.Models.Tokens.Responses;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -18,7 +17,7 @@ public class LeadsControllerTest
     {
         //arrange
         var registrationLeadRequest = new RegisterLeadRequest();
-        _leadsServiceMock.Setup(x => x.AddLeadAsync(registrationLeadRequest)).ReturnsAsync(new Guid());
+        _leadsServiceMock.Setup(x => x.AddLeadAsync(registrationLeadRequest)).ReturnsAsync((new Guid(), new Guid()));
         var sut = new LeadsController(_leadsServiceMock.Object);
 
         //act
@@ -34,7 +33,7 @@ public class LeadsControllerTest
     {
         //arrange
         var loginLeadRequest = new LoginLeadRequest();
-        _leadsServiceMock.Setup(x => x.LoginLeadAsync(loginLeadRequest)).ReturnsAsync(new AuthenticatedResponse());
+        _leadsServiceMock.Setup(x => x.LoginLeadAsync(loginLeadRequest)).ReturnsAsync(new Guid());
         var sut = new LeadsController(_leadsServiceMock.Object);
 
         //act

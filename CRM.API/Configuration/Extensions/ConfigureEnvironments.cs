@@ -12,6 +12,8 @@ public static class ConfigureEnvironments
         configuration.ReadSection(databaseSettings);
         var secretSettings = configuration.GetSection(ConfigurationSettings.SecretSettings).GetChildren();
         configuration.ReadSection(secretSettings);
+        var rabbitMqSettings = configuration.GetSection(ConfigurationSettings.RabbitMqSettings).GetChildren();
+        configuration.ReadSection(rabbitMqSettings);
     }
     
     private static void ReadValue(this IConfiguration configuration, IConfigurationSection key)

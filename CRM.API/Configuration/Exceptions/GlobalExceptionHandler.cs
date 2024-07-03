@@ -65,7 +65,23 @@ public class GlobalExceptionHandler : IExceptionHandler
             };
 
                 break;
+                
+            case nameof(GatewayTimeoutException):
+            {
+                problemDetails.Status = StatusCodes.Status504GatewayTimeout;
+                problemDetails.Title = GlobalExceptions.GatewayTimeoutException;
+            };
+
+                break;
             
+            case nameof(BadGatewayException):
+            {
+                problemDetails.Status = StatusCodes.Status502BadGateway;
+                problemDetails.Title = GlobalExceptions.BadGatewayException;
+            };
+
+                break;
+
             default:
                 {
                     problemDetails.Status = StatusCodes.Status500InternalServerError;
