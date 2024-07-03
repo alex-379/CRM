@@ -7,12 +7,13 @@ namespace CRM.API;
 
 public static class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         try
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Configuration.ReadSettingsFromEnvironment();
+            await builder.Configuration.ReadSettingsFromConfigurationManager();
             builder.Logging.ClearProviders();
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration)
