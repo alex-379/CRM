@@ -10,5 +10,7 @@ public static class ConfigureServicesFromJson
             .Get<SecretSettings>(options => options.BindNonPublicProperties = true));
         services.AddScoped(sp => configuration.GetSection(ConfigurationSettings.JwtToken)
             .Get<JwtToken>(options => options.BindNonPublicProperties = true));
+        services.AddScoped(sp => configuration.GetSection(ConfigurationSettings.ServicesUrlSettings)
+            .Get<ServicesUrlSettings>(options => options.BindNonPublicProperties = true));
     }
 }

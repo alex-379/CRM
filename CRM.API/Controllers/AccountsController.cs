@@ -2,6 +2,7 @@
 using CRM.API.Configuration.Filters;
 using CRM.API.Controllers.Constants;
 using CRM.API.Controllers.Constants.Logs;
+using CRM.Business.Configuration;
 using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
@@ -17,20 +18,21 @@ namespace CRM.API.Controllers;
 
 [Authorize]
 [ApiController]
-[Route(Routes.AccountsController)]
-public class AccountsController(IAccountsService accountsService, IHttpClientService<TransactionStoreHttpClient> httpClientService) : Controller
+[Route($"{Routes.Api}{Routes.AccountsController}")]
+public class AccountsController(IAccountsService accountsService, IHttpClientService<TransactionStoreHttpClient> httpClientService, ServicesUrlSettings servicesUrlSettings) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<AccountsController>();
 
     [HttpPost]
     public async Task<ActionResult<Guid>> RegisterAccountAsync([FromBody] RegisterAccountRequest request)
     {
+        var a = servicesUrlSettings.Crm;
         _logger.Information(LeadsLogs.GetAuthorizedLead);
         var currentLeadId = GetCurrentLeadFromClaims(HttpContext.User); 
         _logger.Information(AccountsLogs.RegisterAccount, request.Currency, currentLeadId);
         var id = await accountsService.AddAccountAsync(currentLeadId, request);
 
-        return Created($"{Routes.Host}{Routes.LeadsController}/{id}", id);
+        return Created($"{servicesUrlSettings.Crm}{Routes.LeadsController}/{id}", id);
     }
     
     private static Guid GetCurrentLeadFromClaims(ClaimsPrincipal claimsPrincipal)

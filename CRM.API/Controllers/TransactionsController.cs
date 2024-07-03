@@ -1,6 +1,7 @@
 using CRM.API.Configuration.Filters;
 using CRM.API.Controllers.Constants;
 using CRM.API.Controllers.Constants.Logs;
+using CRM.Business.Configuration;
 using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Responses;
@@ -15,8 +16,8 @@ namespace CRM.API.Controllers;
 
 [Authorize]
 [ApiController]
-[Route(Routes.TransactionsController)]
-public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService, IAccountsService accountsService) : Controller
+[Route($"{Routes.Api}{Routes.TransactionsController}")]
+public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService, IAccountsService accountsService, ServicesUrlSettings servicesUrlSettings) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<TransactionsController>();
     
@@ -29,7 +30,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         _logger.Information(TransactionsLogs.AddDepositTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
         var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
         
-        return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{id}", id);
+        return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{id}", id);
     }
     
     [AuthorizationFilterForTransactionByAccountId]
@@ -41,7 +42,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         _logger.Information(TransactionsLogs.AddWithdrawTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
         var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
         
-        return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{id}", id);
+        return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{id}", id);
     }
     
     [AuthorizationFilterForTransferByAccountsId]
@@ -53,7 +54,7 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
         _logger.Information(TransactionsLogs.AddTransferTransaction, tStoreRequest.AccountFromId, tStoreRequest.AccountToId);
         var response = await httpClientService.SendAsync<TransferRequest,TransferGuidsResponse>(tStoreRequest, requestMessage);
         
-        return Created($"{Routes.HostTStore}{Routes.TransactionsController}/{response}", response);
+        return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{response}", response);
     }
     
     [Authorize(Roles = nameof(LeadStatus.Administrator))]

@@ -32,7 +32,7 @@ public static class Program
 
             app.UseApp();
             app.MapControllers();
-            app.Run();
+            await app.RunAsync();
         }
         catch (Exception ex)
         {
@@ -40,7 +40,7 @@ public static class Program
         }
         finally
         { 
-            Log.CloseAndFlush();
+            await Log.CloseAndFlushAsync();
         }
     }
 }

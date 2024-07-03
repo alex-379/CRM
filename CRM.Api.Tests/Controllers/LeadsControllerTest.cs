@@ -18,7 +18,7 @@ public class LeadsControllerTest
         //arrange
         var registrationLeadRequest = new RegisterLeadRequest();
         _leadsServiceMock.Setup(x => x.AddLeadAsync(registrationLeadRequest)).ReturnsAsync((new Guid(), new Guid()));
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.RegisterLeadAsync(registrationLeadRequest);
@@ -34,7 +34,7 @@ public class LeadsControllerTest
         //arrange
         var loginLeadRequest = new LoginLeadRequest();
         _leadsServiceMock.Setup(x => x.LoginLeadAsync(loginLeadRequest)).ReturnsAsync(new Guid());
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.LoginAsync(loginLeadRequest);
@@ -49,7 +49,7 @@ public class LeadsControllerTest
     {
         //arrange
         _leadsServiceMock.Setup(x => x.GetLeadsAsync()).ReturnsAsync([]);
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.GetLeadsAsync();
@@ -65,7 +65,7 @@ public class LeadsControllerTest
         //arrange
         var id = new Guid();
         _leadsServiceMock.Setup(x => x.GetLeadByIdAsync(id)).ReturnsAsync(new LeadFullResponse());
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.GetLeadByIdAsync(id);
@@ -82,7 +82,7 @@ public class LeadsControllerTest
         var id = new Guid();
         var updateLeadDataRequest = new UpdateLeadDataRequest();
         _leadsServiceMock.Setup(x => x.UpdateLeadAsync(id, updateLeadDataRequest));
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.UpdateLeadDataAsync(id, updateLeadDataRequest);
@@ -99,7 +99,7 @@ public class LeadsControllerTest
         //arrange
         var id = new Guid();
         _leadsServiceMock.Setup(x => x.DeleteLeadByIdAsync(id));
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.DeleteLeadByIdAsync(id);
@@ -116,7 +116,7 @@ public class LeadsControllerTest
         var id = new Guid();
         var updateLeadPasswordRequest = new UpdateLeadPasswordRequest();
         _leadsServiceMock.Setup(x => x.UpdateLeadPasswordAsync(id, updateLeadPasswordRequest));
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.UpdateLeadPasswordAsync(id, updateLeadPasswordRequest);
@@ -133,7 +133,7 @@ public class LeadsControllerTest
         var id = new Guid();
         var updateLeadStatusRequest = new UpdateLeadStatusRequest();
         _leadsServiceMock.Setup(x => x.UpdateLeadStatusAsync(id, updateLeadStatusRequest));
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.UpdateLeadStatusAsync(id, updateLeadStatusRequest);
@@ -150,7 +150,7 @@ public class LeadsControllerTest
         var id = new Guid();
         var updateLeadBirthDateRequest = new UpdateLeadBirthDateRequest();
         _leadsServiceMock.Setup(x => x.UpdateLeadBirthDateAsync(id, updateLeadBirthDateRequest));
-        var sut = new LeadsController(_leadsServiceMock.Object);
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
 
         //act
         var actual = await sut.UpdateLeadBirthDateAsync(id, updateLeadBirthDateRequest);
