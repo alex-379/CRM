@@ -12,6 +12,15 @@ public static class Program
         try
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Configuration.AddJsonFile(ConfigurationSettings.DefaultConfigurationJson, optional: false, reloadOnChange: true);
+
+            // var dict = new Dictionary<string, string>
+            // {
+            //     { "Log_ConfigurationManager", "new MyDictClass()" }
+            // };
+            // builder.Configuration.UpdateSettingsFromConfigurationManager(dict);
+            
+            
             builder.Configuration.ReadSettingsFromEnvironment();
             await builder.Configuration.ReadSettingsFromConfigurationManager();
             builder.Logging.ClearProviders();
