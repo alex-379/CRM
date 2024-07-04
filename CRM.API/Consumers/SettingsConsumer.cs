@@ -14,8 +14,9 @@ public class SettingsConsumer(IConfiguration configuration) : IConsumer<Configur
     public Task Consume(ConsumeContext<ConfigurationMessage> context)
     {
         var jsonMessage = JsonSerializer.Serialize(context.Message.Configurations);
-        _logger.Information($"Getting current configuration: {jsonMessage} from Rates Provider");
+        _logger.Information(ConsumersLogs.SettingsConsumer, jsonMessage);
         configuration.UpdateSettingsFromConfigurationManager(context.Message.Configurations);
+        
         return Task.CompletedTask;
     }
 }
