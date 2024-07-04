@@ -50,30 +50,36 @@ public static class ConfigureSettingsFromConfigurationManager
     public static void UpdateSettingsFromConfigurationManager(this IConfiguration configuration,
         Dictionary<string, string> settings)
     {
-        var defaultSection = configuration.GetSection(ConfigurationSettings.DefaultConfigurationSection); 
-        UpdateValueFromConfigurationManager(defaultSection.GetSection(ConfigurationSettings.LogPath), settings); 
-        defaultSection.UpdateSection(ConfigurationSettings.DatabaseSettings, settings);
-        defaultSection.UpdateSection(ConfigurationSettings.RabbitMqSettings, settings);
-        defaultSection.UpdateSection(ConfigurationSettings.ServicesUrlSettings, settings);
+        var defaultSection = configuration.GetSection(ConfigurationSettings.DefaultConfigurationSection);
+        UpdateValueFromConfigurationManager(defaultSection.GetSection(ConfigurationSettings.LogPath), configuration.GetSection(ConfigurationSettings.LogPath), settings); 
+        configuration.UpdateSection(ConfigurationSettings.DatabaseSettings, settings);
+        configuration.UpdateSection(ConfigurationSettings.RabbitMqSettings, settings);
+        configuration.UpdateSection(ConfigurationSettings.ServicesUrlSettings, settings);
     }
     
     private static void UpdateSection(this IConfiguration configuration, string keySection, Dictionary<string, string> configurationSettings)
     {
-        var section = configuration.GetSection(keySection).GetChildren();
-        foreach (var key in section)
+        var sourceSection = configuration.GetSection(ConfigurationSettings.DefaultConfigurationSection).GetSection(keySection).GetChildren();;
+        var destinationSection = configuration.GetSection(keySection).GetChildren();
+        
+        var sourceKeys = sourceSection.Select(x => x.Key).ToList();
+        var destinationKeys = destinationSection.Select(x => x.Key).ToList();
+        
+        for (var i = 0; i < sourceKeys.Count; i++)
         {
-            UpdateValueFromConfigurationManager(key, configurationSettings);    
-        }
+            var sourceKey = configuration.GetSection($"{ConfigurationSettings.DefaultConfigurationSection}:{keySection}:{sourceKeys[i]}");
+            var destinationKey = configuration.GetSection($"{keySection}:{destinationKeys[i]}");
+            UpdateValueFromConfigurationManager(sourceKey, destinationKey, configurationSettings);
+        }    
     }
     
-    private static void UpdateValueFromConfigurationManager(IConfigurationSection key, Dictionary<string, string> configurationSettings)
+    private static void UpdateValueFromConfigurationManager(IConfigurationSection sourceKey, IConfigurationSection destinationKey, Dictionary<string, string> configurationSettings)
     { 
-        var value = key.Value ?? throw new ConfigurationMissingException(ConfigurationExceptions.ConfigurationKeyNull); 
+        var value = sourceKey.Value ?? throw new ConfigurationMissingException(ConfigurationExceptions.ConfigurationKeyNull); 
         if (!configurationSettings.TryGetValue(value, out var configurationSetting))
         {
             throw new ConfigurationMissingException(ConfigurationExceptions.ConfigurationManagerVariablesNotSpecified);
         }
-        
-        key.Value = configurationSetting;
+        destinationKey.Value = configurationSetting;
     }
 }
