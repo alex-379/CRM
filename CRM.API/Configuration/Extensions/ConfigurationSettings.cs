@@ -25,6 +25,9 @@ public static class ConfigurationSettings
     public const string ConfigurationQueueName = "settings_queue";
     public const string ConfigurationExchangeName = "configurations-exchange";
     public const string ConfigurationExchangeType = "fanout";
+    public const string LeadUpdaterQueueName = "leads_queue";
+    public const string LeadUpdaterExchangeName = "leads-guids-exchange";
+    public const string LeadUpdaterExchangeType = "fanout";
     public const string DefaultConfigurationJson = "appsettings.DefaultConfiguration.json";
     public const string DefaultConfigurationSection = "DefaultSettings";
 }

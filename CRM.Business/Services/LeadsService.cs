@@ -291,4 +291,10 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
             await messagesService.PublishAsync<AccountBlocked, AccountDto>(account);
         }
     }
+    
+    public async Task SetLeadStatusAsync(List<Guid> leads, LeadStatus status)
+    {
+        _logger.Information(LeadsServiceLogs.SetLeadsStatus, status);
+        await leadsRepository.SetLeadStatusAsync(leads, status);
+    }
 }

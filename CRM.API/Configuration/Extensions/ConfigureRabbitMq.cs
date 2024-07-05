@@ -11,6 +11,7 @@ public static class ConfigureRabbitMq
         services.AddMassTransit(x =>
         {
             x.AddConsumer<SettingsConsumer>();
+            x.AddConsumer<LeadsConsumer>();
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(configuration[ConfigurationSettings.RabbitMqHost], h =>
@@ -25,6 +26,14 @@ public static class ConfigureRabbitMq
                         с.ExchangeType = ConfigurationSettings.ConfigurationExchangeType;
                     });
                     e.ConfigureConsumer<SettingsConsumer>(context);
+                });
+                cfg.ReceiveEndpoint(ConfigurationSettings.LeadUpdaterQueueName, e =>
+                {
+                    e.Bind(ConfigurationSettings.LeadUpdaterExchangeName, с =>
+                    {
+                        с.ExchangeType = ConfigurationSettings.LeadUpdaterExchangeType;
+                    });
+                    e.ConfigureConsumer<LeadsConsumer>(context);
                 });
             });
         });
