@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CRM.API.Configuration.Extensions;
+using CRM.Core.Enums;
 using MassTransit;
 using Messaging.Shared;
 using Serilog;
@@ -13,6 +14,10 @@ public class SettingsConsumer(IConfiguration configuration, IConfigurationRoot c
     
     public Task Consume(ConsumeContext<ConfigurationMessage> context)
     {
+        if (context.Message.ServiceType != ServiceType.Crm)
+        {
+            return Task.CompletedTask;
+        }
         var jsonMessage = JsonSerializer.Serialize(context.Message.Configurations);
         _logger.Information(ConsumersLogs.SettingsConsumer, jsonMessage);
         configuration.UpdateSettingsFromConfigurationManager(context.Message.Configurations);
