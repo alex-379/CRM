@@ -129,6 +129,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         _logger.Information(LeadsServiceLogs.AuthorizationCode, code);
         var mailRequest = new MailRequest()
         {
+            From = Data.MailFrom,
             To = [lead.Mail],
             Subject = Data.AuthorizationCode,
             Body = $"{Data.AuthorizationCode}: {code}"
