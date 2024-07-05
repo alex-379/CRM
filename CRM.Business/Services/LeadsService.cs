@@ -90,6 +90,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
 
     private async Task PublishAddLeadAsync(LeadDto lead)
     {
+        
         await messagesService.PublishAsync<LeadCreated, LeadDto>(lead);
         await messagesService.PublishAsync<AccountCreated, AccountDto>(lead.Accounts.FirstOrDefault());
     }

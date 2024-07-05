@@ -61,10 +61,8 @@ public static class ConfigureSettingsFromConfigurationManager
     {
         var sourceSection = configuration.GetSection(ConfigurationSettings.DefaultConfigurationSection).GetSection(keySection).GetChildren();;
         var destinationSection = configuration.GetSection(keySection).GetChildren();
-        
         var sourceKeys = sourceSection.Select(x => x.Key).ToList();
         var destinationKeys = destinationSection.Select(x => x.Key).ToList();
-        
         for (var i = 0; i < sourceKeys.Count; i++)
         {
             var sourceKey = configuration.GetSection($"{ConfigurationSettings.DefaultConfigurationSection}:{keySection}:{sourceKeys[i]}");

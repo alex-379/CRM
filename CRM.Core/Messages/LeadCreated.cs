@@ -11,4 +11,5 @@ public class LeadCreated
     public string Address { get; init; }
     public DateOnly BirthDate { get; init; }
     public LeadStatus Status { get; init; }
+    public List<AccountCreated> Accounts { get; init; }
 }

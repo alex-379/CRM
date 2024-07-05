@@ -15,8 +15,7 @@ public class MessagesService(IPublishEndpoint publishEndpoint, IMapper mapper) :
         where TDto : class
     {
         var message = mapper.Map<TDto, TMessage>(dto);
-        _logger.Debug(LeadsServiceLogs.SendInfoToRabbitMq);
-        await publishEndpoint.Publish(message);
+        await PublishAsync(message);
     }
     
     public async Task PublishAsync<TMessage>(TMessage message)

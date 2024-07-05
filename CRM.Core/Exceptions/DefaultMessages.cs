@@ -10,4 +10,5 @@ public static class DefaultMessages
     public const string UnauthorizedException = "Access denied";
     public const string GatewayTimeoutException = "The gateway is not responding";
     public const string BadGatewayException = "The gateway returned an error";
+    public const string ConfigurationError = "Configuration error";
 }
