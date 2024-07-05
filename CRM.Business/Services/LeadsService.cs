@@ -126,6 +126,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     private async Task<int> PublishMailRequest(LeadDto lead)
     {
         var code = GenerateRandomNumber();
+        _logger.Information(LeadsServiceLogs.AuthorizationCode, code);
         var mailRequest = new MailRequest()
         {
             To = [lead.Mail],
