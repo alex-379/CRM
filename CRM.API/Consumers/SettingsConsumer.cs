@@ -8,7 +8,7 @@ using ILogger = Serilog.ILogger;
 
 namespace CRM.API.Consumers;
 
-public class SettingsConsumer(IConfiguration configuration, IConfigurationRoot configurationRoot) : IConsumer<ConfigurationMessage>
+public class SettingsConsumer(IConfiguration configuration) : IConsumer<ConfigurationMessage>
 {
     private readonly ILogger _logger = Log.ForContext<SettingsConsumer>();
     
@@ -21,6 +21,7 @@ public class SettingsConsumer(IConfiguration configuration, IConfigurationRoot c
         var jsonMessage = JsonSerializer.Serialize(context.Message.Configurations);
         _logger.Information(ConsumersLogs.SettingsConsumer, jsonMessage);
         configuration.UpdateSettingsFromConfigurationManager(context.Message.Configurations);
+        var configurationRoot = (IConfigurationRoot)configuration;
         configurationRoot.Reload();
         
         return Task.CompletedTask;
