@@ -130,7 +130,6 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         _logger.Information(LeadsServiceLogs.AuthorizationCode, code);
         var mailRequest = new MailRequest()
         {
-            From = Data.MailFrom,
             To = [lead.Mail],
             Subject = Data.AuthorizationCode,
             Body = $"{Data.AuthorizationCode}: {code}"
@@ -295,9 +294,15 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         }
     }
     
-    public async Task SetLeadStatusAsync(List<Guid> leads, LeadStatus status)
+    public async Task SetLeadStatusByStatusAsync(LeadStatus statusIn, LeadStatus statusOut)
+    {
+        _logger.Information(LeadsServiceLogs.SetLeadsStatus, statusOut);
+        await leadsRepository.SetLeadStatusByStatusAsync(statusIn, statusOut);
+    }
+    
+    public async Task SetLeadStatusByIdAsync(List<Guid> leads, LeadStatus status)
     {
         _logger.Information(LeadsServiceLogs.SetLeadsStatus, status);
-        await leadsRepository.SetLeadStatusAsync(leads, status);
+        await leadsRepository.SetLeadStatusByIdAsync(leads, status);
     }
 }

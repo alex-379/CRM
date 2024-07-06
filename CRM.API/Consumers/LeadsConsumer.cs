@@ -13,8 +13,11 @@ public class LeadsConsumer(ILeadsService leadsService) : IConsumer<LeadsMessage>
     
     public Task Consume(ConsumeContext<LeadsMessage> context)
     {
-        _logger.Information(ConsumersLogs.LeadsConsumer);
-        leadsService.SetLeadStatusAsync(context.Message.Leads, LeadStatus.Vip);
+        _logger.Information(ConsumersLogs.LeadsConsumerRegular);
+        leadsService.SetLeadStatusByStatusAsync(LeadStatus.Vip, LeadStatus.Regular);
+        var countLeads = context.Message.Leads.Count;
+        _logger.Information(ConsumersLogs.LeadsConsumerVip, countLeads);
+        leadsService.SetLeadStatusByIdAsync(context.Message.Leads, LeadStatus.Vip);
         
         return Task.CompletedTask;
     }

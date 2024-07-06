@@ -58,7 +58,17 @@ public class LeadsRepository(CrmContext context) : BaseRepository(context), ILea
         _logger.Information(LeadsRepositoryLogs.UpdateLead, lead.Id);
     }
 
-    public async Task SetLeadStatusAsync(List<Guid> leads, LeadStatus status)
+    public async Task SetLeadStatusByStatusAsync(LeadStatus statusIn, LeadStatus statusOut)
+    {
+        await _ctx.Leads
+            .Where(d => d.Status == statusIn)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(d => d.Status, d => statusOut));
+        await _ctx.SaveChangesAsync();
+        _logger.Information(LeadsRepositoryLogs.SetStatusForLeads, statusOut);
+    }
+    
+    public async Task SetLeadStatusByIdAsync(List<Guid> leads, LeadStatus status)
     {
         await _ctx.Leads
             .Where(d => leads

@@ -10,5 +10,6 @@ public interface ILeadsRepository
     Task<LeadDto> GetLeadByMailAsync(string mail);
     Task<List<LeadDto>> GetLeadsAsync();
     Task UpdateLeadAsync(LeadDto lead);
-    Task SetLeadStatusAsync(List<Guid> leads, LeadStatus status);
+    Task SetLeadStatusByStatusAsync(LeadStatus statusIn, LeadStatus statusOut);
+    Task SetLeadStatusByIdAsync(List<Guid> leads, LeadStatus status);
 }
