@@ -38,6 +38,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
             await transactionsManager.RollbackTransactionAsync(transaction, ex);
         }
         await PublishAddLeadAsync(lead);
+        await messagesService.PublishAsync<LeadCreated, LeadDto>(lead);
 
         return (lead.Id,account.Id);
     }
