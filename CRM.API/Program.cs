@@ -3,7 +3,7 @@ using CRM.Business.Configuration;
 using CRM.DataLayer.Configuration.Extensions;
 using Serilog;
 
-namespace CRM.API;                // { "Log_ConfigurationManager", "Log" }
+namespace CRM.API;     
 
 public static class Program
 {

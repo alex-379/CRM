@@ -37,7 +37,6 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         {
             await transactionsManager.RollbackTransactionAsync(transaction, ex);
         }
-        await PublishAddLeadAsync(lead);
         await messagesService.PublishAsync<LeadCreated, LeadDto>(lead);
 
         return (lead.Id,account.Id);
@@ -87,13 +86,6 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         _logger.Information(AccountsServiceLogs.AddDefaultAccount);
         await accountsRepository.AddAccountAsync(account);
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
-    }
-
-    private async Task PublishAddLeadAsync(LeadDto lead)
-    {
-        
-        await messagesService.PublishAsync<LeadCreated, LeadDto>(lead);
-        await messagesService.PublishAsync<AccountCreated, AccountDto>(lead.Accounts.FirstOrDefault());
     }
 
     public async Task<Guid> LoginLeadAsync(LoginLeadRequest request)
