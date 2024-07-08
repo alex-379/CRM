@@ -106,7 +106,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         {
             throw new ValidationException(AccountsServiceExceptions.CurrencyIsUnknown);
         }
-        if (lead.Status == LeadStatus.Regular && allowedCurrenciesForRegularLead.Contains(request.Currency))
+        if (lead.Status == LeadStatus.Regular && !allowedCurrenciesForRegularLead.Contains(request.Currency))
         {
             throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, allowedCurrenciesForRegularLead));
         }
