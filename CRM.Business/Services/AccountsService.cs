@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
 using CRM.Business.Services.Constants.Exceptions;
@@ -101,14 +102,15 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
     
     private static void CheckAllowedCurrencyByLeadStatus(LeadDto lead, RegisterAccountRequest request)
     {
-        List<Currency> allowedCurrenciesForRegularLead = [Currency.Rub, Currency.Usd, Currency.Eur];
+        Currency[] allowedCurrenciesForRegularLead = [Currency.Rub, Currency.Usd, Currency.Eur];
+        var stringAllowedCurrencies = JsonSerializer.Serialize(allowedCurrenciesForRegularLead); 
         if (request.Currency == Currency.Unknown)
         {
             throw new ValidationException(AccountsServiceExceptions.CurrencyIsUnknown);
         }
         if (lead.Status == LeadStatus.Regular && !allowedCurrenciesForRegularLead.Contains(request.Currency))
         {
-            throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, allowedCurrenciesForRegularLead));
+            throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, stringAllowedCurrencies));
         }
     }
 }
