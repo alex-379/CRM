@@ -1,4 +1,5 @@
 ﻿using CRM.Business.Models.Accounts.Requests;
+using CRM.Core.Enums;
 
 namespace CRM.Business.Interfaces;
 

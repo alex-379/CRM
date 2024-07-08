@@ -13,13 +13,11 @@ namespace CRM.Business.Tests.Services;
 public class AccountsServiceTest
 {
     private readonly Mock<IAccountsRepository> _accountsRepositoryMock;
-    private readonly Mock<ILeadsRepository> _leadsRepositoryMock;
     private readonly IMapper _mapper;
 
     public AccountsServiceTest()
     {
         _accountsRepositoryMock = new Mock<IAccountsRepository>();
-        _leadsRepositoryMock = new Mock<ILeadsRepository>();
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new AccountsMappingProfile());
@@ -34,17 +32,15 @@ public class AccountsServiceTest
         //arrange
         var leadId = Guid.NewGuid();
         var registrationAccountRequest = TestsData.GetFakeRegistrationAccountRequest();
-        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(leadId)).ReturnsAsync(new LeadDto());
         var expectedGuid = Guid.NewGuid();
         _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper, null);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, _mapper);
 
         //act
         var actual = await sut.AddAccountAsync(leadId, registrationAccountRequest);
 
         //assert
         Assert.Equal(expectedGuid, actual);
-        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(leadId), Times.Once);
         _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Once);
     }
 
@@ -55,10 +51,9 @@ public class AccountsServiceTest
         //arrange
         var leadId = Guid.Empty;
         var registrationAccountRequest = TestsData.GetFakeRegistrationAccountRequest();
-        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(leadId)).ReturnsAsync((LeadDto)null);
         var expectedGuid = Guid.NewGuid();
         _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _mapper, null);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, _mapper);
 
         //act
         var act = async () => await sut.AddAccountAsync(leadId, registrationAccountRequest);
@@ -66,7 +61,6 @@ public class AccountsServiceTest
         //assert
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
-        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(leadId), Times.Once);
         _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Never);
     }
 

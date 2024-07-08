@@ -5,7 +5,6 @@ using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Configuration;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
-using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Transactions.Responses;
 using CRM.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;

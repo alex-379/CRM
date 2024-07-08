@@ -7,7 +7,9 @@ using CRM.Core.Exceptions;
 
 namespace CRM.Business.Services;
 
-public class HttpClientService<THttpClient>(THttpClient httpClient, CancellationTokenSource cancellationTokenSource) : IHttpClientService<THttpClient> where THttpClient : IHttpClient
+public class HttpClientService<THttpClient>(THttpClient httpClient, CancellationTokenSource cancellationTokenSource) 
+    : IHttpClientService<THttpClient> 
+    where THttpClient : IHttpClient
 {
     private readonly JsonSerializerOptions _options = JsonSerializerOptionsProvider.GetJsonSerializerOptions();
     private readonly CancellationToken _token = cancellationTokenSource.Token;

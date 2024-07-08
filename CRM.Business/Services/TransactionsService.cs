@@ -12,7 +12,7 @@ using Serilog;
 
 namespace CRM.Business.Services;
 
-public class TransactionsService(IAccountsService accountsService, IHttpClientService<TransactionStoreHttpClient> httpClientService) : ITransactionsService
+public class TransactionsService(IAccountsService accountsService, ILeadsService leadsService, IHttpClientService<TransactionStoreHttpClient> httpClientService) : ITransactionsService
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
     public async Task<Guid> AddDepositTransaction(TransactionRequest request)
@@ -73,7 +73,7 @@ public class TransactionsService(IAccountsService accountsService, IHttpClientSe
     private async Task<DepositWithdrawRequest> CreateDepositWithdrawRequestTStore(TransactionRequest request)
     {
         var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountId);
-        CheckCurrencyForDepositWithdrawTransaction(account);
+        CheckCurrencyForDepositWithdrawTransaction(account.Currency);
         var tStoreRequest = new DepositWithdrawRequest()
         {
             AccountId = request.AccountId,
@@ -114,11 +114,10 @@ public class TransactionsService(IAccountsService accountsService, IHttpClientSe
         }
     }
 
-    private static void CheckCurrencyForDepositWithdrawTransaction(AccountForTransactionResponse account)
+    private static void CheckCurrencyForDepositWithdrawTransaction(Currency currency)
     {
-        Currency[] allowedCurrenciesForDepositWithdrawTransaction = [Currency.Rub, Currency.Usd];
-        var allowedCurrencyNames = allowedCurrenciesForDepositWithdrawTransaction.Select(c => c.ToString()).ToArray();
-        if(!allowedCurrenciesForDepositWithdrawTransaction.Contains(account.Currency))
+        var (allowedCurrenciesForDepositWithdrawTransaction, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForRegularLead();
+        if(!allowedCurrenciesForDepositWithdrawTransaction.Contains(currency))
         {
             throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForDepositWithdrawTransaction, string.Join(",", allowedCurrencyNames)));
         }
@@ -130,6 +129,16 @@ public class TransactionsService(IAccountsService accountsService, IHttpClientSe
         if (amount > balance)
         {
             throw new ValidationException(TransactionsServiceExceptions.BalanceNotEnough);
+        }
+    }
+
+    private async Task CheckLeadRights(Guid leadId, Currency currency)
+    {
+        var (allowedCurrenciesForRegularLead, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForRegularLead();
+        var lead = await leadsService.GetLeadByIdAsync(leadId);
+        if (lead.Status == LeadStatus.Regular && !allowedCurrenciesForRegularLead.Contains(currency))
+        {
+            throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForRegularLead, string.Join(",", allowedCurrencyNames)));
         }
     }
 }

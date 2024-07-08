@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
+using CRM.Business.Models.Accounts.Responses;
+using CRM.Business.Models.Leads.Responses;
 using CRM.Business.Services.Constants.Exceptions;
 using CRM.Business.Services.Constants.Logs;
 using CRM.Core.Dtos;
@@ -12,7 +14,7 @@ using Serilog;
 
 namespace CRM.Business.Services;
 
-public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepository leadsRepository, IMapper mapper, IMessagesService messagesService)
+public class AccountsService(IAccountsRepository accountsRepository, ILeadsService leadsService, IMessagesService messagesService, IMapper mapper)
     : IAccountsService
 {
     private readonly ILogger _logger = Log.ForContext<AccountsService>();
@@ -20,9 +22,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
     public async Task<Guid> AddAccountAsync(Guid leadId, RegisterAccountRequest request)
     {
         var account = mapper.Map<AccountDto>(request);
-        account.Lead = await leadsRepository.GetLeadByIdAsync(leadId)
-            ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
-        CheckAccountRegister(account.Lead, request);
+        await CheckAccountRegister(leadId, request.Currency);
         _logger.Information(AccountsServiceLogs.AddAccount, request.Currency);
         account.Id = await accountsRepository.AddAccountAsync(account);
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
@@ -46,7 +46,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         _logger.Information(AccountsServiceLogs.CheckAccountById, id);
         var account = await accountsRepository.GetAccountByIdAsync(id)
             ?? throw new NotFoundException(string.Format(AccountsServiceExceptions.NotFoundException, id));
-        CheckAccountStatus(account, request);
+        CheckAccountStatus(account, request.Status);
         _logger.Information(AccountsServiceLogs.UpdateAccountStatus, request.Status, id);
         account.Status = request.Status;
         _logger.Information(AccountsServiceLogs.UpdateAccountById, id);
@@ -54,60 +54,60 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         await messagesService.PublishAsync<AccountUpdatedStatus, AccountDto>(account);
     }
 
-    private static void CheckAccountStatus(AccountDto account, UpdateAccountStatusRequest request)
+    private static void CheckAccountStatus(AccountDto account, AccountStatus status)
     {
-        CheckAccountIsRub(account, request);
-        CheckAccountStatusIsEqual(account, request);
-        CheckAccountStatusIsUnknown(request);
+        CheckAccountIsRub(account.Currency, status);
+        CheckAccountStatusIsEqual(account.Status, status);
+        CheckAccountStatusIsUnknown(status);
     }
     
-    private static void CheckAccountIsRub(AccountDto account, UpdateAccountStatusRequest request)
+    private static void CheckAccountIsRub(Currency currency, AccountStatus status)
     {
-        if (account.Currency == Currency.Rub && request.Status == AccountStatus.Blocked)
+        if (currency == Currency.Rub && status == AccountStatus.Blocked)
         {
             throw new ValidationException(AccountsServiceExceptions.AccountRubException);
         }
     }
     
-    private static void CheckAccountStatusIsEqual(AccountDto account, UpdateAccountStatusRequest request)
+    private static void CheckAccountStatusIsEqual(AccountStatus accountStatus, AccountStatus requestStatus)
     {
-        if (account.Status == request.Status)
+        if (accountStatus == requestStatus)
         {
             throw new ValidationException(AccountsServiceExceptions.AccountStatusEqual);
         }
     }
     
-    private static void CheckAccountStatusIsUnknown(UpdateAccountStatusRequest request)
+    private static void CheckAccountStatusIsUnknown(AccountStatus status)
     {
-        if (request.Status == AccountStatus.Unknown)
+        if (status == AccountStatus.Unknown)
         {
             throw new ValidationException(AccountsServiceExceptions.AccountStatusIsUnknown);
         }
     }
     
-    private static void CheckAccountRegister(LeadDto lead, RegisterAccountRequest request)
+    private async Task CheckAccountRegister(Guid leadId, Currency currency)
     {
-        CheckAccountCurrency(lead, request);
-        CheckAllowedCurrencyByLeadStatus(lead, request);
+        var lead = await leadsService.GetLeadByIdAsync(leadId);
+        CheckAccountCurrency(lead.Accounts, currency);
+        CheckAllowedCurrencyByLeadStatus(lead.Status, currency);
     }
 
-    private static void CheckAccountCurrency(LeadDto lead, RegisterAccountRequest request)
+    private static void CheckAccountCurrency(List<AccountResponse> accounts, Currency currency)
     {
-        if (lead.Accounts.Select(d => d.Currency).Contains(request.Currency))
+        if (accounts.Select(d => d.Currency).Contains(currency))
         {
             throw new ValidationException(AccountsServiceExceptions.AccountCurrencyContains);
         }
     }
     
-    private static void CheckAllowedCurrencyByLeadStatus(LeadDto lead, RegisterAccountRequest request)
+    private static void CheckAllowedCurrencyByLeadStatus(LeadStatus status, Currency currency)
     {
-        Currency[] allowedCurrenciesForRegularLead = [Currency.Rub, Currency.Usd, Currency.Eur];
-        var allowedCurrencyNames = allowedCurrenciesForRegularLead.Select(c => c.ToString()).ToArray();
-        if (request.Currency == Currency.Unknown)
+        var (allowedCurrenciesForRegularLead, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForRegularLead();
+        if (currency == Currency.Unknown)
         {
             throw new ValidationException(AccountsServiceExceptions.CurrencyIsUnknown);
         }
-        if (lead.Status == LeadStatus.Regular && !allowedCurrenciesForRegularLead.Contains(request.Currency))
+        if (status == LeadStatus.Regular && !allowedCurrenciesForRegularLead.Contains(currency))
         {
             throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, string.Join(",", allowedCurrencyNames)));
         }
