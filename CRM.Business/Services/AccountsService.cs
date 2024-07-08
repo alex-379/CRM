@@ -22,6 +22,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         var account = mapper.Map<AccountDto>(request);
         account.Lead = await leadsRepository.GetLeadByIdAsync(leadId)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
+        CheckAccountCurrency(account.Lead, request);
         _logger.Information(AccountsServiceLogs.AddAccount, request.Currency);
         account.Id = await accountsRepository.AddAccountAsync(account);
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
@@ -45,7 +46,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         _logger.Information(AccountsServiceLogs.CheckAccountById, id);
         var account = await accountsRepository.GetAccountByIdAsync(id)
             ?? throw new NotFoundException(string.Format(AccountsServiceExceptions.NotFoundException, id));
-        CheckAccount(account, request);
+        CheckAccountStatus(account, request);
         _logger.Information(AccountsServiceLogs.UpdateAccountStatus, request.Status, id);
         account.Status = request.Status;
         _logger.Information(AccountsServiceLogs.UpdateAccountById, id);
@@ -53,7 +54,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         await messagesService.PublishAsync<AccountUpdatedStatus, AccountDto>(account);
     }
 
-    private static void CheckAccount(AccountDto account, UpdateAccountStatusRequest request)
+    private static void CheckAccountStatus(AccountDto account, UpdateAccountStatusRequest request)
     {
         CheckAccountIsRub(account, request);
         CheckAccountStatusIsEqual(account, request);
@@ -72,6 +73,14 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         if (account.Status == request.Status)
         {
             throw new ValidationException(AccountsServiceExceptions.AccountStatusEqual);
+        }
+    }
+
+    private static void CheckAccountCurrency(LeadDto lead, RegisterAccountRequest request)
+    {
+        if (lead.Accounts.Select(d => d.Currency).Contains(request.Currency))
+        {
+            throw new ValidationException(AccountsServiceExceptions.AccountCurrencyContains);
         }
     }
 }
