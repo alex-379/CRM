@@ -110,7 +110,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         }
         if (lead.Status == LeadStatus.Regular && !allowedCurrenciesForRegularLead.Contains(request.Currency))
         {
-            throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, allowedCurrencyNames));
+            throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, string.Join(",", allowedCurrencyNames)));
         }
     }
 }
