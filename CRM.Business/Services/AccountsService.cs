@@ -103,14 +103,14 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
     private static void CheckAllowedCurrencyByLeadStatus(LeadDto lead, RegisterAccountRequest request)
     {
         Currency[] allowedCurrenciesForRegularLead = [Currency.Rub, Currency.Usd, Currency.Eur];
-        var stringAllowedCurrencies = JsonSerializer.Serialize(allowedCurrenciesForRegularLead); 
+        var allowedCurrencyNames = allowedCurrenciesForRegularLead.Select(c => c.ToString()).ToArray();
         if (request.Currency == Currency.Unknown)
         {
             throw new ValidationException(AccountsServiceExceptions.CurrencyIsUnknown);
         }
         if (lead.Status == LeadStatus.Regular && !allowedCurrenciesForRegularLead.Contains(request.Currency))
         {
-            throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, stringAllowedCurrencies));
+            throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, allowedCurrencyNames));
         }
     }
 }
