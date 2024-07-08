@@ -2,6 +2,7 @@ using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Transactions.Requests;
 using CRM.Business.Services.Constants.Exceptions;
+using CRM.Core.Enums;
 using CRM.Core.Exceptions;
 
 namespace CRM.Business.Services;
@@ -11,6 +12,7 @@ public class TransactionsService(IAccountsService accountsService) : ITransactio
     public async Task<DepositWithdrawRequest> CreateDepositWithdrawRequestTStore(TransactionRequest request)
     {
         var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountId);
+        CheckCurrencyForDepositWithdrawTransaction(account);
         var tStoreRequest = new DepositWithdrawRequest()
         {
             AccountId = request.AccountId,
@@ -48,6 +50,16 @@ public class TransactionsService(IAccountsService accountsService) : ITransactio
         if (accountFrom.Currency == accountTo.Currency)
         {
             throw new ValidationException(TransactionsServiceExceptions.AccountsCurrencyEqual);
+        }
+    }
+
+    private static void CheckCurrencyForDepositWithdrawTransaction(AccountForTransactionResponse account)
+    {
+        Currency[] allowedCurrenciesForDepositWithdrawTransaction = [Currency.Rub, Currency.Usd];
+        var allowedCurrencyNames = allowedCurrenciesForDepositWithdrawTransaction.Select(c => c.ToString()).ToArray();
+        if(!allowedCurrenciesForDepositWithdrawTransaction.Contains(account.Currency))
+        {
+            throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForDepositWithdrawTransaction, string.Join(",", allowedCurrencyNames)));
         }
     }
 }

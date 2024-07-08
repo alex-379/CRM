@@ -25,7 +25,6 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     [HttpPost]
     public async Task<ActionResult<Guid>> RegisterAccountAsync([FromBody] RegisterAccountRequest request)
     {
-        var a = servicesUrlSettings.Crm;
         _logger.Information(LeadsLogs.GetAuthorizedLead);
         var currentLeadId = GetCurrentLeadFromClaims(HttpContext.User); 
         _logger.Information(AccountsLogs.RegisterAccount, request.Currency, currentLeadId);
