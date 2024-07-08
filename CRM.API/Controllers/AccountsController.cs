@@ -8,7 +8,6 @@ using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
 using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Transactions.Responses;
-using CRM.Core.Enums;
 using CRM.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,14 +32,6 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
         var id = await accountsService.AddAccountAsync(currentLeadId, request);
 
         return Created($"{servicesUrlSettings.Crm}{Routes.LeadsController}/{id}", id);
-    }
-    
-    private static Guid GetCurrentLeadFromClaims(ClaimsPrincipal claimsPrincipal)
-    {
-        var currentLeadId = new Guid(claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier)
-                                     ?? throw new NotFoundException(Exceptions.ClaimNotFound));
-
-        return currentLeadId;
     }
     
     [AuthorizationFilterByAccountId]
@@ -78,5 +69,13 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
         balance.Currency = account.Currency;
 
         return Ok(balance);
+    }
+        
+    private static Guid GetCurrentLeadFromClaims(ClaimsPrincipal claimsPrincipal)
+    {
+        var currentLeadId = new Guid(claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier)
+                                     ?? throw new NotFoundException(Exceptions.ClaimNotFound));
+
+        return currentLeadId;
     }
 }

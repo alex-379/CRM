@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using AutoMapper;
+﻿using AutoMapper;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
 using CRM.Business.Services.Constants.Exceptions;
