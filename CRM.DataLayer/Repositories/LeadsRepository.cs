@@ -1,4 +1,5 @@
 ﻿using CRM.Core.Dtos;
+using CRM.Core.Enums;
 using CRM.DataLayer.Interfaces;
 using CRM.DataLayer.Repositories.Constants.Logs;
 using Microsoft.EntityFrameworkCore;
@@ -55,5 +56,26 @@ public class LeadsRepository(CrmContext context) : BaseRepository(context), ILea
         _ctx.Leads.Update(lead);
         await _ctx.SaveChangesAsync();
         _logger.Information(LeadsRepositoryLogs.UpdateLead, lead.Id);
+    }
+
+    public async Task SetLeadStatusByStatusAsync(LeadStatus statusIn, LeadStatus statusOut)
+    {
+        await _ctx.Leads
+            .Where(d => d.Status == statusIn)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(d => d.Status, d => statusOut));
+        await _ctx.SaveChangesAsync();
+        _logger.Information(LeadsRepositoryLogs.SetStatusForLeads, statusOut);
+    }
+    
+    public async Task SetLeadStatusByIdAsync(List<Guid> leads, LeadStatus status)
+    {
+        await _ctx.Leads
+            .Where(d => leads
+                .Contains(d.Id))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(d => d.Status, d => status));
+        await _ctx.SaveChangesAsync();
+        _logger.Information(LeadsRepositoryLogs.SetStatusForLeads, status);
     }
 }

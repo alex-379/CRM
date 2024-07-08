@@ -1,6 +1,7 @@
 ﻿using CRM.API.Configuration.Filters;
 using CRM.API.Controllers.Constants;
 using CRM.API.Controllers.Constants.Logs;
+using CRM.Business.Configuration;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
@@ -14,8 +15,8 @@ namespace CRM.API.Controllers;
 
 [Authorize]
 [ApiController]
-[Route(Routes.LeadsController)]
-public class LeadsController(ILeadsService leadsService) : Controller
+[Route($"{Routes.Api}{Routes.LeadsController}")]
+public class LeadsController(ILeadsService leadsService,  ServicesUrlSettings servicesUrlSettings) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<LeadsController>();
 
@@ -31,7 +32,7 @@ public class LeadsController(ILeadsService leadsService) : Controller
             lead.accountId
         };
         
-        return Created($"{Routes.Host}{Routes.LeadsController}/{lead.leadId}", response);
+        return Created($"{servicesUrlSettings.Crm}{Routes.LeadsController}/{lead.leadId}", response);
     }
 
     [AllowAnonymous]

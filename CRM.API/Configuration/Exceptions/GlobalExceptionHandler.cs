@@ -65,6 +65,14 @@ public class GlobalExceptionHandler : IExceptionHandler
             };
 
                 break;
+            
+            case nameof(ConfigurationMissingException):
+            {
+                problemDetails.Status = StatusCodes.Status503ServiceUnavailable;
+                problemDetails.Title = GlobalExceptions.ConfigurationMissingException;
+            };
+
+                break;
                 
             case nameof(GatewayTimeoutException):
             {

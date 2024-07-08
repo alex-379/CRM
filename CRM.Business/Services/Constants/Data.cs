@@ -5,5 +5,4 @@ public static class Data
     public const int RandomNumber = 32;
     public const string ApplicationType = "application/json";
     public const string AuthorizationCode = "Authorization code";
-
-}
+} 

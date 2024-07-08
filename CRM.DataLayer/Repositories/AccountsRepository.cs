@@ -40,7 +40,8 @@ namespace CRM.DataLayer.Repositories
         public async Task SetBlockedStatusForAccountsAsync(List<AccountDto> accounts)
         {
             await _ctx.Accounts
-                .Where(d => accounts.Select(a => a.Id)
+                .Where(d => accounts
+                    .Select(a => a.Id)
                     .Contains(d.Id))
                 .ExecuteUpdateAsync(s => s
                 .SetProperty(d => d.Status,  d => AccountStatus.Blocked));

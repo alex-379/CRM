@@ -18,7 +18,7 @@ public class AccountsControllerTest
         var id = new Guid();
         var updateAccountStatusRequest = new UpdateAccountStatusRequest();
         _accountsServiceMock.Setup(x => x.UpdateAccountStatusAsync(id, updateAccountStatusRequest));
-        var sut = new AccountsController(_accountsServiceMock.Object, null);
+        var sut = new AccountsController(_accountsServiceMock.Object, null, null);
 
         //act
         var actual = await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);

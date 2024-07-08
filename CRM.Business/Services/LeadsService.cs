@@ -37,7 +37,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         {
             await transactionsManager.RollbackTransactionAsync(transaction, ex);
         }
-        await PublishAddLeadAsync(lead);
+        await messagesService.PublishAsync<LeadCreated, LeadDto>(lead);
 
         return (lead.Id,account.Id);
     }
@@ -88,12 +88,6 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
     }
 
-    private async Task PublishAddLeadAsync(LeadDto lead)
-    {
-        await messagesService.PublishAsync<LeadCreated, LeadDto>(lead);
-        await messagesService.PublishAsync<AccountCreated, AccountDto>(lead.Accounts.FirstOrDefault());
-    }
-
     public async Task<Guid> LoginLeadAsync(LoginLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
@@ -125,6 +119,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     private async Task<int> PublishMailRequest(LeadDto lead)
     {
         var code = GenerateRandomNumber();
+        _logger.Information(LeadsServiceLogs.AuthorizationCode, code);
         var mailRequest = new MailRequest()
         {
             To = [lead.Mail],
@@ -289,5 +284,17 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         {
             await messagesService.PublishAsync<AccountBlocked, AccountDto>(account);
         }
+    }
+    
+    public async Task SetLeadStatusByStatusAsync(LeadStatus statusIn, LeadStatus statusOut)
+    {
+        _logger.Information(LeadsServiceLogs.SetLeadsStatus, statusOut);
+        await leadsRepository.SetLeadStatusByStatusAsync(statusIn, statusOut);
+    }
+    
+    public async Task SetLeadStatusByIdAsync(List<Guid> leads, LeadStatus status)
+    {
+        _logger.Information(LeadsServiceLogs.SetLeadsStatus, status);
+        await leadsRepository.SetLeadStatusByIdAsync(leads, status);
     }
 }

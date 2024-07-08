@@ -19,5 +19,15 @@ public static class ConfigurationSettings
     public const string RabbitMqHost = "RabbitMqSettings:Host";
     public const string RabbitMqUserName = "RabbitMqSettings:UserName";
     public const string RabbitMqPassword = "RabbitMqSettings:Password";
+    public const string ServicesUrlSettings = "ServicesUrlSettings";
+    public const string ConfigurationServiceUrl= "ConfigurationServiceSettings:ConfigurationServiceForCrm";
     public const int TimeCansel = 60000;
+    public const string ConfigurationQueueName = "settings_queue";
+    public const string ConfigurationExchangeName = "configurations-exchange";
+    public const string ConfigurationExchangeType = "fanout";
+    public const string LeadUpdaterQueueName = "leads_queue";
+    public const string LeadUpdaterExchangeName = "leads-guids-exchange";
+    public const string LeadUpdaterExchangeType = "fanout";
+    public const string DefaultConfigurationJson = "appsettings.DefaultConfiguration.json";
+    public const string DefaultConfigurationSection = "DefaultSettings";
 }

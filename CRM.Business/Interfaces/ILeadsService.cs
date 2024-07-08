@@ -1,6 +1,7 @@
 ﻿using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
 using CRM.Business.Models.Tokens.Responses;
+using CRM.Core.Enums;
 
 namespace CRM.Business.Interfaces;
 
@@ -16,4 +17,6 @@ public interface ILeadsService
     Task UpdateLeadBirthDateAsync(Guid leadId, UpdateLeadBirthDateRequest request);
     Task UpdateLeadPasswordAsync(Guid leadId, UpdateLeadPasswordRequest request);
     Task UpdateLeadStatusAsync(Guid leadId, UpdateLeadStatusRequest request);
+    Task SetLeadStatusByStatusAsync(LeadStatus statusIn, LeadStatus statusOut);
+    Task SetLeadStatusByIdAsync(List<Guid> leads, LeadStatus status);
 }

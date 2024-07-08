@@ -2,12 +2,11 @@
 
 public static class Routes
 {
-    public const string Host = "https://194.87.210.5:10000";
-    public const string HostTStore = "https://194.87.210.5:11000";
-    public const string LeadsController = "/api/leads";
-    public const string AccountsController = "api/accounts";
-    public const string TokensController = "api/tokens";
-    public const string TransactionsController = "api/transactions";
+    public const string Api = "/api/";
+    public const string LeadsController = "leads";
+    public const string AccountsController = "accounts";
+    public const string TokensController = "tokens";
+    public const string TransactionsController = "transactions";
     public const string Id = "{id}";
     public const string Login = "login";
     public const string Login2Fa = "login-2fa";

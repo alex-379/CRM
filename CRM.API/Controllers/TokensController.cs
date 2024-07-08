@@ -12,7 +12,7 @@ namespace CRM.API.Controllers;
 
 [Authorize(Roles = nameof(LeadStatus.Administrator))]
 [ApiController]
-[Route(Routes.TokensController)]
+[Route($"{Routes.Api}{Routes.TokensController}")]
 public class TokensController(ITokensService tokensService) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<TokensController>();

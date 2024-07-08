@@ -1,3 +1,4 @@
+using System.Text.Json;
 using AutoMapper;
 using CRM.Business.Interfaces;
 using CRM.Business.Services.Constants.Logs;
@@ -15,14 +16,14 @@ public class MessagesService(IPublishEndpoint publishEndpoint, IMapper mapper) :
         where TDto : class
     {
         var message = mapper.Map<TDto, TMessage>(dto);
-        _logger.Debug(LeadsServiceLogs.SendInfoToRabbitMq);
-        await publishEndpoint.Publish(message);
+        await PublishAsync(message);
     }
     
     public async Task PublishAsync<TMessage>(TMessage message)
         where TMessage : class
     {
-        _logger.Debug(LeadsServiceLogs.SendInfoToRabbitMq);
+        var jsonMessage = JsonSerializer.Serialize(message);
+        _logger.Debug(LeadsServiceLogs.SendInfoToRabbitMq, jsonMessage);
         await publishEndpoint.Publish(message);
     }
 }

@@ -3,16 +3,18 @@ using CRM.Business.Configuration;
 using CRM.DataLayer.Configuration.Extensions;
 using Serilog;
 
-namespace CRM.API;
+namespace CRM.API;     
 
 public static class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         try
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Configuration.AddJsonFile(ConfigurationSettings.DefaultConfigurationJson, optional: false, reloadOnChange: true);
             builder.Configuration.ReadSettingsFromEnvironment();
+            await builder.Configuration.ReadSettingsFromConfigurationManager();
             builder.Logging.ClearProviders();
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration)
@@ -31,7 +33,7 @@ public static class Program
 
             app.UseApp();
             app.MapControllers();
-            app.Run();
+            await app.RunAsync();
         }
         catch (Exception ex)
         {
@@ -39,7 +41,7 @@ public static class Program
         }
         finally
         { 
-            Log.CloseAndFlush();
+            await Log.CloseAndFlushAsync();
         }
     }
 }

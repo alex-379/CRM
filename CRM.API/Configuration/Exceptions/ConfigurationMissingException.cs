@@ -1,5 +1,7 @@
-﻿namespace CRM.API.Configuration.Exceptions;
+﻿using CRM.Core.Exceptions;
 
-public class ConfigurationMissingException(string message="fault configuration") : Exception(message)
+namespace CRM.API.Configuration.Exceptions;
+
+public class ConfigurationMissingException(string message=DefaultMessages.ConfigurationError) : Exception(message)
 {
 }
