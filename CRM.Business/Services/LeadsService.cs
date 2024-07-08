@@ -18,7 +18,8 @@ using Serilog;
 namespace CRM.Business.Services;
 
 public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository accountsRepository, ITransactionsManager transactionsManager, 
-    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt, IMessagesService messagesService, IMemoryCache memoryCache) : ILeadsService
+    ITokensService tokensService, IMapper mapper, SecretSettings secret, JwtToken jwt, IMessagesService messagesService, IMemoryCache memoryCache)
+    : ILeadsService
 {
     private readonly ILogger _logger = Log.ForContext<LeadsService>();
 
@@ -41,53 +42,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
 
         return (lead.Id,account.Id);
     }
-
-    private async Task<LeadDto> SetupLeadAsync(LeadDto lead)
-    {
-        var mailLower = lead.Mail.ToLower();
-        var leadDb = await leadsRepository.GetLeadByMailAsync(mailLower);
-        if (leadDb is not null)
-        {
-            throw leadDb.IsDeleted switch
-            {
-                true => new ConflictException(LeadsServiceExceptions.ConflictExceptionIsDeleted),
-                false => new ConflictException(LeadsServiceExceptions.ConflictException)
-            };
-        }
-        lead.Mail = mailLower;
-        _logger.Information(LeadsServiceLogs.SetLowerRegister);
-        var (hash, salt) = PasswordsService.HashPassword(lead.Password, secret.SecretPassword);
-        lead.Password = hash;
-        lead.Salt = salt;
-
-        return lead;
-    }
     
-    private static AccountDto SetupDefaultRubAccount(LeadDto lead)
-    {
-        AccountDto account = new()
-        {
-            Currency = Currency.Rub,
-            Lead = lead
-        };
-
-        return account;
-    }
-    
-    private async Task AddToDatabaseLeadAsync(LeadDto lead)
-    {
-        _logger.Information(LeadsServiceLogs.AddLead);
-        lead.Id = await leadsRepository.AddLeadAsync(lead);
-        _logger.Information(LeadsServiceLogs.CompleteLead, lead.Id);
-    }
-    
-    private async Task AddToDatabaseAccountAsync(AccountDto account)
-    {
-        _logger.Information(AccountsServiceLogs.AddDefaultAccount);
-        await accountsRepository.AddAccountAsync(account);
-        _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
-    }
-
     public async Task<Guid> LoginLeadAsync(LoginLeadRequest request)
     {
         var lead = mapper.Map<LeadDto>(request);
@@ -104,39 +59,6 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         memoryCache.Set(token, code, options);
 
         return token;
-    }
-    
-    private void ConfirmPassword(LeadDto lead, LeadDto leadDb)
-    {
-        _logger.Information(LeadsServiceLogs.CheckLeadPassword);
-        var confirmPassword = PasswordsService.VerifyPassword(lead.Password, secret.SecretPassword, leadDb.Password, leadDb.Salt);
-        if (!confirmPassword)
-        {
-            throw new UnauthenticatedException();
-        }
-    }
-    
-    private async Task<int> PublishMailRequest(LeadDto lead)
-    {
-        var code = GenerateRandomNumber();
-        _logger.Information(LeadsServiceLogs.AuthorizationCode, code);
-        var mailRequest = new MailRequest()
-        {
-            To = [lead.Mail],
-            Subject = Data.AuthorizationCode,
-            Body = $"{Data.AuthorizationCode}: {code}"
-        };
-        await messagesService.PublishAsync(mailRequest);
-        
-        return code;
-    }
-    
-    private static int GenerateRandomNumber()
-    {
-        const int min = 1000;
-        const int max = 9999;
-        var rdm = new Random();
-        return rdm.Next(min, max);
     }
 
     public async Task<AuthenticatedResponse> Login2FaLeadAsync(Login2FaLeadRequest request)
@@ -155,15 +77,6 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
             AccessToken = accessToken,
             RefreshToken = refreshToken
         };
-    }
-    
-    private (string accessToken, string refreshToken) SetTokens(LeadDto lead)
-    {
-        var (accessToken, refreshToken) = tokensService.GenerateTokens(lead);
-        lead.RefreshToken = refreshToken;
-        lead.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(jwt.LifeTimeRefreshToken);
-
-        return (accessToken, refreshToken);
     }
     
     public async Task<List<LeadResponse>> GetLeadsAsync()
@@ -194,14 +107,6 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         await leadsRepository.UpdateLeadAsync(lead);
         await messagesService.PublishAsync<LeadUpdated, LeadDto>(lead);
     }
-    
-    private void SetLeadData(LeadDto lead, UpdateLeadDataRequest request)
-    {
-        _logger.Information(LeadsServiceLogs.UpdateLeadData, lead.Id);
-        lead.Name = request.Name;
-        lead.Phone = request.Phone;
-        lead.Address = request.Address;
-    }
 
     public async Task UpdateLeadPasswordAsync(Guid leadId, UpdateLeadPasswordRequest request)
     {
@@ -212,15 +117,6 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         _logger.Information(LeadsServiceLogs.UpdateLeadById, leadId);
         await leadsRepository.UpdateLeadAsync(lead);
         await messagesService.PublishAsync<LeadPasswordUpdated, LeadDto>(lead);
-    }
-    
-    private void SetLeadPassword(LeadDto lead, UpdateLeadPasswordRequest request)
-    {
-        _logger.Information(LeadsServiceLogs.UpdateLeadPassword, lead.Id);
-        lead.Password = request.Password;
-        var (hash, salt) = PasswordsService.HashPassword(lead.Password, secret.SecretPassword);
-        lead.Password = hash;
-        lead.Salt = salt;
     }
 
     public async Task UpdateLeadStatusAsync(Guid id, UpdateLeadStatusRequest request)
@@ -296,5 +192,110 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     {
         _logger.Information(LeadsServiceLogs.SetLeadsStatus, status);
         await leadsRepository.SetLeadStatusByIdAsync(leads, status);
+    }
+    
+    private async Task<LeadDto> SetupLeadAsync(LeadDto lead)
+    {
+        var mailLower = lead.Mail.ToLower();
+        var leadDb = await leadsRepository.GetLeadByMailAsync(mailLower);
+        if (leadDb is not null)
+        {
+            throw leadDb.IsDeleted switch
+            {
+                true => new ConflictException(LeadsServiceExceptions.ConflictExceptionIsDeleted),
+                false => new ConflictException(LeadsServiceExceptions.ConflictException)
+            };
+        }
+        lead.Mail = mailLower;
+        _logger.Information(LeadsServiceLogs.SetLowerRegister);
+        var (hash, salt) = PasswordsService.HashPassword(lead.Password, secret.SecretPassword);
+        lead.Password = hash;
+        lead.Salt = salt;
+
+        return lead;
+    }
+    
+    private static AccountDto SetupDefaultRubAccount(LeadDto lead)
+    {
+        AccountDto account = new()
+        {
+            Currency = Currency.Rub,
+            Lead = lead
+        };
+
+        return account;
+    }
+    
+    private async Task AddToDatabaseLeadAsync(LeadDto lead)
+    {
+        _logger.Information(LeadsServiceLogs.AddLead);
+        lead.Id = await leadsRepository.AddLeadAsync(lead);
+        _logger.Information(LeadsServiceLogs.CompleteLead, lead.Id);
+    }
+    
+    private async Task AddToDatabaseAccountAsync(AccountDto account)
+    {
+        _logger.Information(AccountsServiceLogs.AddDefaultAccount);
+        await accountsRepository.AddAccountAsync(account);
+        _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
+    }
+
+    private void ConfirmPassword(LeadDto lead, LeadDto leadDb)
+    {
+        _logger.Information(LeadsServiceLogs.CheckLeadPassword);
+        var confirmPassword = PasswordsService.VerifyPassword(lead.Password, secret.SecretPassword, leadDb.Password, leadDb.Salt);
+        if (!confirmPassword)
+        {
+            throw new UnauthenticatedException();
+        }
+    }
+    
+    private async Task<int> PublishMailRequest(LeadDto lead)
+    {
+        var code = GenerateRandomNumber();
+        _logger.Information(LeadsServiceLogs.AuthorizationCode, code);
+        var mailRequest = new MailRequest()
+        {
+            To = [lead.Mail],
+            Subject = Data.AuthorizationCode,
+            Body = $"{Data.AuthorizationCode}: {code}"
+        };
+        await messagesService.PublishAsync(mailRequest);
+        
+        return code;
+    }
+    
+    private static int GenerateRandomNumber()
+    {
+        const int min = 1000;
+        const int max = 9999;
+        var rdm = new Random();
+        return rdm.Next(min, max);
+    }
+    
+    private (string accessToken, string refreshToken) SetTokens(LeadDto lead)
+    {
+        var (accessToken, refreshToken) = tokensService.GenerateTokens(lead);
+        lead.RefreshToken = refreshToken;
+        lead.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(jwt.LifeTimeRefreshToken);
+
+        return (accessToken, refreshToken);
+    }
+    
+    private void SetLeadData(LeadDto lead, UpdateLeadDataRequest request)
+    {
+        _logger.Information(LeadsServiceLogs.UpdateLeadData, lead.Id);
+        lead.Name = request.Name;
+        lead.Phone = request.Phone;
+        lead.Address = request.Address;
+    }
+        
+    private void SetLeadPassword(LeadDto lead, UpdateLeadPasswordRequest request)
+    {
+        _logger.Information(LeadsServiceLogs.UpdateLeadPassword, lead.Id);
+        lead.Password = request.Password;
+        var (hash, salt) = PasswordsService.HashPassword(lead.Password, secret.SecretPassword);
+        lead.Password = hash;
+        lead.Salt = salt;
     }
 }

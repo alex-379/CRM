@@ -2,6 +2,6 @@
 
 namespace CRM.API.Configuration.Exceptions;
 
-public class ConfigurationMissingException(string message=DefaultMessages.ConfigurationError) : Exception(message)
+public class ConfigurationMissingException(string message=DefaultMessages.ConfigurationException) : Exception(message)
 {
 }

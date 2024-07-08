@@ -43,7 +43,7 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
         return currentLeadId;
     }
     
-    [Authorize(Roles = nameof(LeadStatus.Administrator))]
+    [AuthorizationFilterByAccountId]
     [HttpPatch(Routes.Status)]
     public async Task<ActionResult> UpdateAccountStatusAsync([FromRoute] Guid id, [FromBody] UpdateAccountStatusRequest request)
     {
