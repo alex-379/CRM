@@ -45,7 +45,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         _logger.Information(AccountsServiceLogs.CheckAccountById, id);
         var account = await accountsRepository.GetAccountByIdAsync(id)
             ?? throw new NotFoundException(string.Format(AccountsServiceExceptions.NotFoundException, id));
-        CheckAccountIsRub(account, request);
+        CheckAccount(account, request);
         _logger.Information(AccountsServiceLogs.UpdateAccountStatus, request.Status, id);
         account.Status = request.Status;
         _logger.Information(AccountsServiceLogs.UpdateAccountById, id);
@@ -53,11 +53,25 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         await messagesService.PublishAsync<AccountUpdatedStatus, AccountDto>(account);
     }
 
+    private static void CheckAccount(AccountDto account, UpdateAccountStatusRequest request)
+    {
+        CheckAccountIsRub(account, request);
+        CheckAccountStatusIsEqual(account, request);
+    }
+    
     private static void CheckAccountIsRub(AccountDto account, UpdateAccountStatusRequest request)
     {
         if (account.Currency == Currency.Rub && request.Status == AccountStatus.Blocked)
         {
             throw new ValidationException(AccountsServiceExceptions.AccountRubException);
+        }
+    }
+    
+    private static void CheckAccountStatusIsEqual(AccountDto account, UpdateAccountStatusRequest request)
+    {
+        if (account.Status == request.Status)
+        {
+            throw new ValidationException(AccountsServiceExceptions.AccountStatusEqual);
         }
     }
 }
