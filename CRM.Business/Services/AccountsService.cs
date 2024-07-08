@@ -101,7 +101,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
     
     private static void CheckAllowedCurrencyByLeadStatus(LeadDto lead, RegisterAccountRequest request)
     {
-        Currency[] allowedCurrenciesForRegularLead = [Currency.Rub, Currency.Usd, Currency.Eur];
+        List<Currency> allowedCurrenciesForRegularLead = [Currency.Rub, Currency.Usd, Currency.Eur];
         if (request.Currency == Currency.Unknown)
         {
             throw new ValidationException(AccountsServiceExceptions.CurrencyIsUnknown);
