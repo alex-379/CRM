@@ -22,7 +22,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
         var account = mapper.Map<AccountDto>(request);
         account.Lead = await leadsRepository.GetLeadByIdAsync(leadId)
             ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
-        CheckAccountCurrency(account.Lead, request);
+        CheckAccountRegister(account.Lead, request);
         _logger.Information(AccountsServiceLogs.AddAccount, request.Currency);
         account.Id = await accountsRepository.AddAccountAsync(account);
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
@@ -58,6 +58,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
     {
         CheckAccountIsRub(account, request);
         CheckAccountStatusIsEqual(account, request);
+        CheckAccountStatusIsUnknown(request);
     }
     
     private static void CheckAccountIsRub(AccountDto account, UpdateAccountStatusRequest request)
@@ -75,12 +76,39 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
             throw new ValidationException(AccountsServiceExceptions.AccountStatusEqual);
         }
     }
+    
+    private static void CheckAccountStatusIsUnknown(UpdateAccountStatusRequest request)
+    {
+        if (request.Status == AccountStatus.Unknown)
+        {
+            throw new ValidationException(AccountsServiceExceptions.AccountStatusIsUnknown);
+        }
+    }
+    
+    private static void CheckAccountRegister(LeadDto lead, RegisterAccountRequest request)
+    {
+        CheckAccountCurrency(lead, request);
+        CheckAllowedCurrencyByLeadStatus(lead, request);
+    }
 
     private static void CheckAccountCurrency(LeadDto lead, RegisterAccountRequest request)
     {
         if (lead.Accounts.Select(d => d.Currency).Contains(request.Currency))
         {
             throw new ValidationException(AccountsServiceExceptions.AccountCurrencyContains);
+        }
+    }
+    
+    private static void CheckAllowedCurrencyByLeadStatus(LeadDto lead, RegisterAccountRequest request)
+    {
+        Currency[] allowedCurrenciesForRegularLead = [Currency.Rub, Currency.Usd, Currency.Eur];
+        if (request.Currency == Currency.Unknown)
+        {
+            throw new ValidationException(AccountsServiceExceptions.CurrencyIsUnknown);
+        }
+        if (lead.Status == LeadStatus.Regular && allowedCurrenciesForRegularLead.Contains(request.Currency))
+        {
+            throw new ValidationException(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, allowedCurrenciesForRegularLead));
         }
     }
 }
