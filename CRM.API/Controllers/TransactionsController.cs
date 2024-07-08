@@ -16,7 +16,7 @@ namespace CRM.API.Controllers;
 [Authorize]
 [ApiController]
 [Route($"{Routes.Api}{Routes.TransactionsController}")]
-public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService, IAccountsService accountsService,
+public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService,
     ITransactionsService transactionsService, ServicesUrlSettings servicesUrlSettings) 
     : Controller
 {
@@ -26,10 +26,8 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     [HttpPost(Routes.Deposit)]
     public async Task<ActionResult<Guid>> AddDepositTransaction([FromBody] TransactionRequest request)
     {
-        var tStoreRequest = await transactionsService.CreateDepositWithdrawRequestTStore(request);
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.DepositTStore);
-        _logger.Information(TransactionsLogs.AddDepositTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
-        var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
+        _logger.Information(TransactionsLogs.AddDepositTransaction, request.AccountId, request.Amount);
+        var id = await transactionsService.AddDepositTransaction(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{id}", id);
     }
@@ -38,10 +36,8 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     [HttpPost(Routes.Withdraw)]
     public async Task<ActionResult<Guid>> AddWithdrawTransaction([FromBody] TransactionRequest request)
     {
-        var tStoreRequest = await transactionsService.CreateDepositWithdrawRequestTStore(request);
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.WithdrawTStore);
-        _logger.Information(TransactionsLogs.AddWithdrawTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
-        var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
+        _logger.Information(TransactionsLogs.AddWithdrawTransaction, request.AccountId, request.Amount);
+        var id = await transactionsService.AddWithdrawTransaction(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{id}", id);
     }
@@ -50,10 +46,8 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     [HttpPost(Routes.Transfer)]
     public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransaction([FromBody] CrmTransferRequest request)
     {
-        var tStoreRequest = await transactionsService.CreateTransferRequestTStore(request);
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.TransferTStore);
-        _logger.Information(TransactionsLogs.AddTransferTransaction, tStoreRequest.AccountFromId, tStoreRequest.AccountToId);
-        var response = await httpClientService.SendAsync<TransferRequest,TransferGuidsResponse>(tStoreRequest, requestMessage);
+        _logger.Information(TransactionsLogs.AddTransferTransaction, request.AccountFromId, request.AccountToId);
+        var response = await transactionsService.AddTransferTransaction(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{response}", response);
     }

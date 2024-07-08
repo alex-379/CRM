@@ -16,14 +16,9 @@ public static class Routes
     public const string Refresh = "refresh";
     public const string Revoke = "revoke";
     public const string Deposit = "deposit";
-    public const string DepositTStore = "transactions/deposit";
     public const string Withdraw = "withdraw";
-    public const string WithdrawTStore = "transactions/withdraw";
     public const string Transfer = "transfer";
-    public const string TransferTStore = "transactions/transfer";
     public const string Transactions = "{id}/transactions";
     public const string TransactionsTStore = "transactions/{0}";
-    public const string TransactionsByAccountIdTStore = "accounts/{0}/transactions";
     public const string Balance = "{id}/balance";
-    public const string BalanceByAccountIdTStore = "accounts/{0}/balance";
 }

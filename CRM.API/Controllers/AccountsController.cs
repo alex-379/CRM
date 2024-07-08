@@ -3,7 +3,6 @@ using CRM.API.Configuration.Filters;
 using CRM.API.Controllers.Constants;
 using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Configuration;
-using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
 using CRM.Business.Models.Accounts.Responses;
@@ -18,7 +17,7 @@ namespace CRM.API.Controllers;
 [Authorize]
 [ApiController]
 [Route($"{Routes.Api}{Routes.AccountsController}")]
-public class AccountsController(IAccountsService accountsService, IHttpClientService<TransactionStoreHttpClient> httpClientService, ServicesUrlSettings servicesUrlSettings) : Controller
+public class AccountsController(IAccountsService accountsService, ITransactionsService transactionsService, ServicesUrlSettings servicesUrlSettings) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<AccountsController>();
 
@@ -48,12 +47,7 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     public async Task<ActionResult<List<TransactionResponse>>> GetTransactionsByAccountId(Guid id)
     {
         _logger.Information(AccountsLogs.GetTransactions, id);
-        var transactions = await httpClientService.GetAsync<List<TransactionResponse>>(string.Format(Routes.TransactionsByAccountIdTStore, id));
-        foreach (var transaction in transactions)
-        { 
-            var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(transaction.AccountId);
-            transaction.Currency = account.Currency;
-        }
+        var transactions = await transactionsService.GetTransactionsByAccountId(id);
 
         return Ok(transactions);
     }
@@ -63,9 +57,7 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     public async Task<ActionResult<AccountBalanceResponse>> GetBalanceByAccountId(Guid id)
     {
         _logger.Information(AccountsLogs.GetBalance, id);
-        var balance = await httpClientService.GetAsync<AccountBalanceResponse>(string.Format(Routes.BalanceByAccountIdTStore, id));
-        var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(balance.AccountId);
-        balance.Currency = account.Currency;
+        var balance = await transactionsService.GetBalanceByAccountId(id);
 
         return Ok(balance);
     }
