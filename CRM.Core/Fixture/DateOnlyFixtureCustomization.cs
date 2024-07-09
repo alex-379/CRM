@@ -1,6 +1,6 @@
 using AutoFixture;
 
-namespace CRM.DataLayer.Tests.Fixture;
+namespace CRM.Core.Fixture;
 
 public class DateOnlyFixtureCustomization : ICustomization
 {

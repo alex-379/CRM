@@ -1,6 +1,6 @@
 using CRM.Core.Enums;
 
-namespace CRM.Business.Services;
+namespace CRM.Core;
 
 public static class AllowedCurrencies
 {

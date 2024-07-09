@@ -1,7 +1,7 @@
 ﻿using AutoFixture;
 using CRM.Core.Dtos;
+using CRM.Core.Fixture;
 using CRM.DataLayer.Repositories;
-using CRM.DataLayer.Tests.Fixture;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;

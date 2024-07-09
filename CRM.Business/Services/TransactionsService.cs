@@ -6,13 +6,15 @@ using CRM.Business.Models.Transactions.Responses;
 using CRM.Business.Services.Constants;
 using CRM.Business.Services.Constants.Exceptions;
 using CRM.Business.Services.Constants.Logs;
+using CRM.Core;
 using CRM.Core.Enums;
 using CRM.Core.Exceptions;
+using CRM.DataLayer.Interfaces;
 using Serilog;
 
 namespace CRM.Business.Services;
 
-public class TransactionsService(IAccountsService accountsService, ILeadsService leadsService, IHttpClientService<TransactionStoreHttpClient> httpClientService) : ITransactionsService
+public class TransactionsService(IAccountsService accountsService, ILeadsRepository leadsRepository, IHttpClientService<TransactionStoreHttpClient> httpClientService) : ITransactionsService
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
     public async Task<Guid> AddDepositTransaction(TransactionRequest request)
@@ -88,7 +90,7 @@ public class TransactionsService(IAccountsService accountsService, ILeadsService
     {
         var accountFrom = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountFromId);
         var accountTo = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountToId);
-        CheckLeadAccountsForTransferTransaction(accountFrom, accountTo);
+        await CheckLeadAccountsForTransferTransaction(accountFrom, accountTo);
         var tStoreRequest = new TransferRequest()
         {
             AccountToId = request.AccountToId,
@@ -101,7 +103,7 @@ public class TransactionsService(IAccountsService accountsService, ILeadsService
         return tStoreRequest;
     }
 
-    private static void CheckLeadAccountsForTransferTransaction(AccountForTransactionResponse accountFrom, AccountForTransactionResponse accountTo)
+    private async Task CheckLeadAccountsForTransferTransaction(AccountForTransactionResponse accountFrom, AccountForTransactionResponse accountTo)
     {
         if (accountFrom.LeadId != accountTo.LeadId)
         {
@@ -112,11 +114,13 @@ public class TransactionsService(IAccountsService accountsService, ILeadsService
         {
             throw new ValidationException(TransactionsServiceExceptions.AccountsCurrencyEqual);
         }
+        
+        await CheckLeadRights(accountTo.LeadId, accountFrom.Currency, accountTo.Currency);
     }
 
     private static void CheckCurrencyForDepositWithdrawTransaction(Currency currency)
     {
-        var (allowedCurrenciesForDepositWithdrawTransaction, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForRegularLead();
+        var (allowedCurrenciesForDepositWithdrawTransaction, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForDepositWithdrawTransaction();
         if(!allowedCurrenciesForDepositWithdrawTransaction.Contains(currency))
         {
             throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForDepositWithdrawTransaction, string.Join(",", allowedCurrencyNames)));
@@ -132,13 +136,24 @@ public class TransactionsService(IAccountsService accountsService, ILeadsService
         }
     }
 
-    private async Task CheckLeadRights(Guid leadId, Currency currency)
+    private async Task CheckLeadRights(Guid leadId, Currency currencyFrom, Currency currencyTo)
     {
         var (allowedCurrenciesForRegularLead, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForRegularLead();
-        var lead = await leadsService.GetLeadByIdAsync(leadId);
-        if (lead.Status == LeadStatus.Regular && !allowedCurrenciesForRegularLead.Contains(currency))
+        var lead = await leadsRepository.GetLeadByIdAsync(leadId);
+        if (lead.Status == LeadStatus.Regular
+            )
         {
-            throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForRegularLead, string.Join(",", allowedCurrencyNames)));
+            if (!allowedCurrenciesForRegularLead.Contains(currencyFrom) && currencyTo != Currency.Rub)
+            {
+                throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForRegularLead,
+                    string.Join(",", allowedCurrencyNames)));
+            }
+
+            if (!allowedCurrenciesForRegularLead.Contains(currencyTo))
+            {
+                throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForRegularLead,
+                    string.Join(",", allowedCurrencyNames)));
+            }
         }
     }
 }

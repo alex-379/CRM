@@ -11,7 +11,7 @@ public class MessagesService(IPublishEndpoint publishEndpoint, IMapper mapper) :
 {
     private readonly ILogger _logger = Log.ForContext<MessagesService>();
     
-    public async Task PublishAsync<TMessage, TDto>(TDto dto)
+    public virtual async Task PublishAsync<TMessage, TDto>(TDto dto)
         where TMessage : class
         where TDto : class
     {
@@ -19,7 +19,7 @@ public class MessagesService(IPublishEndpoint publishEndpoint, IMapper mapper) :
         await PublishAsync(message);
     }
     
-    public async Task PublishAsync<TMessage>(TMessage message)
+    public virtual async Task PublishAsync<TMessage>(TMessage message)
         where TMessage : class
     {
         var jsonMessage = JsonSerializer.Serialize(message);

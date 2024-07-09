@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
-using CRM.Business.Models.Accounts.Responses;
-using CRM.Business.Models.Leads.Responses;
 using CRM.Business.Services.Constants.Exceptions;
 using CRM.Business.Services.Constants.Logs;
+using CRM.Core;
 using CRM.Core.Dtos;
 using CRM.Core.Enums;
 using CRM.Core.Exceptions;
@@ -14,7 +13,7 @@ using Serilog;
 
 namespace CRM.Business.Services;
 
-public class AccountsService(IAccountsRepository accountsRepository, ILeadsService leadsService, IMessagesService messagesService, IMapper mapper)
+public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepository leadsRepository, IMessagesService messagesService, IMapper mapper)
     : IAccountsService
 {
     private readonly ILogger _logger = Log.ForContext<AccountsService>();
@@ -87,12 +86,12 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsServi
     
     private async Task CheckAccountRegister(Guid leadId, Currency currency)
     {
-        var lead = await leadsService.GetLeadByIdAsync(leadId);
+        var lead = await leadsRepository.GetLeadByIdAsync(leadId);
         CheckAccountCurrency(lead.Accounts, currency);
         CheckAllowedCurrencyByLeadStatus(lead.Status, currency);
     }
 
-    private static void CheckAccountCurrency(List<AccountResponse> accounts, Currency currency)
+    private static void CheckAccountCurrency(List<AccountDto> accounts, Currency currency)
     {
         if (accounts.Select(d => d.Currency).Contains(currency))
         {
