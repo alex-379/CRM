@@ -76,7 +76,7 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
     {
         var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountId);
         CheckCurrencyForDepositWithdrawTransaction(account.Currency);
-        var tStoreRequest = new DepositWithdrawRequest()
+        var tStoreRequest = new DepositWithdrawRequest
         {
             AccountId = request.AccountId,
             Currency = account.Currency,
@@ -91,7 +91,7 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         var accountFrom = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountFromId);
         var accountTo = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountToId);
         await CheckLeadAccountsForTransferTransaction(accountFrom, accountTo);
-        var tStoreRequest = new TransferRequest()
+        var tStoreRequest = new TransferRequest
         {
             AccountToId = request.AccountToId,
             AccountFromId = request.AccountFromId,
@@ -141,19 +141,11 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         var (allowedCurrenciesForRegularLead, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForRegularLead();
         var lead = await leadsRepository.GetLeadByIdAsync(leadId);
         if (lead.Status == LeadStatus.Regular
-            )
+            && ((!allowedCurrenciesForRegularLead.Contains(currencyFrom) && currencyTo != Currency.Rub)
+                || !allowedCurrenciesForRegularLead.Contains(currencyTo)))
         {
-            if (!allowedCurrenciesForRegularLead.Contains(currencyFrom) && currencyTo != Currency.Rub)
-            {
-                throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForRegularLead,
-                    string.Join(",", allowedCurrencyNames)));
-            }
-
-            if (!allowedCurrenciesForRegularLead.Contains(currencyTo))
-            {
-                throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForRegularLead,
-                    string.Join(",", allowedCurrencyNames)));
-            }
+            throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForRegularLead,
+                string.Join(",", allowedCurrencyNames)));
         }
     }
 }

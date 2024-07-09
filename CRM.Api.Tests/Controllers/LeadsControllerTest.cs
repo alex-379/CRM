@@ -1,4 +1,5 @@
 ﻿using CRM.API.Controllers;
+using CRM.Business.Configuration;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
@@ -11,6 +12,7 @@ namespace CRM.API.Tests.Controllers;
 public class LeadsControllerTest
 {
     private readonly Mock<ILeadsService> _leadsServiceMock = new();
+    private readonly ServicesUrlSettings _servicesUrlSettings = new();
 
     [Fact]
     public async Task RegistrationLeadAsync_RegistrationLeadRequestSent_CreatedResultReceived()
@@ -18,7 +20,7 @@ public class LeadsControllerTest
         //arrange
         var registrationLeadRequest = new RegisterLeadRequest();
         _leadsServiceMock.Setup(x => x.AddLeadAsync(registrationLeadRequest)).ReturnsAsync((new Guid(), new Guid()));
-        var sut = new LeadsController(_leadsServiceMock.Object, null);
+        var sut = new LeadsController(_leadsServiceMock.Object, _servicesUrlSettings);
 
         //act
         var actual = await sut.RegisterLeadAsync(registrationLeadRequest);

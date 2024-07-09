@@ -254,7 +254,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
     {
         var code = GenerateRandomNumber();
         _logger.Information(LeadsServiceLogs.AuthorizationCode, code);
-        var mailRequest = new MailRequest()
+        var mailRequest = new MailRequest
         {
             To = [lead.Mail],
             Subject = Data.AuthorizationCode,

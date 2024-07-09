@@ -2,6 +2,7 @@
 using AutoMapper;
 using CRM.Business.Models.Accounts;
 using CRM.Business.Models.Accounts.Requests;
+using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Services;
 using CRM.Business.Services.Constants.Exceptions;
 using CRM.Core;
@@ -48,7 +49,7 @@ public class AccountsServiceTest
         var expectedGuid = fixture.Create<Guid>();
         var lead = fixture.Create<LeadDto>();
         lead.Status = LeadStatus.Regular;
-        lead.Accounts = [ new AccountDto(){Currency = Currency.Rub}];
+        lead.Accounts = [ new AccountDto {Currency = Currency.Rub}];
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(It.IsAny<Guid>())).ReturnsAsync(lead);
         _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
         var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _messagesService, _mapper);
@@ -58,8 +59,10 @@ public class AccountsServiceTest
 
         //assert
         Assert.Equal(expectedGuid, actual);
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(It.IsAny<Guid>()), Times.Once);
         _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Once);
     }
+    
     
     [Fact]
     public async Task AddAccountAsync_GuidLeadAndRegistrationAccountForVipLeadWithValidCurrencyRequestSent_GuidReceived()
@@ -72,7 +75,7 @@ public class AccountsServiceTest
         var expectedGuid = fixture.Create<Guid>();
         var lead = fixture.Create<LeadDto>();
         lead.Status = LeadStatus.Vip;
-        lead.Accounts = [ new AccountDto(){Currency = Currency.Rub}];
+        lead.Accounts = [ new AccountDto {Currency = Currency.Rub}];
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(It.IsAny<Guid>())).ReturnsAsync(lead);
         _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
         var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _messagesService, _mapper);
@@ -82,6 +85,7 @@ public class AccountsServiceTest
 
         //assert
         Assert.Equal(expectedGuid, actual);
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(It.IsAny<Guid>()), Times.Once);
         _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Once);
     }
     
@@ -94,9 +98,10 @@ public class AccountsServiceTest
         registrationAccountRequest.Currency = Currency.Rub;
         var leadId = fixture.Create<Guid>();
         var lead = fixture.Create<LeadDto>();
-        lead.Accounts = [ new AccountDto(){Currency = Currency.Rub}];
+        lead.Accounts = [ new AccountDto {Currency = Currency.Rub}];
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(It.IsAny<Guid>())).ReturnsAsync(lead);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _messagesService, _mapper);
+        _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(It.IsAny<Guid>);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, null, _mapper);
 
         //act
         var act = async () => await sut.AddAccountAsync(leadId, registrationAccountRequest);
@@ -104,6 +109,7 @@ public class AccountsServiceTest
         //assert
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage(string.Format(AccountsServiceExceptions.AccountCurrencyContains));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(It.IsAny<Guid>()), Times.Once);
         _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Never);
     }
 
@@ -116,13 +122,12 @@ public class AccountsServiceTest
         var registrationAccountRequest = fixture.Create<RegisterAccountRequest>();
         registrationAccountRequest.Currency = Currency.Jpy;
         var leadId = fixture.Create<Guid>();
-        var expectedGuid = fixture.Create<Guid>();
         var lead = fixture.Create<LeadDto>();
         lead.Status = LeadStatus.Regular;
-        lead.Accounts = [ new AccountDto(){Currency = Currency.Rub}];
+        lead.Accounts = [ new AccountDto {Currency = Currency.Rub}];
         _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(It.IsAny<Guid>())).ReturnsAsync(lead);
-        _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _messagesService, _mapper);
+        _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(It.IsAny<Guid>);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, null, _mapper);
 
         //act
         var act = async () => await sut.AddAccountAsync(leadId, registrationAccountRequest);
@@ -130,6 +135,32 @@ public class AccountsServiceTest
         //assert
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage(string.Format(AccountsServiceExceptions.CurrencyForRegularLead, string.Join(",", allowedCurrencyNames)));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(It.IsAny<Guid>()), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Never);
+    }
+    
+    [Fact]
+    public async Task AddAccountAsync_GuidLeadAndRegistrationAccountForLeadWithUnknownCurrencyRequestSent_ValidationErrorReceived()
+    {
+        //arrange
+        var fixture = _customFixture.GetFixture();
+        var registrationAccountRequest = fixture.Create<RegisterAccountRequest>();
+        registrationAccountRequest.Currency = Currency.Unknown;
+        var leadId = fixture.Create<Guid>();
+        var expectedGuid = fixture.Create<Guid>();
+        var lead = fixture.Create<LeadDto>();
+        lead.Accounts = [ new AccountDto {Currency = Currency.Rub}];
+        _leadsRepositoryMock.Setup(x => x.GetLeadByIdAsync(It.IsAny<Guid>())).ReturnsAsync(lead);
+        _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, null, _mapper);
+
+        //act
+        var act = async () => await sut.AddAccountAsync(leadId, registrationAccountRequest);
+
+        //assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage(string.Format(AccountsServiceExceptions.CurrencyIsUnknown));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(It.IsAny<Guid>()), Times.Once);
         _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Never);
     }
 
@@ -137,11 +168,12 @@ public class AccountsServiceTest
     public async Task AddAccountAsyncNoLead_EmptyGuidAndRegistrationAccountRequestSent_LeadNotFoundErrorReceived()
     {
         //arrange
+        var fixture = _customFixture.GetFixture();
         var leadId = Guid.Empty;
-        var registrationAccountRequest = TestsData.GetFakeRegistrationAccountRequest();
+        var registrationAccountRequest = fixture.Create<RegisterAccountRequest>();
         var expectedGuid = Guid.NewGuid();
         _accountsRepositoryMock.Setup(x => x.AddAccountAsync(It.IsAny<AccountDto>())).ReturnsAsync(expectedGuid);
-        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, _mapper);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, null, _mapper);
 
         //act
         var act = async () => await sut.AddAccountAsync(leadId, registrationAccountRequest);
@@ -149,17 +181,66 @@ public class AccountsServiceTest
         //assert
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
+        _leadsRepositoryMock.Verify(m => m.GetLeadByIdAsync(It.IsAny<Guid>()), Times.Once);
         _accountsRepositoryMock.Verify(m => m.AddAccountAsync(It.IsAny<AccountDto>()), Times.Never);
+    }
+    
+    [Fact]
+    public async Task GetAccountByIdAsync_GuidSent_AccountResponseReceived()
+    {
+        //arrange
+        var fixture = _customFixture.GetFixture();
+        var id = Guid.NewGuid();
+        var expectedAccount = fixture.Create<AccountDto>();
+        var expected = new AccountForTransactionResponse
+        {
+            Currency = expectedAccount.Currency,
+            LeadId = expectedAccount.Lead.Id
+        };
+
+        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync(expectedAccount);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, _mapper);
+
+        //act
+        var actual = await sut.GetAccountByIdAsync<AccountForTransactionResponse>(id);
+
+        //assert
+        actual.Should().BeEquivalentTo(expected);
+        _accountsRepositoryMock.Verify(m => m.GetAccountByIdAsync(id), Times.Once);
     }
 
     [Fact]
-    public async Task UpdateAccountStatusAsync_GuidAndUpdateAccountStatusRequestSent_NoErrorsReceived()
+    public void GetAccountByIdAsyncNoLead_EmptyGuidSent_AccountNotFoundErrorReceived()
+    {
+        //arrange
+        var id = Guid.Empty;
+        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync((AccountDto)null);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, _mapper);
+        
+        //act
+        var act = async () => await sut.GetAccountByIdAsync<AccountForTransactionResponse>(id);
+
+        //assert
+        act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(string.Format(AccountsServiceExceptions.NotFoundException, id));
+        _accountsRepositoryMock.Verify(m => m.GetAccountByIdAsync(id), Times.Once);
+    }
+    
+    [Fact]
+    public async Task UpdateAccountStatusAsync_GuidAndUpdateAccountStatusValidRequestSent_NoErrorsReceived()
     {
         //arrange
         var id = Guid.NewGuid();
-        var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
-        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync(new AccountDto());
-        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, null);
+        var updateAccountStatusRequest = new UpdateAccountStatusRequest
+        {
+            Status = AccountStatus.Blocked
+        };
+        var account = new AccountDto
+        {
+            Currency = Currency.Eur
+        };
+        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync(account);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, _messagesService, null);
 
         //act
         await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);
@@ -168,13 +249,90 @@ public class AccountsServiceTest
         _accountsRepositoryMock.Verify(m => m.GetAccountByIdAsync(id), Times.Once);
         _accountsRepositoryMock.Verify(m => m.UpdateAccountAsync(It.IsAny<AccountDto>()), Times.Once);
     }
+    
+    [Fact]
+    public async Task UpdateAccountStatusAsync_GuidAndUpdateAccountRubStatusBlockedRequestSent_ValidationErrorReceived()
+    {
+        //arrange
+        var id = Guid.NewGuid();
+        var updateAccountStatusRequest = new UpdateAccountStatusRequest
+        {
+            Status = AccountStatus.Blocked
+        };
+        var account = new AccountDto
+        {
+            Currency = Currency.Rub
+        };
+        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync(account);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, null);
 
+        //act
+        var act = async () => await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);
+
+        //assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage(AccountsServiceExceptions.AccountRubException);
+        _accountsRepositoryMock.Verify(m => m.GetAccountByIdAsync(id), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.UpdateAccountAsync(It.IsAny<AccountDto>()), Times.Never);
+    }
+    
+    [Fact]
+    public async Task UpdateAccountStatusAsync_GuidAndUpdateAccountEqualStatusRequestSent_ValidationErrorReceived()
+    {
+        //arrange
+        var fixture = _customFixture.GetFixture();
+        var id = Guid.NewGuid();
+        var updateAccountStatusRequest = fixture.Create<UpdateAccountStatusRequest>();
+        var account = new AccountDto
+        {
+            Status = updateAccountStatusRequest.Status
+        };
+        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync(account);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, null);
+
+        //act
+        var act = async () => await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);
+
+        //assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage(AccountsServiceExceptions.AccountStatusEqual);
+        _accountsRepositoryMock.Verify(m => m.GetAccountByIdAsync(id), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.UpdateAccountAsync(It.IsAny<AccountDto>()), Times.Never);
+    }
+    
+    [Fact]
+    public async Task UpdateAccountStatusAsync_GuidAndUpdateAccountStatusIsUnknownRequestSent_ValidationErrorReceived()
+    {
+        //arrange
+        var id = Guid.NewGuid();
+        var updateAccountStatusRequest = new UpdateAccountStatusRequest
+        {
+            Status = AccountStatus.Unknown
+        };
+        var account = new AccountDto
+        {
+            Status = AccountStatus.Active
+        };
+        _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync(account);
+        var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, null);
+
+        //act
+        var act = async () => await sut.UpdateAccountStatusAsync(id, updateAccountStatusRequest);
+
+        //assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage(AccountsServiceExceptions.AccountStatusIsUnknown);
+        _accountsRepositoryMock.Verify(m => m.GetAccountByIdAsync(id), Times.Once);
+        _accountsRepositoryMock.Verify(m => m.UpdateAccountAsync(It.IsAny<AccountDto>()), Times.Never);
+    }
+    
     [Fact]
     public async Task UpdateAccountStatusAsync_EmptyGuidAndUpdateAccountStatusRequestSent_AccountNotFoundErrorReceived()
     {
         //arrange
+        var fixture = _customFixture.GetFixture();
         var id = Guid.Empty;
-        var updateAccountStatusRequest = TestsData.GetFakeUpdateAccountStatusRequest();
+        var updateAccountStatusRequest = fixture.Create<UpdateAccountStatusRequest>();
         _accountsRepositoryMock.Setup(x => x.GetAccountByIdAsync(id)).ReturnsAsync((AccountDto)null);
         var sut = new AccountsService(_accountsRepositoryMock.Object, null, null, null);
 

@@ -38,7 +38,7 @@ public class TokensService(SecretSettings secret, JwtToken jwt, ILeadsRepository
         
         var (newAccessToken, newRefreshToken) = UpdateLeadTokens(lead);
         
-        return new AuthenticatedResponse()
+        return new AuthenticatedResponse
         {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,

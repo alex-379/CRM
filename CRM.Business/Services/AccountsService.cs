@@ -86,7 +86,8 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepos
     
     private async Task CheckAccountRegister(Guid leadId, Currency currency)
     {
-        var lead = await leadsRepository.GetLeadByIdAsync(leadId);
+        var lead = await leadsRepository.GetLeadByIdAsync(leadId)
+                   ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
         CheckAccountCurrency(lead.Accounts, currency);
         CheckAllowedCurrencyByLeadStatus(lead.Status, currency);
     }
