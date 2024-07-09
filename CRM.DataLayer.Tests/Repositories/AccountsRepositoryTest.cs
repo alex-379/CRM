@@ -1,5 +1,7 @@
-﻿using CRM.Core.Dtos;
+﻿using AutoFixture;
+using CRM.Core.Dtos;
 using CRM.DataLayer.Repositories;
+using CRM.DataLayer.Tests.Fixture;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
@@ -9,15 +11,17 @@ namespace CRM.DataLayer.Tests.Repositories;
 
 public class AccountsRepositoryTest
 {
-    private static readonly DbContextOptions<CrmContext> _options = new();
-    private readonly Mock<CrmContext> _contextMock = new(_options);
+    private readonly Mock<CrmContext> _contextMock = new(new DbContextOptions<CrmContext>());
+    private readonly CustomFixture _customFixture = new();
 
     [Fact]
     public async Task AddAccountAsync_AccountDtoSent_GuidReceived()
     {
         //arrange
+        DatabaseConnection.SetDatabase(_contextMock);
+        var fixture = _customFixture.GetFixture();
         var accounts = new List<AccountDto>();
-        var account = TestData.GetFakeAccountDto();
+        var account = fixture.Create<AccountDto>();
         var mock = accounts.BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Accounts)
             .Returns(mock.Object);
@@ -29,7 +33,7 @@ public class AccountsRepositoryTest
         var actual = await sut.AddAccountAsync(account);
 
         //assert
-        Assert.Matches(TestData.RegexGuid, actual.ToString());
+        Assert.Matches(CustomFixture.RegexGuid, actual.ToString());
         Assert.Single(accounts);
         mock.Verify(m => m.AddAsync(account,default), Times.Once());
         _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
@@ -39,6 +43,7 @@ public class AccountsRepositoryTest
     public async Task AddAccountAsync_NullSent_NullReferenceExceptionErrorReceived()
     {
         //arrange
+        DatabaseConnection.SetDatabase(_contextMock);
         var mock = Enumerable.Empty<AccountDto>().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Accounts)
             .Returns(mock.Object);
@@ -55,14 +60,17 @@ public class AccountsRepositoryTest
     public async Task GetAccountByIdAsync_GuidSent_AccountDtoReceived()
     {
         //arrange
-        var expected = new Guid(TestData.Guid);
-        var mock = TestData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
-        _contextMock.Setup(x => x.Leads)
+        DatabaseConnection.SetDatabase(_contextMock);
+        var fixture = _customFixture.GetFixture();
+        var accounts = fixture.Create<List<AccountDto>>();
+        var expected = accounts.FirstOrDefault()!.Id;
+        var mock = accounts.BuildMock().BuildMockDbSet();
+        _contextMock.Setup(x => x.Accounts)
             .Returns(mock.Object);
-        var sut = new LeadsRepository(_contextMock.Object);
+        var sut = new AccountsRepository(_contextMock.Object);
 
         //act
-        var actual = await sut.GetLeadByIdAsync(expected);
+        var actual = await sut.GetAccountByIdAsync(expected);
 
         //assert
         Assert.NotNull(actual);
@@ -73,7 +81,9 @@ public class AccountsRepositoryTest
     public async Task UpdateAccountAsync_AccountDtoSent_NoErrorsReceived()
     {
         //arrange
-        var account = TestData.GetFakeAccountDto();
+        DatabaseConnection.SetDatabase(_contextMock);
+        var fixture = _customFixture.GetFixture();
+        var account = fixture.Create<AccountDto>();
         var mock = Enumerable.Empty<AccountDto>().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Accounts)
             .Returns(mock.Object);
@@ -91,6 +101,7 @@ public class AccountsRepositoryTest
     public async Task UpdateAccountAsync_NullSent_NullReferenceExceptionErrorReceived()
     {
         //arrange
+        DatabaseConnection.SetDatabase(_contextMock);
         var mock = Enumerable.Empty<AccountDto>().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Accounts)
             .Returns(mock.Object);

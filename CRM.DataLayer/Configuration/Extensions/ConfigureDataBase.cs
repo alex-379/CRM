@@ -1,5 +1,4 @@
 ﻿using CRM.Core.Enums;
-using CRM.DataLayer.Configuration.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +8,8 @@ namespace CRM.DataLayer.Configuration.Extensions;
 
 public static class ConfigureDataBase
 {
+    private const string _databaseContext = "DatabaseSettings:CrmDb";
+    
     public static void AddDataBases(this IServiceCollection services, IConfiguration configuration)
     {
         var dataSource = ConfigureDataSource(configuration);
@@ -21,7 +22,7 @@ public static class ConfigureDataBase
     
     private static NpgsqlDataSource ConfigureDataSource(IConfiguration configuration)
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(configuration[ConfigurationSettings.DatabaseContext]);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(configuration[_databaseContext]);
         dataSourceBuilder.MapEnum<AccountStatus>();
         dataSourceBuilder.MapEnum<Currency>();
         dataSourceBuilder.MapEnum<LeadStatus>();
