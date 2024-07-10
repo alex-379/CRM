@@ -14,7 +14,7 @@ using Serilog;
 
 namespace CRM.Business.Services;
 
-public class AccountsService(IAccountsRepository accountsRepository, ILeadsService leadsService, IMessagesService messagesService, IMapper mapper)
+public class AccountsService(IAccountsRepository accountsRepository, ILeadsRepository leadsRepository, IMessagesService messagesService, IMapper mapper)
     : IAccountsService
 {
     private readonly ILogger _logger = Log.ForContext<AccountsService>();
@@ -22,7 +22,7 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsServi
     public async Task<Guid> AddAccountAsync(Guid leadId, RegisterAccountRequest request)
     {
         var account = mapper.Map<AccountDto>(request);
-        await CheckAccountRegisterAsync(leadId, request.Currency);
+        account.Lead = await CheckAccountRegisterAsync(leadId, request.Currency);
         _logger.Information(AccountsServiceLogs.AddAccount, request.Currency);
         account.Id = await accountsRepository.AddAccountAsync(account);
         _logger.Information(AccountsServiceLogs.CompleteAccount, account.Id);
@@ -85,15 +85,17 @@ public class AccountsService(IAccountsRepository accountsRepository, ILeadsServi
         }
     }
     
-    private async Task CheckAccountRegisterAsync(Guid leadId, Currency currency)
+    private async Task<LeadDto> CheckAccountRegisterAsync(Guid leadId, Currency currency)
     {
-        var lead = await leadsService.GetLeadByIdAsync(leadId)
+        var lead = await leadsRepository.GetLeadByIdAsync(leadId)
                    ?? throw new NotFoundException(string.Format(LeadsServiceExceptions.NotFoundException, leadId));
         CheckAccountCurrency(lead.Accounts, currency);
         CheckAllowedCurrencyByLeadStatus(lead.Status, currency);
+        
+        return lead;
     }
 
-    private static void CheckAccountCurrency(List<AccountResponse> accounts, Currency currency)
+    private static void CheckAccountCurrency(List<AccountDto> accounts, Currency currency)
     {
         if (accounts.Select(d => d.Currency).Contains(currency))
         {
