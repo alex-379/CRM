@@ -7,6 +7,6 @@ public class LeadFullResponse : LeadResponse
 {
     public string Address { get; init; }
     public DateOnly BirthDate { get; init; }
-    public LeadStatus Status { get; init; }
+    public LeadStatus Status { get; set; }
     public List<AccountResponse> Accounts { get; init; }
 }

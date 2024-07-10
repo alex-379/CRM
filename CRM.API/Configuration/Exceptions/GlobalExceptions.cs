@@ -12,4 +12,5 @@ public static class GlobalExceptions
     public const string ConfigurationMissingException = "Configuration missing exception";
     public const string GatewayTimeoutException = "Gateway timeout";
     public const string BadGatewayException = "Gateway error";
+    public const string ValidationException = "Validation error";
 }

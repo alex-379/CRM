@@ -3,12 +3,9 @@ using CRM.API.Configuration.Filters;
 using CRM.API.Controllers.Constants;
 using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Configuration;
-using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Accounts.Requests;
-using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Transactions.Responses;
-using CRM.Core.Enums;
 using CRM.Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,14 +16,13 @@ namespace CRM.API.Controllers;
 [Authorize]
 [ApiController]
 [Route($"{Routes.Api}{Routes.AccountsController}")]
-public class AccountsController(IAccountsService accountsService, IHttpClientService<TransactionStoreHttpClient> httpClientService, ServicesUrlSettings servicesUrlSettings) : Controller
+public class AccountsController(IAccountsService accountsService, ITransactionsService transactionsService, ServicesUrlSettings servicesUrlSettings) : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<AccountsController>();
 
     [HttpPost]
     public async Task<ActionResult<Guid>> RegisterAccountAsync([FromBody] RegisterAccountRequest request)
     {
-        var a = servicesUrlSettings.Crm;
         _logger.Information(LeadsLogs.GetAuthorizedLead);
         var currentLeadId = GetCurrentLeadFromClaims(HttpContext.User); 
         _logger.Information(AccountsLogs.RegisterAccount, request.Currency, currentLeadId);
@@ -35,15 +31,7 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
         return Created($"{servicesUrlSettings.Crm}{Routes.LeadsController}/{id}", id);
     }
     
-    private static Guid GetCurrentLeadFromClaims(ClaimsPrincipal claimsPrincipal)
-    {
-        var currentLeadId = new Guid(claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier)
-                                     ?? throw new NotFoundException(Exceptions.ClaimNotFound));
-
-        return currentLeadId;
-    }
-    
-    [Authorize(Roles = nameof(LeadStatus.Administrator))]
+    [AuthorizationFilterByAccountId]
     [HttpPatch(Routes.Status)]
     public async Task<ActionResult> UpdateAccountStatusAsync([FromRoute] Guid id, [FromBody] UpdateAccountStatusRequest request)
     {
@@ -58,12 +46,7 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     public async Task<ActionResult<List<TransactionResponse>>> GetTransactionsByAccountId(Guid id)
     {
         _logger.Information(AccountsLogs.GetTransactions, id);
-        var transactions = await httpClientService.GetAsync<List<TransactionResponse>>(string.Format(Routes.TransactionsByAccountIdTStore, id));
-        foreach (var transaction in transactions)
-        { 
-            var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(transaction.AccountId);
-            transaction.Currency = account.Currency;
-        }
+        var transactions = await transactionsService.GetTransactionsByAccountIdAsync(id);
 
         return Ok(transactions);
     }
@@ -73,10 +56,16 @@ public class AccountsController(IAccountsService accountsService, IHttpClientSer
     public async Task<ActionResult<AccountBalanceResponse>> GetBalanceByAccountId(Guid id)
     {
         _logger.Information(AccountsLogs.GetBalance, id);
-        var balance = await httpClientService.GetAsync<AccountBalanceResponse>(string.Format(Routes.BalanceByAccountIdTStore, id));
-        var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(balance.AccountId);
-        balance.Currency = account.Currency;
+        var balance = await transactionsService.GetBalanceByAccountIdAsync(id);
 
         return Ok(balance);
+    }
+        
+    private static Guid GetCurrentLeadFromClaims(ClaimsPrincipal claimsPrincipal)
+    {
+        var currentLeadId = new Guid(claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier)
+                                     ?? throw new NotFoundException(Exceptions.ClaimNotFound));
+
+        return currentLeadId;
     }
 }

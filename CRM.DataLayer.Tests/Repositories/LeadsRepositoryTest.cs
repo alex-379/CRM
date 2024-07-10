@@ -1,4 +1,6 @@
-﻿using CRM.Core.Dtos;
+﻿using AutoFixture;
+using CRM.Core.Dtos;
+using CRM.Core.Fixture;
 using CRM.DataLayer.Repositories;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -10,15 +12,17 @@ namespace CRM.DataLayer.Tests.Repositories;
 
 public class LeadsRepositoryTest
 {
-    private static readonly DbContextOptions<CrmContext> _options = new();
-    private readonly Mock<CrmContext> _contextMock = new(_options);
+    private readonly Mock<CrmContext> _contextMock = new(new DbContextOptions<CrmContext>());
+    private readonly CustomFixture _customFixture = new();
 
     [Fact]
     public async Task AddLeadAsync_LeadDtoSent_GuidReceived()
     {
         //arrange
+        DatabaseConnection.SetDatabase(_contextMock);
+        var fixture = _customFixture.GetFixture();
         var leads = new List<LeadDto>();
-        var lead = TestData.GetFakeLeadDto();
+        var lead = fixture.Create<LeadDto>();
         var mock = leads.BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
@@ -30,7 +34,7 @@ public class LeadsRepositoryTest
         var actual = await sut.AddLeadAsync(lead);
 
         //assert
-        Assert.Matches(TestData.RegexGuid, actual.ToString());
+        Assert.Matches(CustomFixture.RegexGuid, actual.ToString());
         Assert.Single(leads);
         mock.Verify(m => m.AddAsync(lead,default), Times.Once());
         _contextMock.Verify(m => m.SaveChangesAsync(default), Times.Once());
@@ -40,6 +44,7 @@ public class LeadsRepositoryTest
     public async Task AddLeadAsync_NullSent_NullReferenceExceptionErrorReceived()
     {
         //arrange
+        DatabaseConnection.SetDatabase(_contextMock);
         var mock = Enumerable.Empty<LeadDto>().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
@@ -56,9 +61,12 @@ public class LeadsRepositoryTest
     public async Task GetLeadsAsync_Called_LeadDtoListReceived()
     {
         //arrange
-        const int expected = TestData.LeadsCount;
+        DatabaseConnection.SetDatabase(_contextMock);
+        var fixture = _customFixture.GetFixture();
+        var leads = fixture.Create<List<LeadDto>>().Where(d => d.IsDeleted == false).ToList();;
+        var expected = leads.Count;
         _contextMock.Setup(x => x.Leads)
-            .ReturnsDbSet(TestData.GetFakeLeadDtoList());
+            .ReturnsDbSet(leads);
         var sut = new LeadsRepository(_contextMock.Object);
 
         //act
@@ -73,8 +81,11 @@ public class LeadsRepositoryTest
     public async Task GetLeadByIdAsync_GuidSent_LeadDtoReceived()
     {
         //arrange
-        var expected = new Guid(TestData.Guid);
-        var mock = TestData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
+        DatabaseConnection.SetDatabase(_contextMock);
+        var fixture = _customFixture.GetFixture();
+        var leads = fixture.Create<List<LeadDto>>().Where(d => d.IsDeleted == false).ToList();
+        var expected = leads.FirstOrDefault()!.Id;
+        var mock = leads.BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
         var sut = new LeadsRepository(_contextMock.Object);
@@ -91,9 +102,12 @@ public class LeadsRepositoryTest
     public async Task GetLeadByMailAsync_MailSent_LeadDtoReceived()
     {
         //arrange
-        const string mail = TestData.Mail;
-        var expected = new Guid(TestData.Guid);
-        var mock = TestData.GetFakeLeadDtoList().BuildMock().BuildMockDbSet();
+        DatabaseConnection.SetDatabase(_contextMock);
+        var fixture = _customFixture.GetFixture();
+        var leads = fixture.Create<List<LeadDto>>().Where(d => d.IsDeleted == false).ToList();
+        var mail = leads.FirstOrDefault()?.Mail;
+        var expected = leads.FirstOrDefault()?.Id;
+        var mock = leads.BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
         var sut = new LeadsRepository(_contextMock.Object);
@@ -110,7 +124,9 @@ public class LeadsRepositoryTest
     public async Task UpdateLeadAsync_LeadDtoSent_NoErrorsReceived()
     {
         //arrange
-        var lead = TestData.GetFakeLeadDto();
+        DatabaseConnection.SetDatabase(_contextMock);
+        var fixture = _customFixture.GetFixture();
+        var lead = fixture.Create<LeadDto>();
         var mock = Enumerable.Empty<LeadDto>().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);
@@ -128,6 +144,7 @@ public class LeadsRepositoryTest
     public async Task UpdateLeadAsync_NullSent_NullReferenceExceptionErrorReceived()
     {
         //arrange
+        DatabaseConnection.SetDatabase(_contextMock);
         var mock = Enumerable.Empty<LeadDto>().BuildMock().BuildMockDbSet();
         _contextMock.Setup(x => x.Leads)
             .Returns(mock.Object);

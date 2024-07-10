@@ -9,6 +9,11 @@ public class BaseRepository
     protected BaseRepository(CrmContext context)
     {
         _ctx = context;
+        EnsureDatabaseConnection();
+    }
+
+    private void EnsureDatabaseConnection()
+    {
         if (!_ctx.Database.CanConnect())
         {
             throw new ServiceUnavailableException();

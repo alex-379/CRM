@@ -7,7 +7,9 @@ using CRM.Core.Exceptions;
 
 namespace CRM.Business.Services;
 
-public class HttpClientService<THttpClient>(THttpClient httpClient, CancellationTokenSource cancellationTokenSource) : IHttpClientService<THttpClient> where THttpClient : IHttpClient
+public class HttpClientService<THttpClient>(THttpClient httpClient, CancellationTokenSource cancellationTokenSource) 
+    : IHttpClientService<THttpClient> 
+    where THttpClient : IHttpClient
 {
     private readonly JsonSerializerOptions _options = JsonSerializerOptionsProvider.GetJsonSerializerOptions();
     private readonly CancellationToken _token = cancellationTokenSource.Token;
@@ -23,8 +25,7 @@ public class HttpClientService<THttpClient>(THttpClient httpClient, Cancellation
             using var requestContent = new StreamContent(ms);
             requestMessage.Content = requestContent;
             requestContent.Headers.ContentType = new MediaTypeHeaderValue(Data.ApplicationType);
-            using var response =
-                await httpClient.Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, _token);
+            using var response = await httpClient.Client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, _token);
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStreamAsync(_token);
             var result = await JsonSerializer.DeserializeAsync<TResponse>(content, _options, _token);

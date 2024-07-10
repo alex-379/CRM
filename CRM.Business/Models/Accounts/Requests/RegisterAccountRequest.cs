@@ -4,5 +4,5 @@ namespace CRM.Business.Models.Accounts.Requests;
 
 public class RegisterAccountRequest
 {
-    public Currency Currency { get; init; }
+    public Currency Currency { get; set; }
 }

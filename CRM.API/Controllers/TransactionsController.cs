@@ -4,7 +4,6 @@ using CRM.API.Controllers.Constants.Logs;
 using CRM.Business.Configuration;
 using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Interfaces;
-using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Transactions.Requests;
 using CRM.Business.Models.Transactions.Responses;
 using CRM.Core.Enums;
@@ -17,82 +16,49 @@ namespace CRM.API.Controllers;
 [Authorize]
 [ApiController]
 [Route($"{Routes.Api}{Routes.TransactionsController}")]
-public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService, IAccountsService accountsService, ServicesUrlSettings servicesUrlSettings) : Controller
+public class TransactionsController(IHttpClientService<TransactionStoreHttpClient> httpClientService,
+    ITransactionsService transactionsService, ServicesUrlSettings servicesUrlSettings) 
+    : Controller
 {
     private readonly Serilog.ILogger _logger = Log.ForContext<TransactionsController>();
     
     [AuthorizationFilterForTransactionByAccountId]
     [HttpPost(Routes.Deposit)]
-    public async Task<ActionResult<Guid>> AddDepositTransaction([FromBody] TransactionRequest request)
+    public async Task<ActionResult<Guid>> AddDepositTransactionAsync([FromBody] TransactionRequest request)
     {
-        var tStoreRequest = await CreateDepositWithdrawRequestTStore(request);
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.DepositTStore);
-        _logger.Information(TransactionsLogs.AddDepositTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
-        var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
+        _logger.Information(TransactionsLogs.AddDepositTransaction, request.AccountId, request.Amount);
+        var id = await transactionsService.AddDepositTransactionAsync(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{id}", id);
     }
     
     [AuthorizationFilterForTransactionByAccountId]
     [HttpPost(Routes.Withdraw)]
-    public async Task<ActionResult<Guid>> AddWithdrawTransaction([FromBody] TransactionRequest request)
+    public async Task<ActionResult<Guid>> AddWithdrawTransactionAsync([FromBody] TransactionRequest request)
     {
-        var tStoreRequest = await CreateDepositWithdrawRequestTStore(request);
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.WithdrawTStore);
-        _logger.Information(TransactionsLogs.AddWithdrawTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
-        var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
+        _logger.Information(TransactionsLogs.AddWithdrawTransaction, request.AccountId, request.Amount);
+        var id = await transactionsService.AddWithdrawTransactionAsync(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{id}", id);
     }
     
     [AuthorizationFilterForTransferByAccountsId]
     [HttpPost(Routes.Transfer)]
-    public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransaction([FromBody] CrmTransferRequest request)
+    public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransactionAsync([FromBody] CrmTransferRequest request)
     {
-        var tStoreRequest = await CreateTransferRequestTStore(request);
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.TransferTStore);
-        _logger.Information(TransactionsLogs.AddTransferTransaction, tStoreRequest.AccountFromId, tStoreRequest.AccountToId);
-        var response = await httpClientService.SendAsync<TransferRequest,TransferGuidsResponse>(tStoreRequest, requestMessage);
+        _logger.Information(TransactionsLogs.AddTransferTransaction, request.AccountFromId, request.AccountToId);
+        var response = await transactionsService.AddTransferTransactionAsync(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{response}", response);
     }
     
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
     [HttpGet(Routes.Id)]
-    public async Task<ActionResult<FullTransactionResponse>> GetTransactionById(Guid id)
+    public async Task<ActionResult<FullTransactionResponse>> GetTransactionByIdAsync(Guid id)
     {
         _logger.Information(TransactionsLogs.GetTransaction, id);
         var transactions = await httpClientService.GetAsync<FullTransactionResponse>(string.Format(Routes.TransactionsTStore, id));
         
         return Ok(transactions);
-    }
-    
-    private async Task<DepositWithdrawRequest> CreateDepositWithdrawRequestTStore(TransactionRequest request)
-    {
-        var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountId);
-        var tStoreRequest = new DepositWithdrawRequest()
-        {
-            AccountId = request.AccountId,
-            Currency = account.Currency,
-            Amount = request.Amount
-        };
-
-        return tStoreRequest;
-    }
-    
-    private async Task<TransferRequest> CreateTransferRequestTStore(CrmTransferRequest request)
-    {
-        var accountFrom = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountFromId);
-        var accountTo = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountToId);
-        var tStoreRequest = new TransferRequest()
-        {
-            AccountToId = request.AccountToId,
-            AccountFromId = request.AccountFromId,
-            CurrencyTo = accountTo.Currency,
-            CurrencyFrom = accountFrom.Currency,
-            Amount = request.Amount
-        };
-
-        return tStoreRequest;
     }
 }

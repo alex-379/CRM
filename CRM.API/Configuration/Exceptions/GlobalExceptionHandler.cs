@@ -89,6 +89,14 @@ public class GlobalExceptionHandler : IExceptionHandler
             };
 
                 break;
+            
+            case nameof(ValidationException):
+            {
+                problemDetails.Status = StatusCodes.Status422UnprocessableEntity;
+                problemDetails.Title = GlobalExceptions.ValidationException;
+            };
+
+                break;
 
             default:
                 {

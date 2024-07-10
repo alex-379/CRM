@@ -4,5 +4,6 @@ namespace CRM.Business.Models.Accounts.Responses;
 
 public class AccountForTransactionResponse
 {
-    public Currency Currency { get; init; }
+    public Currency Currency { get; set; }
+    public Guid LeadId { get; set; }
 }

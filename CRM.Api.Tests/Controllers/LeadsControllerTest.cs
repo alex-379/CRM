@@ -1,7 +1,9 @@
 ﻿using CRM.API.Controllers;
+using CRM.Business.Configuration;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
+using CRM.Business.Models.Tokens.Responses;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -11,6 +13,7 @@ namespace CRM.API.Tests.Controllers;
 public class LeadsControllerTest
 {
     private readonly Mock<ILeadsService> _leadsServiceMock = new();
+    private readonly ServicesUrlSettings _servicesUrlSettings = new();
 
     [Fact]
     public async Task RegistrationLeadAsync_RegistrationLeadRequestSent_CreatedResultReceived()
@@ -18,7 +21,7 @@ public class LeadsControllerTest
         //arrange
         var registrationLeadRequest = new RegisterLeadRequest();
         _leadsServiceMock.Setup(x => x.AddLeadAsync(registrationLeadRequest)).ReturnsAsync((new Guid(), new Guid()));
-        var sut = new LeadsController(_leadsServiceMock.Object, null);
+        var sut = new LeadsController(_leadsServiceMock.Object, _servicesUrlSettings);
 
         //act
         var actual = await sut.RegisterLeadAsync(registrationLeadRequest);
@@ -42,6 +45,22 @@ public class LeadsControllerTest
         //assert
         actual.Result.Should().BeOfType<OkObjectResult>();
         _leadsServiceMock.Verify(m => m.LoginLeadAsync(loginLeadRequest), Times.Once);
+    }
+    
+    [Fact]
+    public async Task Login2FaAsync_Login2FaLeadRequestSent_OkResultReceived()
+    {
+        //arrange
+        var login2FaLeadRequest = new Login2FaLeadRequest();
+        _leadsServiceMock.Setup(x => x.Login2FaLeadAsync(login2FaLeadRequest)).ReturnsAsync(new AuthenticatedResponse());
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
+
+        //act
+        var actual = await sut.Login2FaAsync(login2FaLeadRequest);
+
+        //assert
+        actual.Result.Should().BeOfType<OkObjectResult>();
+        _leadsServiceMock.Verify(m => m.Login2FaLeadAsync(login2FaLeadRequest), Times.Once);
     }
 
     [Fact]
