@@ -2,7 +2,6 @@
 using AutoMapper;
 using CRM.Business.Configuration;
 using CRM.Business.Models.Accounts;
-using CRM.Business.Models.Accounts.Requests;
 using CRM.Business.Models.Accounts.Responses;
 using CRM.Business.Models.Leads;
 using CRM.Business.Models.Leads.Requests;
@@ -15,8 +14,11 @@ using CRM.Core.Exceptions;
 using CRM.Core.Fixture;
 using CRM.DataLayer.Interfaces;
 using FluentAssertions;
+using MemoryCache.Testing.Moq;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
+
 
 namespace CRM.Business.Tests.Services;
 
@@ -25,6 +27,7 @@ public class LeadsServiceTest
     private readonly Mock<ILeadsRepository> _leadsRepositoryMock;
     private readonly Mock<IAccountsRepository> _accountsRepositoryMock;
     private readonly Mock<ITransactionsManager> _transactionsManagerMock;
+    private readonly IMemoryCache _memoryCacheMock;
     private readonly MessagesServiceTest _messagesService;
     private readonly IMapper _mapper;
     private readonly SecretSettings _secret;
@@ -45,6 +48,7 @@ public class LeadsServiceTest
 
         _mapper = new Mapper(config);
         _customFixture = new CustomFixture();
+        _memoryCacheMock = Create.MockedMemoryCache();
     }
 
     [Fact]
@@ -152,6 +156,42 @@ public class LeadsServiceTest
         _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
     }
 
+    [Fact]
+    public async Task Login2FaLeadAsync_Login2FaLeadRequestSentEmptyCache_LeadUnauthenticatedErrorReceived()
+    {
+        //arrange
+        var fixture = _customFixture.GetFixture();
+        var loginLeadRequestIncorrectPassword = fixture.Create<Login2FaLeadRequest>(); 
+        _memoryCacheMock.GetOrCreate(new Guid(), entry => loginLeadRequestIncorrectPassword.Code);
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, _secret, null, null, _memoryCacheMock);
+
+        //act
+        var act = async () => await sut.Login2FaLeadAsync(loginLeadRequestIncorrectPassword);
+
+        //assert
+        await act.Should().ThrowAsync<UnauthenticatedException>();
+        _leadsRepositoryMock.Verify(m => m.GetLeadByMailAsync(loginLeadRequestIncorrectPassword.Mail.ToLower()), Times.Never);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+    }
+    
+    [Fact]
+    public async Task Login2FaLeadAsync_Login2FaLeadRequestIncorrectCodeSent_LeadUnauthenticatedErrorReceived()
+    {
+        //arrange
+        var fixture = _customFixture.GetFixture();
+        var loginLeadRequestIncorrectPassword = fixture.Create<Login2FaLeadRequest>(); 
+        _memoryCacheMock.GetOrCreate(loginLeadRequestIncorrectPassword.Token, entry => It.IsAny<int>());
+        var sut = new LeadsService(_leadsRepositoryMock.Object, null, null, null, _mapper, _secret, null, null, _memoryCacheMock);
+
+        //act
+        var act = async () => await sut.Login2FaLeadAsync(loginLeadRequestIncorrectPassword);
+
+        //assert
+        await act.Should().ThrowAsync<UnauthenticatedException>();
+        _leadsRepositoryMock.Verify(m => m.GetLeadByMailAsync(loginLeadRequestIncorrectPassword.Mail.ToLower()), Times.Never);
+        _leadsRepositoryMock.Verify(m => m.UpdateLeadAsync(It.IsAny<LeadDto>()), Times.Never);
+    }
+    
     [Fact]
     public async Task GetLeadsAsync_Called_ListLeadResponseReceived()
     {

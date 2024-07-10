@@ -1,73 +1,62 @@
-/*
-using System.Text.Json;
+using CRM.Business.Configuration.HttpClients;
 using CRM.Business.Services;
-using CRM.Core.Exceptions;
+using FluentAssertions;
 using RichardSzalay.MockHttp;
 
 namespace CRM.Business.Tests.Services;
 
 public class HttpClientServiceTest
-{ 
-        private readonly MockHttpMessageHandler _mockHttpMessageHandler;
-        private readonly HttpClient _httpClient;
-        
-        public HttpClientServiceTest()
-        {
-            _mockHttpMessageHandler = new MockHttpMessageHandler();
-            _httpClient = new HttpClient(_mockHttpMessageHandler);
-        }
-
-        [Fact]
-        public async Task GetAsync_SuccessfulResponse_ReturnsDeserializedObject()
-        {
-            //arrange
-            var expectedResponse = new { Id = 1, Name = "John Doe" };
-            _mockHttpMessageHandler.When("https://example.com/api/users/1")
-                .Respond("application/json", JsonSerializer.Serialize(expectedResponse));
-            var sut = new HttpClientService<>(_accountsRepositoryMock.Object, _leadsRepositoryMock.Object, _messagesService, _mapper);
-
-            // Act
-            var result = await _httpClientWrapper.GetAsync<dynamic>("https://example.com/api/users/1");
-
-            // Assert
-            Assert.AreEqual(expectedResponse.Id, result.Id);
-            Assert.AreEqual(expectedResponse.Name, result.Name);
-        }
-
-        [Test]
-        public async Task GetAsync_OperationCanceledException_ThrowsGatewayTimeoutException()
-        {
-            // Arrange
-            _mockHttpMessageHandler.When("https://example.com/api/users/1")
-                .Throw(new OperationCanceledException("The operation was canceled."));
-
-            // Act and Assert
-            var ex = Assert.ThrowsAsync<GatewayTimeoutException>(async () =>
-                await _httpClientWrapper.GetAsync<dynamic>("https://example.com/api/users/1"));
-            Assert.AreEqual("The operation was canceled.", ex.Message);
-        }
-
-        [Test]
-        public async Task GetAsync_HttpRequestException_ThrowsBadGatewayException()
-        {
-            // Arrange
-            _mockHttpMessageHandler.When("https://example.com/api/users/1")
-                .Throw(new HttpRequestException("The request failed."));
-
-            // Act and Assert
-            var ex = Assert.ThrowsAsync<BadGatewayException>(async () =>
-                await _httpClientWrapper.GetAsync<dynamic>("https://example.com/api/users/1"));
-            Assert.AreEqual("The request failed.", ex.Message);
-        }
-        
-        
-    }
-}
-
 {
-    public class HttpClientWrapperTests
+    private readonly ConfigurationManagerHttpClient _configurationManagerHttpClient;
+    private readonly MockHttpMessageHandler _mockHttpMessageHandler;
+
+    public HttpClientServiceTest()
     {
-        
+        _mockHttpMessageHandler = new MockHttpMessageHandler();
+        var httpClient = _mockHttpMessageHandler.ToHttpClient();
+        _configurationManagerHttpClient = new ConfigurationManagerHttpClient(httpClient);
+    }
+
+    
+    [Fact]
+    public async Task GetAsync_ValidStringUriSent_DictionaryConfigurationSettingsReceived()
+    {
+        //arrange
+        const string content = "{\"CrmDb_ConfigurationManager\":\"TestDb\",\"Log_ConfigurationManager\":\"Log\",\"RabbitMqPassword_ConfigurationManager\":\"Test\",\"CrmHost_ConfigurationManager\":\"CrmHost\",\"TransactionStoreHost_ConfigurationManager\":\"TStoreHost\",\"RabbitMqHost_ConfigurationManager\":\"rabbiHost\",\"RabbitMqLogin_ConfigurationManager\":\"Test\"}";
+        _mockHttpMessageHandler.When("https://194.87.210.5:13000/api/configuration?service=1")
+            .Respond("application/json", content);
+        var expected = new Dictionary<string, string>
+        {
+            { "CrmDb_ConfigurationManager", "TestDb" },
+            { "Log_ConfigurationManager", "Log" },
+            { "RabbitMqPassword_ConfigurationManager", "Test" },
+            { "CrmHost_ConfigurationManager", "CrmHost" },
+            { "TransactionStoreHost_ConfigurationManager", "TStoreHost" },
+            { "RabbitMqHost_ConfigurationManager", "rabbiHost" },
+            { "RabbitMqLogin_ConfigurationManager", "Test" },
+        };
+        var sut = new HttpClientService<ConfigurationManagerHttpClient>(_configurationManagerHttpClient, new CancellationTokenSource(6000));
+
+        // Act
+        var actual = await sut.GetAsync<Dictionary<string, string>>("https://194.87.210.5:13000/api/configuration?service=1");
+
+        // Assert
+        actual.Should().BeEquivalentTo(expected);
+    }
+    
+    [Fact]
+    public async Task GetAsync_InvalidStringUriSent_MockHttpMatchErrorReceived()
+    {
+        //arrange
+        const string content = "{\"CrmDb_ConfigurationManager\":\"TestDb\",\"Log_ConfigurationManager\":\"Log\",\"RabbitMqPassword_ConfigurationManager\":\"Test\",\"CrmHost_ConfigurationManager\":\"CrmHost\",\"TransactionStoreHost_ConfigurationManager\":\"TStoreHost\",\"RabbitMqHost_ConfigurationManager\":\"rabbiHost\",\"RabbitMqLogin_ConfigurationManager\":\"Test\"}";
+        _mockHttpMessageHandler.When("https://194.87.210.5:13000/api/configuration?service=1")
+            .Respond("application/json", content);
+        var sut = new HttpClientService<ConfigurationManagerHttpClient>(_configurationManagerHttpClient, new CancellationTokenSource(6000));
+
+        //act
+        var act = async () => await sut.GetAsync<Dictionary<string, string>>("https://194.87.210.5:13000/api/configuration?service=2");
+
+        //assert
+        await act.Should().ThrowAsync<MockHttpMatchException>();
     }
 }
-*/

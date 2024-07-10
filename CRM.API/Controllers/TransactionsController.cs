@@ -24,37 +24,37 @@ public class TransactionsController(IHttpClientService<TransactionStoreHttpClien
     
     [AuthorizationFilterForTransactionByAccountId]
     [HttpPost(Routes.Deposit)]
-    public async Task<ActionResult<Guid>> AddDepositTransaction([FromBody] TransactionRequest request)
+    public async Task<ActionResult<Guid>> AddDepositTransactionAsync([FromBody] TransactionRequest request)
     {
         _logger.Information(TransactionsLogs.AddDepositTransaction, request.AccountId, request.Amount);
-        var id = await transactionsService.AddDepositTransaction(request);
+        var id = await transactionsService.AddDepositTransactionAsync(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{id}", id);
     }
     
     [AuthorizationFilterForTransactionByAccountId]
     [HttpPost(Routes.Withdraw)]
-    public async Task<ActionResult<Guid>> AddWithdrawTransaction([FromBody] TransactionRequest request)
+    public async Task<ActionResult<Guid>> AddWithdrawTransactionAsync([FromBody] TransactionRequest request)
     {
         _logger.Information(TransactionsLogs.AddWithdrawTransaction, request.AccountId, request.Amount);
-        var id = await transactionsService.AddWithdrawTransaction(request);
+        var id = await transactionsService.AddWithdrawTransactionAsync(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{id}", id);
     }
     
     [AuthorizationFilterForTransferByAccountsId]
     [HttpPost(Routes.Transfer)]
-    public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransaction([FromBody] CrmTransferRequest request)
+    public async Task<ActionResult<TransferGuidsResponse>> AddTransferTransactionAsync([FromBody] CrmTransferRequest request)
     {
         _logger.Information(TransactionsLogs.AddTransferTransaction, request.AccountFromId, request.AccountToId);
-        var response = await transactionsService.AddTransferTransaction(request);
+        var response = await transactionsService.AddTransferTransactionAsync(request);
         
         return Created($"{servicesUrlSettings.TransactionStore}{Routes.TransactionsController}/{response}", response);
     }
     
     [Authorize(Roles = nameof(LeadStatus.Administrator))]
     [HttpGet(Routes.Id)]
-    public async Task<ActionResult<FullTransactionResponse>> GetTransactionById(Guid id)
+    public async Task<ActionResult<FullTransactionResponse>> GetTransactionByIdAsync(Guid id)
     {
         _logger.Information(TransactionsLogs.GetTransaction, id);
         var transactions = await httpClientService.GetAsync<FullTransactionResponse>(string.Format(Routes.TransactionsTStore, id));

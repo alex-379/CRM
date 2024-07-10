@@ -54,7 +54,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         }
         ConfirmPassword(lead,leadDb);
         var token = Guid.NewGuid();
-        var code = await PublishMailRequest(lead);
+        var code = await PublishMailRequestAsync(lead);
         var options = MemoryCacheEntryOptionsProvider.GetMemoryCacheEntryOptionsForToken();
         memoryCache.Set(token, code, options);
 
@@ -250,7 +250,7 @@ public class LeadsService(ILeadsRepository leadsRepository, IAccountsRepository 
         }
     }
     
-    private async Task<int> PublishMailRequest(LeadDto lead)
+    private async Task<int> PublishMailRequestAsync(LeadDto lead)
     {
         var code = GenerateRandomNumber();
         _logger.Information(LeadsServiceLogs.AuthorizationCode, code);

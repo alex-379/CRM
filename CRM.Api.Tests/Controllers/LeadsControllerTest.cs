@@ -3,6 +3,7 @@ using CRM.Business.Configuration;
 using CRM.Business.Interfaces;
 using CRM.Business.Models.Leads.Requests;
 using CRM.Business.Models.Leads.Responses;
+using CRM.Business.Models.Tokens.Responses;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -44,6 +45,22 @@ public class LeadsControllerTest
         //assert
         actual.Result.Should().BeOfType<OkObjectResult>();
         _leadsServiceMock.Verify(m => m.LoginLeadAsync(loginLeadRequest), Times.Once);
+    }
+    
+    [Fact]
+    public async Task Login2FaAsync_Login2FaLeadRequestSent_OkResultReceived()
+    {
+        //arrange
+        var login2FaLeadRequest = new Login2FaLeadRequest();
+        _leadsServiceMock.Setup(x => x.Login2FaLeadAsync(login2FaLeadRequest)).ReturnsAsync(new AuthenticatedResponse());
+        var sut = new LeadsController(_leadsServiceMock.Object, null);
+
+        //act
+        var actual = await sut.Login2FaAsync(login2FaLeadRequest);
+
+        //assert
+        actual.Result.Should().BeOfType<OkObjectResult>();
+        _leadsServiceMock.Verify(m => m.Login2FaLeadAsync(login2FaLeadRequest), Times.Once);
     }
 
     [Fact]

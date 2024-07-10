@@ -22,7 +22,7 @@ public static class ConfigurationSettings
     public const string ServicesUrlSettings = "ServicesUrlSettings";
     public const string ConfigurationServiceUrl= "ConfigurationServiceSettings:ConfigurationServiceForCrm";
     public const int TimeCansel = 60000;
-    public const string ConfigurationQueueName = "settings_queue";
+    public const string ConfigurationQueueName = "settings-crm";
     public const string ConfigurationExchangeName = "configurations-exchange";
     public const string ConfigurationExchangeType = "fanout";
     public const string LeadUpdaterQueueName = "leads_queue";

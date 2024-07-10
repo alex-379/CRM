@@ -5,9 +5,9 @@ namespace CRM.Business.Interfaces;
 
 public interface ITransactionsService
 {
-    Task<Guid> AddDepositTransaction(TransactionRequest request);
-    Task<Guid> AddWithdrawTransaction(TransactionRequest request);
-    Task<TransferGuidsResponse> AddTransferTransaction(CrmTransferRequest request);
-    Task<List<TransactionResponse>> GetTransactionsByAccountId(Guid id);
-    Task<AccountBalanceResponse> GetBalanceByAccountId(Guid id);
+    Task<Guid> AddDepositTransactionAsync(TransactionRequest request);
+    Task<Guid> AddWithdrawTransactionAsync(TransactionRequest request);
+    Task<TransferGuidsResponse> AddTransferTransactionAsync(CrmTransferRequest request);
+    Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id);
+    Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id);
 }

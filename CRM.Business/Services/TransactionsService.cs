@@ -9,17 +9,17 @@ using CRM.Business.Services.Constants.Logs;
 using CRM.Core;
 using CRM.Core.Enums;
 using CRM.Core.Exceptions;
-using CRM.DataLayer.Interfaces;
 using Serilog;
 
 namespace CRM.Business.Services;
 
-public class TransactionsService(IAccountsService accountsService, ILeadsRepository leadsRepository, IHttpClientService<TransactionStoreHttpClient> httpClientService) : ITransactionsService
+public class TransactionsService(IAccountsService accountsService, ILeadsService leadsService, IHttpClientService<TransactionStoreHttpClient> httpClientService) : ITransactionsService
 {
     private readonly ILogger _logger = Log.ForContext<TransactionsService>();
-    public async Task<Guid> AddDepositTransaction(TransactionRequest request)
+    
+    public async Task<Guid> AddDepositTransactionAsync(TransactionRequest request)
     {
-        var tStoreRequest = await CreateDepositWithdrawRequestTStore(request);
+        var tStoreRequest = await CreateDepositWithdrawRequestTStoreAsync(request);
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.DepositTStore);
         _logger.Information(TransactionsServiceLogs.AddDepositTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
         var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
@@ -27,10 +27,10 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         return id;
     }
     
-    public async Task<Guid> AddWithdrawTransaction(TransactionRequest request)
+    public async Task<Guid> AddWithdrawTransactionAsync(TransactionRequest request)
     {
-        await CheckBalance(request.AccountId, request.Amount);
-        var tStoreRequest = await CreateDepositWithdrawRequestTStore(request);
+        await CheckBalanceAsync(request.AccountId, request.Amount);
+        var tStoreRequest = await CreateDepositWithdrawRequestTStoreAsync(request);
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.WithdrawTStore);
         _logger.Information(TransactionsServiceLogs.AddWithdrawTransaction, tStoreRequest.AccountId, tStoreRequest.Currency);
         var id = await httpClientService.SendAsync<DepositWithdrawRequest,Guid>(tStoreRequest, requestMessage);
@@ -38,10 +38,10 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         return id;
     }
     
-    public async Task<TransferGuidsResponse> AddTransferTransaction(CrmTransferRequest request)
+    public async Task<TransferGuidsResponse> AddTransferTransactionAsync(CrmTransferRequest request)
     {
-        await CheckBalance(request.AccountFromId, request.Amount);
-        var tStoreRequest = await CreateTransferRequestTStore(request);
+        await CheckBalanceAsync(request.AccountFromId, request.Amount);
+        var tStoreRequest = await CreateTransferRequestTStoreAsync(request);
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, Routes.TransferTStore);
         _logger.Information(TransactionsServiceLogs.AddTransferTransaction, tStoreRequest.AccountFromId, tStoreRequest.AccountToId);
         var response = await httpClientService.SendAsync<TransferRequest,TransferGuidsResponse>(tStoreRequest, requestMessage);
@@ -49,7 +49,7 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         return response;
     }
     
-    public async Task<List<TransactionResponse>> GetTransactionsByAccountId(Guid id)
+    public async Task<List<TransactionResponse>> GetTransactionsByAccountIdAsync(Guid id)
     {
         _logger.Information(TransactionsServiceLogs.GetTransactions, id);
         var transactions = await httpClientService.GetAsync<List<TransactionResponse>>(string.Format(Routes.TransactionsByAccountIdTStore, id));
@@ -62,7 +62,7 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         return transactions;
     }
     
-    public async Task<AccountBalanceResponse> GetBalanceByAccountId(Guid id)
+    public async Task<AccountBalanceResponse> GetBalanceByAccountIdAsync(Guid id)
     {
         _logger.Information(TransactionsServiceLogs.GetBalance, id);
         var balance = await httpClientService.GetAsync<AccountBalanceResponse>(string.Format(Routes.BalanceByAccountIdTStore, id));
@@ -72,10 +72,10 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         return balance;
     }
     
-    private async Task<DepositWithdrawRequest> CreateDepositWithdrawRequestTStore(TransactionRequest request)
+    private async Task<DepositWithdrawRequest> CreateDepositWithdrawRequestTStoreAsync(TransactionRequest request)
     {
         var account = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountId);
-        CheckCurrencyForDepositWithdrawTransaction(account.Currency);
+        CheckCurrencyForDepositWithdrawTransactionAsync(account.Currency);
         var tStoreRequest = new DepositWithdrawRequest
         {
             AccountId = request.AccountId,
@@ -86,11 +86,11 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         return tStoreRequest;
     }
     
-    private async Task<TransferRequest> CreateTransferRequestTStore(CrmTransferRequest request)
+    private async Task<TransferRequest> CreateTransferRequestTStoreAsync(CrmTransferRequest request)
     {
         var accountFrom = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountFromId);
         var accountTo = await accountsService.GetAccountByIdAsync<AccountForTransactionResponse>(request.AccountToId);
-        await CheckLeadAccountsForTransferTransaction(accountFrom, accountTo);
+        await CheckLeadAccountsForTransferTransactionAsync(accountFrom, accountTo);
         var tStoreRequest = new TransferRequest
         {
             AccountToId = request.AccountToId,
@@ -103,7 +103,7 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         return tStoreRequest;
     }
 
-    private async Task CheckLeadAccountsForTransferTransaction(AccountForTransactionResponse accountFrom, AccountForTransactionResponse accountTo)
+    private async Task CheckLeadAccountsForTransferTransactionAsync(AccountForTransactionResponse accountFrom, AccountForTransactionResponse accountTo)
     {
         if (accountFrom.LeadId != accountTo.LeadId)
         {
@@ -115,10 +115,10 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
             throw new ValidationException(TransactionsServiceExceptions.AccountsCurrencyEqual);
         }
         
-        await CheckLeadRights(accountTo.LeadId, accountFrom.Currency, accountTo.Currency);
+        await CheckLeadRightsAsync(accountTo.LeadId, accountFrom.Currency, accountTo.Currency);
     }
 
-    private static void CheckCurrencyForDepositWithdrawTransaction(Currency currency)
+    private static void CheckCurrencyForDepositWithdrawTransactionAsync(Currency currency)
     {
         var (allowedCurrenciesForDepositWithdrawTransaction, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForDepositWithdrawTransaction();
         if(!allowedCurrenciesForDepositWithdrawTransaction.Contains(currency))
@@ -127,7 +127,7 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         }
     }
     
-    private async Task CheckBalance(Guid accountId, decimal amount)
+    private async Task CheckBalanceAsync(Guid accountId, decimal amount)
     {
         var balance = (await httpClientService.GetAsync<AccountBalanceResponse>(string.Format(Routes.BalanceByAccountIdTStore, accountId))).Balance;
         if (amount > balance)
@@ -136,12 +136,12 @@ public class TransactionsService(IAccountsService accountsService, ILeadsReposit
         }
     }
 
-    private async Task CheckLeadRights(Guid leadId, Currency currencyFrom, Currency currencyTo)
+    private async Task CheckLeadRightsAsync(Guid leadId, Currency currencyFrom, Currency currencyTo)
     {
         var (allowedCurrenciesForRegularLead, allowedCurrencyNames) = AllowedCurrencies.GetAllowedCurrenciesForRegularLead();
-        var lead = await leadsRepository.GetLeadByIdAsync(leadId);
-        if (lead.Status == LeadStatus.Regular
-            && ((!allowedCurrenciesForRegularLead.Contains(currencyFrom) && currencyTo != Currency.Rub)
+        var lead = await leadsService.GetLeadByIdAsync(leadId);
+        if (lead.Status != LeadStatus.Vip
+            && (!allowedCurrenciesForRegularLead.Contains(currencyFrom) && currencyTo != Currency.Rub
                 || !allowedCurrenciesForRegularLead.Contains(currencyTo)))
         {
             throw new ValidationException(string.Format(TransactionsServiceExceptions.CurrencyForRegularLead,

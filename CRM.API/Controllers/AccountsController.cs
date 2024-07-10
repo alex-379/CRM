@@ -46,7 +46,7 @@ public class AccountsController(IAccountsService accountsService, ITransactionsS
     public async Task<ActionResult<List<TransactionResponse>>> GetTransactionsByAccountId(Guid id)
     {
         _logger.Information(AccountsLogs.GetTransactions, id);
-        var transactions = await transactionsService.GetTransactionsByAccountId(id);
+        var transactions = await transactionsService.GetTransactionsByAccountIdAsync(id);
 
         return Ok(transactions);
     }
@@ -56,7 +56,7 @@ public class AccountsController(IAccountsService accountsService, ITransactionsS
     public async Task<ActionResult<AccountBalanceResponse>> GetBalanceByAccountId(Guid id)
     {
         _logger.Information(AccountsLogs.GetBalance, id);
-        var balance = await transactionsService.GetBalanceByAccountId(id);
+        var balance = await transactionsService.GetBalanceByAccountIdAsync(id);
 
         return Ok(balance);
     }
